@@ -1,0 +1,28 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - 'main'
+    tags:
+      - 'v*'
+  pull_request:
+    branches:
+      - 'main'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  extension-ci:
+    uses: steadybit/extension-kit/.github/workflows/reusable-extension-ci.yml@main
+    with:
+      go_version: '1.22'
+      build_linux_packages: false
+      VERSION_BUMPER_APPID: ${{ vars.GH_APP_STEADYBIT_APP_ID }}
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      PAT_TOKEN_EXTENSION_DEPLOYER: ${{ secrets.PAT_TOKEN_EXTENSION_DEPLOYER }}
+      SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      VERSION_BUMPER_SECRET: ${{ secrets.GH_APP_STEADYBIT_PRIVATE_KEY }}

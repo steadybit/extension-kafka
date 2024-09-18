@@ -1,0 +1,76 @@
+manifest should match snapshot with TLS:
+  1: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        steadybit.com/extension-auto-discovery: |
+          {"extensions":[{"port":8080,"protocol":"https","types":["ACTION","DISCOVERY","EVENT","ADVICE"]}]}
+      labels: null
+      name: RELEASE-NAME-steadybit-extension-scaffold
+      namespace: NAMESPACE
+    spec:
+      ports:
+        - port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/name: steadybit-extension-scaffold
+manifest should match snapshot with mutual TLS:
+  1: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        steadybit.com/extension-auto-discovery: |
+          {"extensions":[{"port":8080,"protocol":"https","types":["ACTION","DISCOVERY","EVENT","ADVICE"]}]}
+      labels: null
+      name: RELEASE-NAME-steadybit-extension-scaffold
+      namespace: NAMESPACE
+    spec:
+      ports:
+        - port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/name: steadybit-extension-scaffold
+manifest should match snapshot with mutual TLS using containerPaths:
+  1: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        steadybit.com/extension-auto-discovery: |
+          {"extensions":[{"port":8080,"protocol":"https","types":["ACTION","DISCOVERY","EVENT","ADVICE"]}]}
+      labels: null
+      name: RELEASE-NAME-steadybit-extension-scaffold
+      namespace: NAMESPACE
+    spec:
+      ports:
+        - port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/name: steadybit-extension-scaffold
+manifest should match snapshot without TLS:
+  1: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        steadybit.com/extension-auto-discovery: |
+          {"extensions":[{"port":8080,"protocol":"http","types":["ACTION","DISCOVERY","EVENT","ADVICE"]}]}
+      labels: null
+      name: RELEASE-NAME-steadybit-extension-scaffold
+      namespace: NAMESPACE
+    spec:
+      ports:
+        - port: 8080
+          protocol: TCP
+          targetPort: 8080
+      selector:
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/name: steadybit-extension-scaffold

@@ -1,0 +1,290 @@
+
+/*
+# Welcome
+This document guides you through the various interfaces exposed by a typical Steadybit extension.
+
+We recommend that you use httpYac to view the document.
+The easiest way to do this (with a running instance of this extension) is to use Gitpod:
+
+http://gitpod.io/#https://github.com/steadybit/extension-scaffold/blob/main/readme.http
+
+# How Extensions work
+Extensions implement a well-defined HTTP interface that the agent uses to control the
+extension. Extensions are deployed alongside the agent on your infrastructure. Steadybit
+doesn't care how you implement or deploy the extension.
+The extensions we're providing are implemented using Go and packaged as container images.
+
+# Landing
+At the root path of extensions, extensions report what capabilities they support. They
+do so through HTTP endpoint definitions that the agent can inspect to learn more.
+
+Try it! Click the little play button next to the following HTTP call.
+*/
+
+GET http://localhost:8080
+
+/*
+You see the capabilities of the Robot's extension which consists of
+
+- added Discovery for a new target type (using DiscoveryKit),
+- added Log-action (using ActionKit) and
+- an event listener (using EventKit).
+
+We will cover each of them subsequently.
+
+----------------------------------------------------------------------------------
+
+
+# Discovery
+Discovery is where Steadybit looks at all your systems and identifies the targets
+that may be used in an action. The Steadybit DiscoveryKit enables the extension of
+Steadybit with new discovery capabilities. For example, DiscoveryKit can be used
+to author open/closed source discoveries for:
+
+ - proprietary technology,
+ - non-natively supported open-source tech,
+ - hardware components and
+ - every other "thing" you would want to see and attack with Steadybit.
+
+Our scaffolding extension implements a discovery logic for robots.
+Before discovering the actual robots, we define how robot-targets are described in
+Steadybit by defining the
+
+- target types
+- target  attributes
+
+## Target Description: Types
+The following HTTP call exposes the description of a robot target type. The target description
+specifies how the platform should display targets in the user interface. All
+actions are associated with a single target type. Among others, this helps
+to narrow down the targets for an action.
+*/
+
+
+GET http://localhost:8080/robot/discovery/target-description
+
+/*
+You can see that the robot targets are described using two attributes (`steadybit.label`, `robot.reportedBy`).
+These can be detailed using the target attributes interface.
+
+## Target Description: Attributes
+At last, you can provide information about additional supported attributes. More
+specifically, it informs the platform about human-readable labels.
+*/
+
+
+GET http://localhost:8080/robot/discovery/attribute-descriptions
+
+/*
+## Discovery Description
+Once the target description is known, Steadybit needs to know how to discover the actual targets.
+Discovery descriptions expose information about the endpoint, the call interval
+and an optional restriction where to run the discovery.
+
+For more information, see the [DiscoveryKit docs](https://github.com/steadybit/discovery-kit/blob/main/docs/discovery-api.md#discovery-description).
+*/
+
+
+GET http://localhost:8080/robot/discovery
+
+/*
+Robots will be discovered once every minute by calling the `discover/path`-HTTP endpoint.
+Discoveries are always scheduled by the agent and in our case only by the leader-agent.
+
+## Do the magic: Discover Robot Targets
+Finally, let's discover all robots!
+By calling the endpoint below Steadybit receives a list of all discovered robots which will be
+accessible within the Steadybit platform.
+*/
+
+
+GET http://localhost:8080/robot/discovery/discovered-targets
+
+
+
+/*
+----------------------------------------------------------------------------------
+
+
+# Actions
+Attacks, checks, running a load test - all these are actions. So basically,
+every step in an experiment is an action from an implementation perspective.
+Attacks act upon targets from the discovery (needed for RBAC), while other
+actions may or may not do this.
+
+Extension can contribute custom actions by implementing the ActionKit interface.
+
+An action describes itself and is divided into prepare, start, status and stop steps
+that you need to implement. If you need to pass around some state between those, the
+agent manages that state for the extension. A defined lifecycle is crucial for
+rolling back attacks and cleaning up any allocated resources. We don’t want to
+run arbitrary shell scripts and leave a messy system behind.
+
+## Action Description
+The following HTTP call exposes the action description. The action description
+is used to provide meta data about the action, e.g., for presentation within the
+user interface and for lifecycle management.
+*/
+
+
+GET http://localhost:8080/robot/actions/log
+
+/*
+Our robot's log action is associated to the category `other` and implements a target-selection-template
+for helping users to define target queries when using the action.
+Furthermore, it reference each of the below described methods of an action lifecycle.
+
+## Action Lifecycle
+Action executions flow through a standardized lifecycle. This standard process enables
+Steadybit to handle several critical aspects for you, e.g., rollback triggering and
+recovery in case of extension crashes/preemption. This document only provides a rough
+overview of the supported lifecycle handlers. For more details, please refer to the
+[ActionKit](https://github.com/steadybit/action-kit/blob/main/docs/action-api.md) documentation.
+
+
+### Prepare
+The preparation (or short prepare) step receives the action's configuration options
+(representing the parameters defined in the action description) and a selected target.
+The HTTP endpoint must respond with an HTTP status code 200 and a JSON response body
+containing a state object.
+
+The state object is later used in HTTP requests to the start and stop endpoints. So you
+will want to include all the execution relevant information within the state object, e.g.,
+a subset of the target's attributes, the configuration options and the original state
+(in case you are going to do some system modification as part of the start step).
+*/
+
+
+POST http://localhost:8080/robot/actions/log/prepare
+Content-Type: application/json
+
+{
+    "target": {
+        "name": "R2-D2",
+        "attributes": {}
+    },
+    "config": {
+        "message": "Hello from %s!"
+    }
+}
+
+
+/*
+### Start
+The actual action happens within the start step, i.e., this is where you will typically
+modify the system, kill processes or reboot servers.
+
+The start step receives the prepare step's state object. The HTTP endpoint must respond
+with an HTTP status code 200 on success. A JSON response body containing a state object
+may be returned. This state object is later passed to the stop step.
+
+This endpoint must respond within a few seconds. It is not permitted to block until the
+action execution is completed within the start endpoint. For example, you can trigger a
+deployment change within the start endpoint, but the start endpoint may not block until
+the deployment change is fully rolled out (this is what the status endpoint is for).
+*/
+
+
+POST http://localhost:8080/robot/actions/log/start
+Content-Type: application/json
+
+{
+    "state": {
+        "FormattedMessage": "Hello from R2-D2!"
+    }
+}
+
+
+/*
+### Status
+The status step exists to observe the status of the action execution. For example, when
+triggering a deployment change you would use the status endpoint to inspect whether the
+deployment change was processed.
+
+The status step receives the prepare, start or previous state step's state object. The
+HTTP endpoint must respond with an HTTP status code 200 on success.
+
+This endpoint must respond within a few seconds. It is not permitted to block until the
+action execution is completed within the status endpoint. For example, you can inspect
+a deployment change's state within the status endpoint, but the status endpoint may not
+block until the deployment change is fully rolled out. The status endpoint is
+continuously called until it responds with completed=true.
+*/
+
+
+POST http://localhost:8080/robot/actions/log/status
+Content-Type: application/json
+
+{
+    "state": {
+        "FormattedMessage": "Hello from R2-D2!"
+    }
+}
+
+
+/*
+### Stop
+The stop step exists to revert system modifications, stop CPU/memory stress or
+any other actions.
+
+The stop step receives the prepare, status or start step's state object. The
+HTTP endpoint must respond with an HTTP status code 200 on success.
+*/
+
+
+POST http://localhost:8080/robot/actions/log/stop
+Content-Type: application/json
+
+{
+    "state": {
+        "FormattedMessage": "Hello from R2-D2!"
+    }
+}
+
+/*
+----------------------------------------------------------------------------------
+
+
+# Events
+Each time a Steadybit event occurs that matches the listenTo and restrictTo
+configuration, Steadybit will send a request to the endpoint. The request
+will contain the event data.
+
+Refer to the [EventKit documentation](https://github.com/steadybit/event-kit/blob/main/docs/event-api.md) to learn more.
+*/
+POST http://localhost:8080/events/all
+Content-Type: application/json
+
+{
+  "id": "da059724-a8ae-4b4b-b4f0-ee01898232d2",
+  "eventName": "experiment.execution.created",
+  "eventTime": "2021-09-01T12:00:00Z",
+  "tenant": {
+    "key": "exmpl",
+    "name": "Example Inc."
+  },
+  "principal": {
+    "principalType": "user",
+    "username": "tom.mason",
+    "name": "Tom Mason",
+    "email": "tom.mason@example.com"
+  },
+  "environment": {
+    "id": "STG",
+    "name": "Staging"
+  },
+  "team": {
+    "key": "ADM",
+    "name": "Administrators"
+  },
+  "experimentExecution": {
+    "experimentKey": "ADM-4",
+    "executionId": 34,
+    "name": "Rollout restart does not impact service availability",
+    "state": "COMPLETED",
+    "preparedTime": "2022-11-08T16:42:32.303762Z",
+    "startedTime": "2022-11-08T16:42:32.329718Z",
+    "endedTime": "2022-11-08T16:42:42.636157Z"
+  }
+}
+
