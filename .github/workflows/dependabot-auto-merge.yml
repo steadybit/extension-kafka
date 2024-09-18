@@ -20,7 +20,7 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
       - name: Delete this step after you've created the branch protection rules!
-        # extension-scaffold should always run, even with this security step. In all other repos the user has to manually delete the step. `format` to prevent a "change all" text replacement.
+        # extension-kafka should always run, even with this security step. In all other repos the user has to manually delete the step. `format` to prevent a "change all" text replacement.
         if: ${{github.event.repository.name != format('extension-{0}{1}','scaf', 'fold')}}
         run: exit 1
       - name: Enable auto-merge for Dependabot PRs

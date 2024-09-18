@@ -13,15 +13,15 @@ import (
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
 	"github.com/steadybit/event-kit/go/event_kit_api"
+	"github.com/steadybit/extension-kafka/config"
+	"github.com/steadybit/extension-kafka/extadvice/robot_maintenance"
+	"github.com/steadybit/extension-kafka/extevents"
+	"github.com/steadybit/extension-kafka/extrobots"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/exthealth"
 	"github.com/steadybit/extension-kit/exthttp"
 	"github.com/steadybit/extension-kit/extlogging"
 	"github.com/steadybit/extension-kit/extruntime"
-	"github.com/steadybit/extension-scaffold/config"
-	"github.com/steadybit/extension-scaffold/extadvice/robot_maintenance"
-	"github.com/steadybit/extension-scaffold/extevents"
-	"github.com/steadybit/extension-scaffold/extrobots"
 	_ "go.uber.org/automaxprocs" // Importing automaxprocs automatically adjusts GOMAXPROCS.
 	_ "net/http/pprof"           //allow pprof
 )

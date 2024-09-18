@@ -9,9 +9,9 @@ import (
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_commons"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
+	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
-	"github.com/steadybit/extension-scaffold/config"
 	"time"
 )
 
@@ -93,7 +93,7 @@ func (d *robotDiscovery) DiscoverTargets(_ context.Context) ([]discovery_kit_api
 			Label:      name,
 			Attributes: map[string][]string{
 				"steadybit.label":         {name},
-				"robot.reportedBy":        {"extension-scaffold"},
+				"robot.reportedBy":        {"extension-kafka"},
 				"robot.tags.firstTag":     {"just a tag"},
 				"robot.needs.maintenance": {needsMaintenance},
 			},

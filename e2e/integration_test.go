@@ -17,7 +17,7 @@ import (
 
 func TestWithMinikube(t *testing.T) {
 	extFactory := e2e.HelmExtensionFactory{
-		Name: "extension-scaffold",
+		Name: "extension-kafka",
 		Port: 8080,
 		ExtraArgs: func(m *e2e.Minikube) []string {
 			return []string{
@@ -57,15 +57,15 @@ func testDiscovery(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 
 	require.NoError(t, err)
 	assert.Equal(t, target.TargetType, "com.steadybit.extension_scaffold.robot")
-	assert.Equal(t, target.Attributes["robot.reportedBy"], []string{"extension-scaffold"})
+	assert.Equal(t, target.Attributes["robot.reportedBy"], []string{"extension-kafka"})
 	assert.NotContains(t, target.Attributes, "robot.tags.firstTag")
 }
 
 func testRunscaffold(t *testing.T, m *e2e.Minikube, e *e2e.Extension) {
 	config := struct {
-		Duration     int      `json:"duration"`
+		Duration int `json:"duration"`
 	}{
-		Duration:     3000,
+		Duration: 3000,
 	}
 	exec, err := e.RunAction("com.steadybit.extension_scaffold.robot.log", &action_kit_api.Target{
 		Name: "robot",

@@ -1,42 +1,69 @@
-# Steadybit Extension Scaffold
+# Steadybit extension-kafka
 
-This repository contains a scaffold with a sample implementation of a [Steadybit extension](https://docs.steadybit.com/integrate-with-steadybit/extensions). You may find this repository helpful…
+TODO describe what your extension is doing here from a user perspective.
 
- - [When you want to understand what Steadybit extensions are](#understanding-the-extension-mechanism).
- - [When you want to build a Steadybit extension](#for-extension-authors)
+TODO optionally add your extension to the [Reliability Hub](https://hub.steadybit.com/) by creating
+a [pull request](https://github.com/steadybit/reliability-hub-db) and add a link to this README.
 
-Please follow one of the links above to move to the appropriate documentation sections.
+## Configuration
 
-## Understanding the Extension Mechanism
+| Environment Variable                                      | Helm value                           | Meaning                                                                                                               | Required | Default                 |
+|-----------------------------------------------------------|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------|----------|-------------------------|
+| `STEADYBIT_EXTENSION_ROBOT_NAMES`                         |                                      | Comma-separated list of discoverable robots                                                                           | yes      | Bender,Terminator,R2-D2 |
+| `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_ROBOT` | `discovery.attributes.excludes.robot | List of Robot Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*" | no       |                         |
 
-One of the best ways to understand the extension mechanism is to run an extension and experiment with its APIs. We have prepared Gitpod and GitHub codespaces setups to make this as easy as possible for you.
+The extension supports all environment variables provided by [steadybit/extension-kit](https://github.com/steadybit/extension-kit#environment-variables).
 
-When you click one of these buttons, you will be directed to an online editor with a locally running extension, and the file `README.http` will open. This file contains documentation and HTTP calls you can execute to learn about extensions and this specific sample implementation.
+## Installation
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](http://gitpod.io/#https://github.com/steadybit/extension-scaffold/blob/main/README.http)
+### Kubernetes
 
+Detailed information about agent and extension installation in kubernetes can also be found in
+our [documentation](https://docs.steadybit.com/install-and-configure/install-agent/install-on-kubernetes).
 
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://github.com/codespaces/new?hide_repo_select=true&ref=main&repo=595972094)
+#### Recommended (via agent helm chart)
 
+All extensions provide a helm chart that is also integrated in the
+[helm-chart](https://github.com/steadybit/helm-charts/tree/main/charts/steadybit-agent) of the agent.
 
-## For Extension Authors
+You must provide additional values to activate this extension.
 
-**Note:** We recommend that you [understand the extension mechanism](#understanding-the-extension-mechanism) before following these instructions.
+```
+--set extension-kafka.enabled=true \
+```
 
-This repository ships with everything Steadybit extensions might need:
- - Basic usage of and initialization for ActionKit, DiscoveryKit, EventKit and ExtensionKit.
- - Extension configuration support.
- - Dockerfile and Helm chart.
- - GitHub actions for building, testing and publishing Docker images and Helm charts.
- - and more.
+Additional configuration options can be found in
+the [helm-chart](https://github.com/steadybit/extension-kafka/blob/main/charts/steadybit-extension-kafka/values.yaml) of the
+extension.
 
-To use this scaffold, you need to:
+#### Alternative (via own helm chart)
 
- 1. Get a copy of this scaffold. [Use GitHub's repository template feature](https://docs.github.com/en/repositories/creating-and-managing-repositories/creating-a-repository-from-a-template), [fork the repository](https://github.com/steadybit/extension-scaffold/fork) or [download it](https://github.com/steadybit/extension-scaffold/archive/refs/heads/main.zip).
- 2. Execute `make eject` within the copy to replace the readme, license etc. files with some more appropriate starting points.
- 3. Delete the `.github/workflows/cla.yml` workflow or allow access to the access for CLA verification.
- 4. Rename all occurrences of `extension-scaffold` to `extension-{{other name}}`
- 5. Verify that the Docker and Helm installation instructions are correct in the `README.md`
- 6. Create an empty branch named "gh-pages"
- 7. After the first build, ensure that you make the Docker image public through `packages -> {{your package name}} -> Package settings -> Change visibility`
+If you need more control, you can install the extension via its
+dedicated [helm-chart](https://github.com/steadybit/extension-kafka/blob/main/charts/steadybit-extension-kafka).
 
+```bash
+helm repo add steadybit-extension-kafka https://steadybit.github.io/extension-kafka
+helm repo update
+helm upgrade steadybit-extension-kafka \
+    --install \
+    --wait \
+    --timeout 5m0s \
+    --create-namespace \
+    --namespace steadybit-agent \
+    steadybit-extension-kafka/steadybit-extension-kafka
+```
+
+### Linux Package
+
+Please use
+our [agent-linux.sh script](https://docs.steadybit.com/install-and-configure/install-agent/install-on-linux-hosts)
+to install the extension on your Linux machine. The script will download the latest version of the extension and install
+it using the package manager.
+
+After installing, configure the extension by editing `/etc/steadybit/extension-kafka` and then restart the service.
+
+## Extension registration
+
+Make sure that the extension is registered with the agent. In most cases this is done automatically. Please refer to
+the [documentation](https://docs.steadybit.com/install-and-configure/install-agent/extension-discovery) for more
+information about extension registration and how to verify.

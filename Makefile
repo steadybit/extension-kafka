@@ -84,7 +84,7 @@ run: tidy build
 ## container: build the container image
 .PHONY: container
 container:
-	docker build --build-arg ADDITIONAL_BUILD_PARAMS="-cover -covermode=atomic" --build-arg SKIP_LICENSES_REPORT="true" -t extension-scaffold:latest .
+	docker build --build-arg ADDITIONAL_BUILD_PARAMS="-cover -covermode=atomic" --build-arg SKIP_LICENSES_REPORT="true" -t extension-kafka:latest .
 
 # ==================================================================================== #
 # EJECT

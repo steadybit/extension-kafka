@@ -6,14 +6,14 @@ manifest should match snapshot using podAnnotations and Labels:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
@@ -21,7 +21,7 @@ manifest should match snapshot using podAnnotations and Labels:
             some-annotation: some-annotation-value
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             some-label: some-label-value
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
@@ -32,7 +32,7 @@ manifest should match snapshot using podAnnotations and Labels:
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
                   value: text
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -70,7 +70,7 @@ manifest should match snapshot using podAnnotations and Labels:
                 runAsNonRoot: true
                 runAsUser: 10000
               volumeMounts: null
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes: null
 manifest should match snapshot with TLS:
   1: |
@@ -80,21 +80,21 @@ manifest should match snapshot with TLS:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
             oneagent.dynatrace.com/injection: "false"
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
         spec:
@@ -108,7 +108,7 @@ manifest should match snapshot with TLS:
                   value: /etc/extension/certificates/server-cert/tls.crt
                 - name: STEADYBIT_EXTENSION_TLS_SERVER_KEY
                   value: /etc/extension/certificates/server-cert/tls.key
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -149,7 +149,7 @@ manifest should match snapshot with TLS:
                 - mountPath: /etc/extension/certificates/server-cert
                   name: certificate-server-cert
                   readOnly: true
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes:
             - name: certificate-server-cert
               secret:
@@ -163,21 +163,21 @@ manifest should match snapshot with extra env vars:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
             oneagent.dynatrace.com/injection: "false"
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
         spec:
@@ -194,7 +194,7 @@ manifest should match snapshot with extra env vars:
                   name: env-configmap
                 - name: env-secrets
                   secretRef: null
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -232,7 +232,7 @@ manifest should match snapshot with extra env vars:
                 runAsNonRoot: true
                 runAsUser: 10000
               volumeMounts: null
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes: null
 manifest should match snapshot with extra labels:
   1: |
@@ -243,21 +243,21 @@ manifest should match snapshot with extra labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
         tags.datadoghq.com/service: steadybit-extension
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
             oneagent.dynatrace.com/injection: "false"
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
             tags.datadoghq.com/service: steadybit-extension
@@ -268,7 +268,7 @@ manifest should match snapshot with extra labels:
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
                   value: text
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -306,7 +306,7 @@ manifest should match snapshot with extra labels:
                 runAsNonRoot: true
                 runAsUser: 10000
               volumeMounts: null
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes: null
 manifest should match snapshot with mutual TLS:
   1: |
@@ -316,21 +316,21 @@ manifest should match snapshot with mutual TLS:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
             oneagent.dynatrace.com/injection: "false"
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
         spec:
@@ -346,7 +346,7 @@ manifest should match snapshot with mutual TLS:
                   value: /etc/extension/certificates/server-cert/tls.key
                 - name: STEADYBIT_EXTENSION_TLS_CLIENT_CAS
                   value: /etc/extension/certificates/client-cert-a/tls.crt,/etc/extension/certificates/client-cert-a/tls.crt
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -390,7 +390,7 @@ manifest should match snapshot with mutual TLS:
                 - mountPath: /etc/extension/certificates/server-cert
                   name: certificate-server-cert
                   readOnly: true
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes:
             - name: certificate-client-cert-a
               secret:
@@ -408,21 +408,21 @@ manifest should match snapshot with mutual TLS using containerPaths:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
             oneagent.dynatrace.com/injection: "false"
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
         spec:
@@ -438,7 +438,7 @@ manifest should match snapshot with mutual TLS using containerPaths:
                   value: /etc/tls/server.key
                 - name: STEADYBIT_EXTENSION_TLS_CLIENT_CAS
                   value: /etc/tls/ca.crt,/etc/tls/ca2.crt
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -476,7 +476,7 @@ manifest should match snapshot with mutual TLS using containerPaths:
                 runAsNonRoot: true
                 runAsUser: 10000
               volumeMounts: null
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes: null
 manifest should match snapshot with podSecurityContext:
   1: |
@@ -486,21 +486,21 @@ manifest should match snapshot with podSecurityContext:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
             oneagent.dynatrace.com/injection: "false"
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
         spec:
@@ -510,7 +510,7 @@ manifest should match snapshot with podSecurityContext:
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
                   value: text
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -550,7 +550,7 @@ manifest should match snapshot with podSecurityContext:
               volumeMounts: null
           securityContext:
             runAsUser: 2222
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes: null
 manifest should match snapshot with priority class:
   1: |
@@ -560,21 +560,21 @@ manifest should match snapshot with priority class:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
             oneagent.dynatrace.com/injection: "false"
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
         spec:
@@ -584,7 +584,7 @@ manifest should match snapshot with priority class:
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
                   value: text
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -623,7 +623,7 @@ manifest should match snapshot with priority class:
                 runAsUser: 10000
               volumeMounts: null
           priorityClassName: my-priority-class
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes: null
 manifest should match snapshot without TLS:
   1: |
@@ -633,21 +633,21 @@ manifest should match snapshot without TLS:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-      name: RELEASE-NAME-steadybit-extension-scaffold
+      name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
       replicas: 1
       selector:
         matchLabels:
           app.kubernetes.io/instance: RELEASE-NAME
-          app.kubernetes.io/name: steadybit-extension-scaffold
+          app.kubernetes.io/name: steadybit-extension-kafka
       template:
         metadata:
           annotations:
             oneagent.dynatrace.com/injection: "false"
           labels:
             app.kubernetes.io/instance: RELEASE-NAME
-            app.kubernetes.io/name: steadybit-extension-scaffold
+            app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
         spec:
@@ -657,7 +657,7 @@ manifest should match snapshot without TLS:
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
                   value: text
-              image: ghcr.io/steadybit/extension-scaffold:v0.0.0
+              image: ghcr.io/steadybit/extension-kafka:v0.0.0
               imagePullPolicy: IfNotPresent
               livenessProbe:
                 failureThreshold: 5
@@ -695,5 +695,5 @@ manifest should match snapshot without TLS:
                 runAsNonRoot: true
                 runAsUser: 10000
               volumeMounts: null
-          serviceAccountName: steadybit-extension-scaffold
+          serviceAccountName: steadybit-extension-kafka
           volumes: null

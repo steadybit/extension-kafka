@@ -1,4 +1,4 @@
-module github.com/steadybit/extension-scaffold
+module github.com/steadybit/extension-kafka
 
 go 1.22.0
 
