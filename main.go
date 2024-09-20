@@ -7,6 +7,7 @@ package main
 import (
 	_ "github.com/KimMachineGun/automemlimit" // By default, it sets `GOMEMLIMIT` to 90% of cgroup's memory limit.
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
 	"github.com/steadybit/advice-kit/go/advice_kit_api"
@@ -16,12 +17,14 @@ import (
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kafka/extadvice/robot_maintenance"
 	"github.com/steadybit/extension-kafka/extevents"
+	"github.com/steadybit/extension-kafka/extkafka"
 	"github.com/steadybit/extension-kafka/extrobots"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/exthealth"
 	"github.com/steadybit/extension-kit/exthttp"
 	"github.com/steadybit/extension-kit/extlogging"
 	"github.com/steadybit/extension-kit/extruntime"
+	"github.com/twmb/franz-go/pkg/kgo"
 	_ "go.uber.org/automaxprocs" // Importing automaxprocs automatically adjusts GOMAXPROCS.
 	_ "net/http/pprof"           //allow pprof
 )
@@ -45,6 +48,7 @@ func main() {
 	// configuration obtained from environment variables.
 	config.ParseConfiguration()
 	config.ValidateConfiguration()
+	initKafkaClient()
 
 	//This will start /health/liveness and /health/readiness endpoints on port 8081 for use with kubernetes
 	//The port can be configured using the STEADYBIT_EXTENSION_HEALTH_PORT environment variable
@@ -127,4 +131,19 @@ func getAdviceRefs() []advice_kit_api.DescribingEndpointReference {
 		}
 	}
 	return refs
+}
+
+func initKafkaClient() {
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(config.Config.SeedBrokers),
+		kgo.DefaultProduceTopic("steadybit-topic"),
+		kgo.ClientID("steadybit"),
+	}
+
+	var err error
+	extkafka.KafkaClient, err = kgo.NewClient(opts...)
+	if err != nil {
+		log.Fatal().Err(err).Msgf("Failed to initialize kafka client: %s", err.Error())
+	}
+	defer extkafka.KafkaClient.Close()
 }
