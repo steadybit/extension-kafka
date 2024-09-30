@@ -61,8 +61,7 @@ func (l *logAction) Describe() action_kit_api.ActionDescription {
 				},
 			}),
 		}),
-		// Category for the targets to appear in
-		Category: extutil.Ptr("other"),
+		Technology: extutil.Ptr("Kafka"),
 
 		// To clarify the purpose of the action, you can set a kind.
 		//   Attack: Will cause harm to targets

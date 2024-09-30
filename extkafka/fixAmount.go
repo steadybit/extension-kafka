@@ -48,8 +48,7 @@ package extkafka
 //			},
 //		}),
 //
-//		// Category for the targets to appear in
-//		Category: extutil.Ptr("HTTP"),
+//		Technology: extutil.Ptr("Kafka"),
 //
 //		// To clarify the purpose of the action:
 //		//   Check: Will perform checks on the targets
