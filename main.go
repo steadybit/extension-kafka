@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
 	_ "github.com/KimMachineGun/automemlimit" // By default, it sets `GOMEMLIMIT` to 90% of cgroup's memory limit.
 	"github.com/rs/zerolog"
@@ -182,19 +181,19 @@ func initKafkaClient() {
 		}
 	}
 
-	// Generate a large payload (e.g., 1 MB)
-	payload := make([]byte, 0, 1*1024*1024)
-	_, err = rand.Read(payload)
-	if err != nil {
-		log.Fatal().Err(err).Msgf("Failed to produce records: %s", err.Error())
-	}
-
-	record := &kgo.Record{
-		Topic: "steadybit",
-		Value: payload,
-	}
-	results := extkafka.KafkaClient.ProduceSync(context.TODO(), record)
-	if results.FirstErr() != nil {
-		log.Fatal().Err(err).Msgf("Failed to produce records: %s", results.FirstErr())
-	}
+	//// Generate a large payload (e.g., 1 MB)
+	//payload := make([]byte, 0, 1*1024*1024)
+	//_, err = rand.Read(payload)
+	//if err != nil {
+	//	log.Fatal().Err(err).Msgf("Failed to produce records: %s", err.Error())
+	//}
+	//
+	//record := &kgo.Record{
+	//	Topic: "steadybit",
+	//	Value: payload,
+	//}
+	//results := extkafka.KafkaClient.ProduceSync(context.TODO(), record)
+	//if results.FirstErr() != nil {
+	//	log.Fatal().Err(err).Msgf("Failed to produce records: %s", results.FirstErr())
+	//}
 }

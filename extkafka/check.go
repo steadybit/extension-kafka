@@ -41,7 +41,7 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	state.NumberOfRequests = extutil.ToUInt64(request.Config["numberOfRequests"])
 	state.ReadTimeout = time.Duration(extutil.ToInt64(request.Config["readTimeout"])) * time.Millisecond
 	state.ExecutionID = request.ExecutionId
-	state.Topic = extutil.ToString(request.Config["Topic"])
+	state.Topic = extutil.ToString(request.Config["topic"])
 	state.RequestSizeBytes = extutil.ToInt64(request.Config["requestSizeBytes"])
 	//state.Body = extutil.ToString(request.Config["body"])
 	//state.Method = extutil.ToString(request.Config["method"])
@@ -115,7 +115,7 @@ func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 }
 
 func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
-
+	log.Debug().Msg("entering the jobs loop")
 	for range executionRunData.jobs {
 		if !checkEnded(executionRunData, state) {
 			var started = time.Now()
@@ -181,10 +181,10 @@ func start(state *KafkaBrokerAttackState) {
 		for {
 			select {
 			case <-executionRunData.stopTicker:
-				log.Debug().Msg("Stop Request Scheduler")
+				log.Debug().Msg("Stop Record Scheduler")
 				return
 			case t := <-executionRunData.tickers.C:
-				log.Debug().Msgf("Schedule Request at %v", t)
+				log.Debug().Msgf("Schedule Record at %v", t)
 				executionRunData.jobs <- t
 			}
 		}
