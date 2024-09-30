@@ -115,7 +115,16 @@ func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 }
 
 func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
-	log.Debug().Msg("entering the jobs loop")
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(config.Config.SeedBrokers),
+		kgo.DefaultProduceTopic(state.Topic),
+		kgo.ClientID("steadybit"),
+	}
+	client, err := kgo.NewClient(opts...)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create client")
+	}
+
 	for range executionRunData.jobs {
 		if !checkEnded(executionRunData, state) {
 			var started = time.Now()
@@ -123,8 +132,11 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 			rec := createRecord(state)
 
 			var producedRecord *kgo.Record
-			producedRecord, err := KafkaClient.ProduceSync(context.Background(), rec).First()
+			before := time.Now()
+			producedRecord, err = client.ProduceSync(context.Background(), rec).First()
+			after := time.Now()
 			log.Debug().Msgf("Record have been produced at timestamp %s", producedRecord.Timestamp)
+			log.Debug().Msgf("Record have been produced in %v milliseconds", after.Sub(before).Milliseconds())
 
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to produce record")
@@ -144,19 +156,19 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 				// Successfully produced the record
 				recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
 				log.Debug().Msgf("Record have been produced at timestamp %s", producedRecord.Timestamp)
-				//metricMap := map[string]string{
-				//	"topic":    rec.Topic,
-				//	"producer": strconv.Itoa(int(rec.ProducerID)),
-				//	"brokers":  config.Config.SeedBrokers,
-				//	"error":    err.Error(),
-				//}
+				metricMap := map[string]string{
+					"topic":    rec.Topic,
+					"producer": strconv.Itoa(int(rec.ProducerID)),
+					"brokers":  config.Config.SeedBrokers,
+					"error":    "",
+				}
 				executionRunData.requestCounter.Add(1)
 
 				executionRunData.requestSuccessCounter.Add(1)
 
 				metric := action_kit_api.Metric{
 					Name:      extutil.Ptr("record_latency"),
-					Metric:    nil,
+					Metric:    metricMap,
 					Value:     recordProducerLatency,
 					Timestamp: producedRecord.Timestamp,
 				}
@@ -164,6 +176,7 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 			}
 		}
 	}
+	defer client.Close()
 }
 
 func start(state *KafkaBrokerAttackState) {
