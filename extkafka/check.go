@@ -135,7 +135,6 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 			before := time.Now()
 			producedRecord, err = client.ProduceSync(context.Background(), rec).First()
 			after := time.Now()
-			log.Debug().Msgf("Record have been produced at timestamp %s", producedRecord.Timestamp)
 			log.Debug().Msgf("Record have been produced in %v milliseconds", after.Sub(before).Milliseconds())
 
 			if err != nil {
@@ -156,6 +155,7 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 				// Successfully produced the record
 				recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
 				log.Debug().Msgf("Record have been produced at timestamp %s", producedRecord.Timestamp)
+				log.Debug().Msgf("Record producer latency: %v milliseconds", recordProducerLatency)
 				metricMap := map[string]string{
 					"topic":    rec.Topic,
 					"producer": strconv.Itoa(int(rec.ProducerID)),
