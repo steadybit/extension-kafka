@@ -52,7 +52,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 
 		// To clarify the purpose of the action:
 		//   Check: Will perform checks on the targets
-		Kind: action_kit_api.Check,
+		Kind: action_kit_api.LoadTest,
 
 		// How the action is controlled over time.
 		//   External: The agent takes care and calls stop then the time has passed. Requires a duration parameter. Use this when the duration is known in advance.
@@ -111,10 +111,6 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			//------------------------
 
 			maxConcurrent,
-			clientSettings,
-			followRedirects,
-			connectTimeout,
-			readTimeout,
 		},
 		Status: extutil.Ptr(action_kit_api.MutatingEndpointReferenceWithCallInterval{
 			CallInterval: extutil.Ptr("1s"),

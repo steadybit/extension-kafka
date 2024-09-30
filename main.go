@@ -5,6 +5,9 @@
 package main
 
 import (
+	"context"
+	"crypto/rand"
+	"fmt"
 	_ "github.com/KimMachineGun/automemlimit" // By default, it sets `GOMEMLIMIT` to 90% of cgroup's memory limit.
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -24,6 +27,7 @@ import (
 	"github.com/steadybit/extension-kit/exthttp"
 	"github.com/steadybit/extension-kit/extlogging"
 	"github.com/steadybit/extension-kit/extruntime"
+	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 	_ "go.uber.org/automaxprocs" // Importing automaxprocs automatically adjusts GOMAXPROCS.
 	_ "net/http/pprof"           //allow pprof
@@ -58,6 +62,8 @@ func main() {
 	// This call registers a handler for the extension's root path. This is the path initially accessed
 	// by the Steadybit agent to obtain the extension's capabilities.
 	exthttp.RegisterHttpHandler("/", exthttp.GetterAsHandler(getExtensionList))
+
+	action_kit_sdk.RegisterAction(extkafka.NewProduceMessageActionPeriodically())
 
 	// This is a section you will most likely want to change: The registration of HTTP handlers
 	// for your extension. You might want to change these because the names do not fit, or because
@@ -136,7 +142,7 @@ func getAdviceRefs() []advice_kit_api.DescribingEndpointReference {
 func initKafkaClient() {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic("steadybit-topic"),
+		kgo.DefaultProduceTopic("steadybit"),
 		kgo.ClientID("steadybit"),
 	}
 
@@ -146,4 +152,49 @@ func initKafkaClient() {
 		log.Fatal().Err(err).Msgf("Failed to initialize kafka client: %s", err.Error())
 	}
 	defer extkafka.KafkaClient.Close()
+
+	err = extkafka.KafkaClient.Ping(context.Background())
+	if err != nil {
+		log.Fatal().Err(err).Msgf("Failed to reach brokers: %s", err.Error())
+	}
+
+	// Create a test topic
+	// Step 2: Create Admin Client for Topic Management
+	admin := kadm.NewClient(extkafka.KafkaClient)
+	defer admin.Close()
+
+	// Step 3: Define topic parameters
+	topicName := "steadybit"
+
+	// Step 4: Create the topic using the Admin client
+	ctx := context.Background()
+	result, err := admin.CreateTopics(ctx, -1, -1, nil, topicName)
+	if err != nil {
+		log.Fatal().Err(err).Msgf("Failed to create topic: %v", err)
+	}
+
+	// Step 5: Check the result of the topic creation
+	for _, res := range result {
+		if res.Err != nil {
+			fmt.Printf("Failed to create topic %s: %v\n", res.Topic, res.Err)
+		} else {
+			fmt.Printf("Topic %s created successfully\n", res.Topic)
+		}
+	}
+
+	// Generate a large payload (e.g., 1 MB)
+	payload := make([]byte, 0, 1*1024*1024)
+	_, err = rand.Read(payload)
+	if err != nil {
+		log.Fatal().Err(err).Msgf("Failed to produce records: %s", err.Error())
+	}
+
+	record := &kgo.Record{
+		Topic: "steadybit",
+		Value: payload,
+	}
+	results := extkafka.KafkaClient.ProduceSync(context.TODO(), record)
+	if results.FirstErr() != nil {
+		log.Fatal().Err(err).Msgf("Failed to produce records: %s", results.FirstErr())
+	}
 }

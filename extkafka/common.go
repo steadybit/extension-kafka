@@ -5,14 +5,13 @@ import (
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"net/url"
 	"time"
 )
 
 const (
 	kafkaBrokerTargetId  = "com.steadybit.extension_kafka.broker"
-	TargetIDPeriodically = "com.steadybit.extension_http.check.periodically"
-	TargetIDFixedAmount  = "com.steadybit.extension_http.check.fixed_amount"
+	TargetIDPeriodically = "com.steadybit.extension_kafka.produce.periodically"
+	TargetIDFixedAmount  = "com.steadybit.extension_kafka.produce.fixed_amount"
 )
 
 const (
@@ -24,25 +23,15 @@ const (
 type KafkaBrokerAttackState struct {
 	NodeID                   string
 	Topic                    string
-	Interval                 time.Duration
-	ExpectedErrorCodes       []int
 	DelayBetweenRequestsInMS int64
-	Timeout                  time.Time
-	ResponsesContains        string
 	SuccessRate              int
 	ResponseTimeMode         string
 	ResponseTime             *time.Duration
 	MaxConcurrent            int
 	NumberOfRequests         uint64
-	RequestSizeMb            uint64
+	RequestSizeBytes         int64
 	ReadTimeout              time.Duration
 	ExecutionID              uuid.UUID
-	Body                     string
-	URL                      url.URL
-	Method                   string
-	Headers                  map[string]string
-	ConnectionTimeout        time.Duration
-	FollowRedirects          bool
 }
 
 var KafkaClient *kgo.Client
@@ -201,41 +190,5 @@ var (
 		Required:     extutil.Ptr(true),
 		Advanced:     extutil.Ptr(true),
 		Order:        extutil.Ptr(16),
-	}
-	clientSettings = action_kit_api.ActionParameter{
-		Name:     "clientSettings",
-		Label:    "HTTP Client Settings",
-		Type:     action_kit_api.Header,
-		Advanced: extutil.Ptr(true),
-		Order:    extutil.Ptr(17),
-	}
-	followRedirects = action_kit_api.ActionParameter{
-		Name:        "followRedirects",
-		Label:       "Follow Redirects?",
-		Description: extutil.Ptr("Should Redirects be followed?"),
-		Type:        action_kit_api.Boolean,
-		Required:    extutil.Ptr(true),
-		Advanced:    extutil.Ptr(true),
-		Order:       extutil.Ptr(18),
-	}
-	connectTimeout = action_kit_api.ActionParameter{
-		Name:         "connectTimeout",
-		Label:        "Connection Timeout",
-		Description:  extutil.Ptr("Connection Timeout for a single Call in seconds. Should be between 1 and 10 seconds."),
-		Type:         action_kit_api.Duration,
-		DefaultValue: extutil.Ptr("5s"),
-		Required:     extutil.Ptr(true),
-		Advanced:     extutil.Ptr(true),
-		Order:        extutil.Ptr(19),
-	}
-	readTimeout = action_kit_api.ActionParameter{
-		Name:         "readTimeout",
-		Label:        "Read Timeout",
-		Description:  extutil.Ptr("Read Timeout for a single Call in seconds. Should be between 1 and 10 seconds."),
-		Type:         action_kit_api.Duration,
-		DefaultValue: extutil.Ptr("5s"),
-		Required:     extutil.Ptr(true),
-		Advanced:     extutil.Ptr(true),
-		Order:        extutil.Ptr(20),
 	}
 )

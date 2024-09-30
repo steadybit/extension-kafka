@@ -6,7 +6,6 @@ package extkafka
 
 import (
 	"context"
-	"crypto/rand"
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -14,8 +13,8 @@ import (
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"net/url"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -34,31 +33,7 @@ var (
 	ExecutionRunDataMap = sync.Map{} //make(map[uuid.UUID]*ExecutionRunData)
 )
 
-type HTTPCheckState struct {
-	ExpectedStatusCodes      []int
-	DelayBetweenRequestsInMS int64
-	Timeout                  time.Time
-	ResponsesContains        string
-	SuccessRate              int
-	ResponseTimeMode         string
-	ResponseTime             *time.Duration
-	MaxConcurrent            int
-	NumberOfRequests         uint64
-	ReadTimeout              time.Duration
-	ExecutionID              uuid.UUID
-	Body                     string
-	URL                      url.URL
-	Method                   string
-	Headers                  map[string]string
-	ConnectionTimeout        time.Duration
-	FollowRedirects          bool
-}
-
 func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) (*action_kit_api.PrepareResult, error) {
-	duration := extutil.ToInt64(request.Config["duration"])
-	state.Timeout = time.Now().Add(time.Millisecond * time.Duration(duration))
-
-	state.ResponsesContains = extutil.ToString(request.Config["responsesContains"])
 	state.SuccessRate = extutil.ToInt(request.Config["successRate"])
 	state.ResponseTimeMode = extutil.ToString(request.Config["responseTimeMode"])
 	state.ResponseTime = extutil.Ptr(time.Duration(extutil.ToInt64(request.Config["responseTime"])) * time.Millisecond)
@@ -66,27 +41,29 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	state.NumberOfRequests = extutil.ToUInt64(request.Config["numberOfRequests"])
 	state.ReadTimeout = time.Duration(extutil.ToInt64(request.Config["readTimeout"])) * time.Millisecond
 	state.ExecutionID = request.ExecutionId
-	state.Body = extutil.ToString(request.Config["body"])
-	state.Method = extutil.ToString(request.Config["method"])
-	state.ConnectionTimeout = time.Duration(extutil.ToInt64(request.Config["connectTimeout"])) * time.Millisecond
-	state.FollowRedirects = extutil.ToBool(request.Config["followRedirects"])
-	var err error
-	state.Headers, err = extutil.ToKeyValue(request.Config, "headers")
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to parse headers")
-		return nil, err
-	}
+	state.Topic = extutil.ToString(request.Config["Topic"])
+	state.RequestSizeBytes = extutil.ToInt64(request.Config["requestSizeBytes"])
+	//state.Body = extutil.ToString(request.Config["body"])
+	//state.Method = extutil.ToString(request.Config["method"])
+	//state.ConnectionTimeout = time.Duration(extutil.ToInt64(request.Config["connectTimeout"])) * time.Millisecond
+	//state.FollowRedirects = extutil.ToBool(request.Config["followRedirects"])
+	//var err error
+	//state.Headers, err = extutil.ToKeyValue(request.Config, "headers")
+	//if err != nil {
+	//	log.Error().Err(err).Msg("Failed to parse headers")
+	//	return nil, err
+	//}
 
-	urlString, ok := request.Config["url"]
-	if !ok {
-		return nil, fmt.Errorf("URL is missing")
-	}
-	parsedUrl, err := url.Parse(extutil.ToString(urlString))
-	if err != nil {
-		log.Error().Err(err).Msg("URL could not be parsed missing")
-		return nil, err
-	}
-	state.URL = *parsedUrl
+	//urlString, ok := request.Config["url"]
+	//if !ok {
+	//	return nil, fmt.Errorf("URL is missing")
+	//}
+	//parsedUrl, err := url.Parse(extutil.ToString(urlString))
+	//if err != nil {
+	//	log.Error().Err(err).Msg("URL could not be parsed missing")
+	//	return nil, err
+	//}
+	//state.URL = *parsedUrl
 
 	initExecutionRunData(state)
 	executionRunData, err := loadExecutionRunData(state.ExecutionID)
@@ -125,61 +102,29 @@ func saveExecutionRunData(executionID uuid.UUID, executionRunData *ExecutionRunD
 	ExecutionRunDataMap.Store(executionID, executionRunData)
 }
 
-func createRecord(state *KafkaBrokerAttackState) (*kgo.Record, error) {
-	// Generate a large payload (e.g., 1 MB)
-	payload := make([]byte, state.RequestSizeMb*1024*1024)
-	_, err := rand.Read(payload)
-	if err != nil {
-		return nil, err
-	}
+func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
+	// Generate a large payload
+	payloadSize := state.RequestSizeBytes * 1024
+	largeString := strings.Repeat("Test data line.\n", int(payloadSize/16))
 
-	record := &kgo.Record{
-		Topic: state.Topic,
-		Value: payload,
-	}
-
-	return record, err
+	record := kgo.KeyStringRecord("steadybit", largeString)
+	record.Topic = state.Topic
+	record.Value = []byte(largeString)
+	log.Debug().Msg("Record created")
+	return record
 }
 
 func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.AllowAutoTopicCreation(),
-		kgo.DefaultProduceTopic("steadybit-topic"),
-		kgo.ClientID("steadybit"),
-	}
-	// TODO
-	// - add TLS config if found
-	// - add AWS config to client if found
-
-	client, err := kgo.NewClient(opts...)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to create kafka client")
-	}
 
 	for range executionRunData.jobs {
 		if !checkEnded(executionRunData, state) {
 			var started = time.Now()
 
-			rec, err := createRecord(state)
-			if err != nil {
-				log.Error().Err(err).Msg("Failed to create record")
-				now := time.Now()
-				executionRunData.metrics <- action_kit_api.Metric{
-					Metric: map[string]string{
-						"topic":    rec.Topic,
-						"producer": strconv.Itoa(int(rec.ProducerID)),
-						"error":    err.Error(),
-					},
-					Name:      extutil.Ptr("response_time"),
-					Value:     float64(now.Sub(started).Milliseconds()),
-					Timestamp: now,
-				}
-				return
-			}
+			rec := createRecord(state)
 
 			var producedRecord *kgo.Record
-			producedRecord, err = client.ProduceSync(context.Background(), rec).First()
+			producedRecord, err := KafkaClient.ProduceSync(context.Background(), rec).First()
+			log.Debug().Msgf("Record have been produced at timestamp %s", producedRecord.Timestamp)
 
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to produce record")
@@ -199,19 +144,19 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 				// Successfully produced the record
 				recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
 				log.Debug().Msgf("Record have been produced at timestamp %s", producedRecord.Timestamp)
-				metricMap := map[string]string{
-					"topic":    rec.Topic,
-					"producer": strconv.Itoa(int(rec.ProducerID)),
-					"brokers":  config.Config.SeedBrokers,
-					"error":    err.Error(),
-				}
+				//metricMap := map[string]string{
+				//	"topic":    rec.Topic,
+				//	"producer": strconv.Itoa(int(rec.ProducerID)),
+				//	"brokers":  config.Config.SeedBrokers,
+				//	"error":    err.Error(),
+				//}
 				executionRunData.requestCounter.Add(1)
 
 				executionRunData.requestSuccessCounter.Add(1)
 
 				metric := action_kit_api.Metric{
 					Name:      extutil.Ptr("record_latency"),
-					Metric:    metricMap,
+					Metric:    nil,
 					Value:     recordProducerLatency,
 					Timestamp: producedRecord.Timestamp,
 				}
