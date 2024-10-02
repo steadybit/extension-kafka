@@ -99,8 +99,6 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			//------------------------
 			resultVerification,
 			successRate,
-			responsesTimeMode,
-			responseTime,
 
 			//------------------------
 			// Additional Settings
