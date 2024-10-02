@@ -38,6 +38,9 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	state.ResponseTimeMode = extutil.ToString(request.Config["responseTimeMode"])
 	state.ResponseTime = extutil.Ptr(time.Duration(extutil.ToInt64(request.Config["responseTime"])) * time.Millisecond)
 	state.MaxConcurrent = extutil.ToInt(request.Config["maxConcurrent"])
+	if state.MaxConcurrent == 0 {
+		return nil, fmt.Errorf("max concurrent can't be zero")
+	}
 	state.NumberOfRequests = extutil.ToUInt64(request.Config["numberOfRequests"])
 	state.ReadTimeout = time.Duration(extutil.ToInt64(request.Config["readTimeout"])) * time.Millisecond
 	state.ExecutionID = request.ExecutionId
@@ -147,6 +150,8 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 			after := time.Now()
 			log.Debug().Msgf("Record have been produced in %v milliseconds", after.Sub(before).Milliseconds())
 
+			executionRunData.requestCounter.Add(1)
+
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to produce record")
 				now := time.Now()
@@ -157,7 +162,7 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 						"brokers":  config.Config.SeedBrokers,
 						"error":    err.Error(),
 					},
-					Name:      extutil.Ptr("response_time"),
+					Name:      extutil.Ptr("producer_response_time"),
 					Value:     float64(now.Sub(started).Milliseconds()),
 					Timestamp: now,
 				}
@@ -172,7 +177,6 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 					"brokers":  config.Config.SeedBrokers,
 					"error":    "",
 				}
-				executionRunData.requestCounter.Add(1)
 
 				executionRunData.requestSuccessCounter.Add(1)
 

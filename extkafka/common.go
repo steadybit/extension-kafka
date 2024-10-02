@@ -42,66 +42,17 @@ type KafkaBrokerAttackState struct {
 var KafkaClient *kgo.Client
 
 var (
-	requestDefinition = action_kit_api.ActionParameter{
-		Name:  "requestDefinition",
-		Label: "Request Definition",
-		Type:  action_kit_api.Header,
-		Order: extutil.Ptr(0),
-	}
-	method = action_kit_api.ActionParameter{
-		Name:         "method",
-		Label:        "HTTP Method",
-		Description:  extutil.Ptr("The HTTP method to use."),
-		Type:         action_kit_api.String,
-		DefaultValue: extutil.Ptr("GET"),
-		Required:     extutil.Ptr(true),
-		Order:        extutil.Ptr(1),
-		Options: extutil.Ptr([]action_kit_api.ParameterOption{
-			action_kit_api.ExplicitParameterOption{
-				Label: "GET",
-				Value: "GET",
-			},
-			action_kit_api.ExplicitParameterOption{
-				Label: "POST",
-				Value: "POST",
-			},
-			action_kit_api.ExplicitParameterOption{
-				Label: "PUT",
-				Value: "PUT",
-			},
-			action_kit_api.ExplicitParameterOption{
-				Label: "PATCH",
-				Value: "PATCH",
-			},
-			action_kit_api.ExplicitParameterOption{
-				Label: "HEAD",
-				Value: "HEAD",
-			},
-			action_kit_api.ExplicitParameterOption{
-				Label: "DELETE",
-				Value: "DELETE",
-			},
-		}),
-	}
-	urlParameter = action_kit_api.ActionParameter{
-		Name:        "url",
-		Label:       "Target URL",
-		Description: extutil.Ptr("The URL to check."),
-		Type:        action_kit_api.Url,
-		Required:    extutil.Ptr(true),
-		Order:       extutil.Ptr(2),
-	}
-	body = action_kit_api.ActionParameter{
-		Name:        "body",
-		Label:       "HTTP Body",
-		Description: extutil.Ptr("The HTTP Body."),
-		Type:        action_kit_api.Textarea,
+	recordKeyValue = action_kit_api.ActionParameter{
+		Name:        "RecordKeyValue",
+		Label:       "Record key and value",
+		Description: extutil.Ptr("The Record Body."),
+		Type:        action_kit_api.KeyValue,
 		Order:       extutil.Ptr(3),
 	}
-	headers = action_kit_api.ActionParameter{
-		Name:        "headers",
-		Label:       "HTTP Headers",
-		Description: extutil.Ptr("The HTTP Headers."),
+	recordHeaders = action_kit_api.ActionParameter{
+		Name:        "recordHeaders",
+		Label:       "Record Headers",
+		Description: extutil.Ptr("The Record Headers."),
 		Type:        action_kit_api.KeyValue,
 		Order:       extutil.Ptr(4),
 	}
@@ -136,55 +87,6 @@ var (
 		Order:        extutil.Ptr(11),
 		MinValue:     extutil.Ptr(0),
 		MaxValue:     extutil.Ptr(100),
-	}
-	statusCode = action_kit_api.ActionParameter{
-		Name:         "statusCode",
-		Label:        "Response status codes",
-		Description:  extutil.Ptr("Which HTTP-Status code should be considered as success? This field supports ranges with '-' and multiple codes delimited by ';' for example '200-399;429'."),
-		Type:         action_kit_api.String,
-		DefaultValue: extutil.Ptr("200-299"),
-		Required:     extutil.Ptr(true),
-		Order:        extutil.Ptr(12),
-	}
-	responsesContains = action_kit_api.ActionParameter{
-		Name:        "responsesContains",
-		Label:       "Responses contains",
-		Description: extutil.Ptr("The Responses needs to contain the given string, otherwise the experiment will fail. The responses will be evaluated and the end of the given duration."),
-		Type:        action_kit_api.String,
-		Required:    extutil.Ptr(false),
-		Order:       extutil.Ptr(13),
-	}
-	responsesTimeMode = action_kit_api.ActionParameter{
-		Name:         "responseTimeMode",
-		Label:        "Response Time Verification Mode",
-		Description:  extutil.Ptr("Should the Response Time be shorter or longer than the given duration?"),
-		Type:         action_kit_api.String,
-		Required:     extutil.Ptr(false),
-		Order:        extutil.Ptr(14),
-		DefaultValue: extutil.Ptr("NO_VERIFICATION"),
-		Options: extutil.Ptr([]action_kit_api.ParameterOption{
-			action_kit_api.ExplicitParameterOption{
-				Label: "no verification",
-				Value: "NO_VERIFICATION",
-			},
-			action_kit_api.ExplicitParameterOption{
-				Label: "shorter than",
-				Value: "SHORTER_THAN",
-			},
-			action_kit_api.ExplicitParameterOption{
-				Label: "longer than",
-				Value: "LONGER_THAN",
-			},
-		}),
-	}
-	responseTime = action_kit_api.ActionParameter{
-		Name:         "responseTime",
-		Label:        "Response Time",
-		Description:  extutil.Ptr("The value for the response time verification."),
-		Type:         action_kit_api.Duration,
-		Required:     extutil.Ptr(false),
-		Order:        extutil.Ptr(15),
-		DefaultValue: extutil.Ptr("500ms"),
 	}
 	maxConcurrent = action_kit_api.ActionParameter{
 		Name:         "maxConcurrent",

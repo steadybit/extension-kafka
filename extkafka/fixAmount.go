@@ -66,11 +66,8 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			//------------------------
 			// Request Definition
 			//------------------------
-			requestDefinition,
-			method,
-			urlParameter,
-			body,
-			headers,
+			recordKeyValue,
+			recordHeaders,
 			{
 				Name:  "-",
 				Label: "-",
@@ -102,8 +99,6 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			//------------------------
 			resultVerification,
 			successRate,
-			statusCode,
-			responsesContains,
 			responsesTimeMode,
 			responseTime,
 

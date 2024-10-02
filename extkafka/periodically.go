@@ -64,11 +64,8 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			//------------------------
 			// Request Definition
 			//------------------------
-			requestDefinition,
-			method,
-			urlParameter,
-			body,
-			headers,
+			recordKeyValue,
+			recordHeaders,
 			{
 				Name:  "-",
 				Label: "-",
@@ -80,9 +77,9 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			//------------------------
 			repetitionControl,
 			{
-				Name:         "requestsPerSecond",
-				Label:        "Requests per second",
-				Description:  extutil.Ptr("The number of requests per second. Should be between 1 and 10."),
+				Name:         "recordsPerSecond",
+				Label:        "Records per second",
+				Description:  extutil.Ptr("The number of records per second. Should be between 1 and 10."),
 				Type:         action_kit_api.Integer,
 				DefaultValue: extutil.Ptr("1"),
 				Required:     extutil.Ptr(true),
@@ -100,10 +97,6 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			//------------------------
 			resultVerification,
 			successRate,
-			statusCode,
-			responsesContains,
-			responsesTimeMode,
-			responseTime,
 
 			//------------------------
 			// Additional Settings
