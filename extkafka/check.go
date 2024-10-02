@@ -107,13 +107,9 @@ func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 
 	var key string
 	var value string
-	if state.GenerateRecord {
-		key = "steadybit"
-		value = strings.Repeat("Test data line.\n", int(payloadSize/16))
-	} else {
-		key = state.RecordKey
-		value = state.RecordValue
-	}
+
+	key = "steadybit"
+	value = strings.Repeat("Test data line.\n", int(payloadSize/16))
 
 	record := kgo.KeyStringRecord(key, value)
 

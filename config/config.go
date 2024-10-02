@@ -21,7 +21,8 @@ type Specification struct {
 	// variable STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_ROBOT="robot.label.a,robot.tags.*".
 	DiscoveryAttributesExcludesRobot []string `json:"discoveryAttributesExcludesRobot" split_words:"true" required:"false"`
 	// variable STEADYBIT_EXTENSION_ACTIVE_ADVICE_LIST="robot_maintenance". To activate all advice, set the value to "*". To exclude some advice, set the value to e.g. "com.steadybit.extension_scaffold.advice.robot-maintenance".
-	ActiveAdviceList []string `required:"false" split_words:"true" default:"*"`
+	ActiveAdviceList       []string `required:"false" split_words:"true" default:"*"`
+	DiscoveryIntervalKafka int      `json:"discoveryIntervalKafka" split_words:"true" required:"false" default:"300"`
 }
 
 var (

@@ -10,6 +10,7 @@ import (
 
 const (
 	kafkaBrokerTargetId  = "com.steadybit.extension_kafka.broker"
+	kafkaClusterTargetId = "com.steadybit.extension_kafka.cluster"
 	TargetIDPeriodically = "com.steadybit.extension_kafka.produce.periodically"
 	TargetIDFixedAmount  = "com.steadybit.extension_kafka.produce.fixed_amount"
 )
@@ -29,8 +30,9 @@ type KafkaBrokerAttackState struct {
 	ResponseTime             *time.Duration
 	MaxConcurrent            int
 	GenerateRecord           bool
-	RecordKey                string
-	RecordValue              string
+	RecordKeyPrefix          string
+	RecordDuplication        bool
+	RecordPartition          int
 	RecordAttrs              uint8
 	NumberOfRequests         uint64
 	RequestSizeBytes         int64
@@ -43,7 +45,7 @@ var KafkaClient *kgo.Client
 
 var (
 	recordKeyValue = action_kit_api.ActionParameter{
-		Name:        "RecordKeyValue",
+		Name:        "recordKeyValue",
 		Label:       "Record key and value",
 		Description: extutil.Ptr("The Record Body."),
 		Type:        action_kit_api.KeyValue,

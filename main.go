@@ -20,7 +20,6 @@ import (
 	"github.com/steadybit/extension-kafka/extadvice/robot_maintenance"
 	"github.com/steadybit/extension-kafka/extevents"
 	"github.com/steadybit/extension-kafka/extkafka"
-	"github.com/steadybit/extension-kafka/extrobots"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/exthealth"
 	"github.com/steadybit/extension-kit/exthttp"
@@ -30,6 +29,9 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 	_ "go.uber.org/automaxprocs" // Importing automaxprocs automatically adjusts GOMAXPROCS.
 	_ "net/http/pprof"           //allow pprof
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -58,24 +60,13 @@ func main() {
 	exthealth.SetReady(false)
 	exthealth.StartProbes(8081)
 
-	// This call registers a handler for the extension's root path. This is the path initially accessed
-	// by the Steadybit agent to obtain the extension's capabilities.
-	exthttp.RegisterHttpHandler("/", exthttp.GetterAsHandler(getExtensionList))
+	ctx, cancel := SignalCanceledContext()
 
-	action_kit_sdk.RegisterAction(extkafka.NewProduceMessageActionPeriodically())
+	registerHandlers(ctx)
 
-	// This is a section you will most likely want to change: The registration of HTTP handlers
-	// for your extension. You might want to change these because the names do not fit, or because
-	// you do not have a need for all of them.
-	discovery_kit_sdk.Register(extrobots.NewRobotDiscovery())
-	action_kit_sdk.RegisterAction(extrobots.NewLogAction())
-	extevents.RegisterEventListenerHandlers()
-
-	// Register the handler for the advice endpoint
-	exthttp.RegisterHttpHandler("/advice/robot-maintenance", exthttp.GetterAsHandler(robot_maintenance.GetAdviceDescriptionRobotMaintenance))
-
-	//This will install a signal handlder, that will stop active actions when receiving a SIGURS1, SIGTERM or SIGINT
-	action_kit_sdk.InstallSignalHandler()
+	action_kit_sdk.InstallSignalHandler(func(o os.Signal) {
+		cancel()
+	})
 
 	//This will register the coverage endpoints for the extension (used by action_kit_test)
 	action_kit_sdk.RegisterCoverageEndpoints()
@@ -99,6 +90,32 @@ type ExtensionListResponse struct {
 	discovery_kit_api.DiscoveryList `json:",inline"`
 	event_kit_api.EventListenerList `json:",inline"`
 	advice_kit_api.AdviceList       `json:",inline"`
+}
+
+func registerHandlers(ctx context.Context) {
+	discovery_kit_sdk.Register(extkafka.NewKafkaBrokerDiscovery(ctx))
+	action_kit_sdk.RegisterAction(extkafka.NewProduceMessageActionPeriodically())
+
+	exthttp.RegisterHttpHandler("/", exthttp.GetterAsHandler(getExtensionList))
+}
+
+func SignalCanceledContext() (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(context.Background())
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM, syscall.SIGUSR1)
+
+	go func() {
+		select {
+		case <-c:
+			cancel()
+		case <-ctx.Done():
+		}
+	}()
+
+	return ctx, func() {
+		signal.Stop(c)
+		cancel()
+	}
 }
 
 func getExtensionList() ExtensionListResponse {
