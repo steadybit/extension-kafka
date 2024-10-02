@@ -43,27 +43,23 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	state.ExecutionID = request.ExecutionId
 	state.Topic = extutil.ToString(request.Config["topic"])
 	state.RequestSizeBytes = extutil.ToInt64(request.Config["requestSizeBytes"])
-	//state.Body = extutil.ToString(request.Config["body"])
-	//state.Method = extutil.ToString(request.Config["method"])
-	//state.ConnectionTimeout = time.Duration(extutil.ToInt64(request.Config["connectTimeout"])) * time.Millisecond
-	//state.FollowRedirects = extutil.ToBool(request.Config["followRedirects"])
-	//var err error
-	//state.Headers, err = extutil.ToKeyValue(request.Config, "headers")
-	//if err != nil {
-	//	log.Error().Err(err).Msg("Failed to parse headers")
-	//	return nil, err
-	//}
+	if str, ok := request.Config["recordAttributes"]; ok {
+		i, err := strconv.ParseUint(str.(string), 0, 8)
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to parse record attributes")
+			return nil, err
+		}
+		state.RecordAttrs = uint8(i)
+	}
 
-	//urlString, ok := request.Config["url"]
-	//if !ok {
-	//	return nil, fmt.Errorf("URL is missing")
-	//}
-	//parsedUrl, err := url.Parse(extutil.ToString(urlString))
-	//if err != nil {
-	//	log.Error().Err(err).Msg("URL could not be parsed missing")
-	//	return nil, err
-	//}
-	//state.URL = *parsedUrl
+	var err error
+	if _, ok := request.Config["recordHeaders"]; ok {
+		state.Headers, err = extutil.ToKeyValue(request.Config, "recordHeaders")
+		if err != nil {
+			log.Error().Err(err).Msg("Failed to parse headers")
+			return nil, err
+		}
+	}
 
 	initExecutionRunData(state)
 	executionRunData, err := loadExecutionRunData(state.ExecutionID)
@@ -105,11 +101,25 @@ func saveExecutionRunData(executionID uuid.UUID, executionRunData *ExecutionRunD
 func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 	// Generate a large payload
 	payloadSize := state.RequestSizeBytes * 1024
-	largeString := strings.Repeat("Test data line.\n", int(payloadSize/16))
 
-	record := kgo.KeyStringRecord("steadybit", largeString)
-	record.Topic = state.Topic
-	record.Value = []byte(largeString)
+	var key string
+	var value string
+	if state.GenerateRecord {
+		key = "steadybit"
+		value = strings.Repeat("Test data line.\n", int(payloadSize/16))
+	} else {
+		key = state.RecordKey
+		value = state.RecordValue
+	}
+
+	record := kgo.KeyStringRecord(key, value)
+
+	if state.Headers != nil {
+		for k, v := range state.Headers {
+			record.Headers = append(record.Headers, kgo.RecordHeader{Key: k, Value: []byte(v)})
+		}
+	}
+
 	log.Debug().Msg("Record created")
 	return record
 }

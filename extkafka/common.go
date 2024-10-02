@@ -28,10 +28,15 @@ type KafkaBrokerAttackState struct {
 	ResponseTimeMode         string
 	ResponseTime             *time.Duration
 	MaxConcurrent            int
+	GenerateRecord           bool
+	RecordKey                string
+	RecordValue              string
+	RecordAttrs              uint8
 	NumberOfRequests         uint64
 	RequestSizeBytes         int64
 	ReadTimeout              time.Duration
 	ExecutionID              uuid.UUID
+	Headers                  map[string]string
 }
 
 var KafkaClient *kgo.Client
