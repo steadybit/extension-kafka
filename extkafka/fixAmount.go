@@ -48,7 +48,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			},
 		}),
 
-		// Category for the targets to appear in
+		// Technology for the targets to appear in
 		Technology: extutil.Ptr("Kafka"),
 
 		// To clarify the purpose of the action:
