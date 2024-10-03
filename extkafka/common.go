@@ -24,7 +24,7 @@ const (
 type KafkaBrokerAttackState struct {
 	NodeID                   string
 	Topic                    string
-	Partitions               []int32
+	Partitions               []string
 	DelayBetweenRequestsInMS int64
 	SuccessRate              int
 	ResponseTimeMode         string
