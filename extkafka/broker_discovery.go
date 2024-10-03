@@ -12,6 +12,7 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
+	"github.com/twmb/franz-go/pkg/kgo"
 	"time"
 )
 
@@ -27,7 +28,7 @@ func NewKafkaBrokerDiscovery(ctx context.Context) discovery_kit_sdk.TargetDiscov
 	discovery := &kafkaBrokerDiscovery{}
 	return discovery_kit_sdk.NewCachedTargetDiscovery(discovery,
 		discovery_kit_sdk.WithRefreshTargetsNow(),
-		discovery_kit_sdk.WithRefreshTargetsInterval(ctx, time.Duration(config.Config.DiscoveryIntervalKafka)*time.Second),
+		discovery_kit_sdk.WithRefreshTargetsInterval(ctx, time.Duration(config.Config.DiscoveryIntervalKafkaBroker)*time.Second),
 	)
 }
 
@@ -35,7 +36,7 @@ func (r *kafkaBrokerDiscovery) Describe() discovery_kit_api.DiscoveryDescription
 	return discovery_kit_api.DiscoveryDescription{
 		Id: kafkaBrokerTargetId,
 		Discover: discovery_kit_api.DescribingEndpointReferenceWithCallInterval{
-			CallInterval: extutil.Ptr(fmt.Sprintf("%ds", config.Config.DiscoveryIntervalKafka)),
+			CallInterval: extutil.Ptr(fmt.Sprintf("%ds", config.Config.DiscoveryIntervalKafkaBroker)),
 		},
 	}
 }
@@ -43,17 +44,17 @@ func (r *kafkaBrokerDiscovery) Describe() discovery_kit_api.DiscoveryDescription
 func (r *kafkaBrokerDiscovery) DescribeTarget() discovery_kit_api.TargetDescription {
 	return discovery_kit_api.TargetDescription{
 		Id:       kafkaBrokerTargetId,
-		Label:    discovery_kit_api.PluralLabel{One: "MSK broker", Other: "MSK brokers"},
-		Category: extutil.Ptr("cloud"),
+		Label:    discovery_kit_api.PluralLabel{One: "Kafka broker", Other: "Kafka brokers"},
+		Category: extutil.Ptr("kafka"),
 		Version:  extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:     extutil.Ptr(kafkaIcon),
 		Table: discovery_kit_api.Table{
 			Columns: []discovery_kit_api.Column{
 				{Attribute: "steadybit.label"},
-				{Attribute: "aws.msk.cluster.state"},
-				{Attribute: "aws.msk.cluster.version"},
-				{Attribute: "aws.msk.cluster.broker.kafka-version"},
-				{Attribute: "aws.account"},
+				{Attribute: "kafka.broker.node-id"},
+				{Attribute: "kafka.broker.host"},
+				{Attribute: "kafka.broker.port"},
+				{Attribute: "kafka.broker.rack"},
 			},
 			OrderBy: []discovery_kit_api.OrderBy{
 				{
@@ -111,37 +112,48 @@ func (r *kafkaBrokerDiscovery) DiscoverTargets(ctx context.Context) ([]discovery
 func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	result := make([]discovery_kit_api.Target, 0, 20)
 
-	admin := kadm.NewClient(KafkaClient)
-	defer admin.Close()
-
-	// Fetch cluster metadata
-	//KafkaClient.ForceMetadataRefresh()
-	metadata, err := admin.Metadata(ctx)
-	if err != nil {
-		return nil, err
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(config.Config.SeedBrokers),
+		kgo.DefaultProduceTopic("steadybit"),
+		kgo.ClientID("steadybit"),
 	}
 
-	clusterName := metadata.Cluster
+	client, err := kgo.NewClient(opts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
+	}
+	defer client.Close()
 
-	for _, broker := range metadata.Brokers {
-		result = append(result, toBrokerTarget(broker, clusterName))
+	adminClient := kadm.NewClient(client)
+	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+	defer cancel()
+
+	// Create topic "franz-go" if it doesn't exist already
+	brokerDetails, err := adminClient.ListBrokers(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list topics: %v", err)
+	}
+	for _, broker := range brokerDetails {
+		result = append(result, toBrokerTarget(broker))
 	}
 
 	return result, nil
 }
 
-func toBrokerTarget(broker kadm.BrokerDetail, clusterName string) discovery_kit_api.Target {
-	attributes := make(map[string][]string)
-	attributes["kafka.cluster.name"] = []string{clusterName}
-	attributes["kafka.broker.node-id"] = []string{fmt.Sprintf("%v", broker.NodeID)}
-	attributes["kafka.broker.host"] = []string{broker.Host}
-	attributes["kafka.broker.port"] = []string{fmt.Sprintf("%v", broker.Port)}
-	attributes["kafka.broker.rack"] = []string{*broker.Rack}
+func toBrokerTarget(broker kadm.BrokerDetail) discovery_kit_api.Target {
+	id := fmt.Sprintf("%v", broker.NodeID)
+	label := broker.Host
 
-	label := clusterName + "-" + fmt.Sprintf("%v", broker.NodeID)
+	attributes := make(map[string][]string)
+	attributes["kafka.broker.node-id"] = []string{fmt.Sprintf("%v", broker.NodeID)}
+	attributes["kafka.broker.host"] = []string{label}
+	attributes["kafka.broker.port"] = []string{fmt.Sprintf("%v", broker.Port)}
+	if broker.Rack != nil {
+		attributes["kafka.broker.rack"] = []string{*broker.Rack}
+	}
 
 	return discovery_kit_api.Target{
-		Id:         label,
+		Id:         id,
 		Label:      label,
 		TargetType: kafkaBrokerTargetId,
 		Attributes: attributes,

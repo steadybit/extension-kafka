@@ -10,7 +10,7 @@ import (
 
 const (
 	kafkaBrokerTargetId  = "com.steadybit.extension_kafka.broker"
-	kafkaClusterTargetId = "com.steadybit.extension_kafka.cluster"
+	kafkaTopicTargetId   = "com.steadybit.extension_kafka.topic"
 	TargetIDPeriodically = "com.steadybit.extension_kafka.produce.periodically"
 	TargetIDFixedAmount  = "com.steadybit.extension_kafka.produce.fixed_amount"
 )

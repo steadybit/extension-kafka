@@ -40,7 +40,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 		Label:       "HTTP (# of Requests)",
 		Description: "Calls an http endpoint a specified number of times and checks the response",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(TargetIDFixedAmount),
+		Icon:        extutil.Ptr(kafkaMessageFixedAmount),
 		Widgets: extutil.Ptr([]action_kit_api.Widget{
 			action_kit_api.PredefinedWidget{
 				Type:               action_kit_api.ComSteadybitWidgetPredefined,
