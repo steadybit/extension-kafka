@@ -13,7 +13,6 @@ import (
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"strconv"
 	"time"
 )
 
@@ -84,13 +83,6 @@ func (r *kafkaTopicDiscovery) DescribeAttributes() []discovery_kit_api.Attribute
 			},
 		},
 		{
-			Attribute: "kafka.topic.internal",
-			Label: discovery_kit_api.PluralLabel{
-				One:   "Kafka topic internal",
-				Other: "Kafka topic internal",
-			},
-		},
-		{
 			Attribute: "kafka.partitions.total",
 			Label: discovery_kit_api.PluralLabel{
 				One:   "Kafka topic partitions total",
@@ -150,7 +142,6 @@ func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 	attributes := make(map[string][]string)
 	attributes["kafka.topic.name"] = []string{topic.Topic}
 	attributes["kafka.topic.id"] = []string{fmt.Sprintf("%v", topic.ID)}
-	attributes["kafka.topic.internal"] = []string{strconv.FormatBool(topic.IsInternal)}
 	attributes["kafka.partitions.total"] = []string{fmt.Sprintf("%v", topic.Partitions.Numbers())}
 	attributes["kafka.partitions.replicas"] = []string{fmt.Sprintf("%v", topic.Partitions.NumReplicas())}
 
