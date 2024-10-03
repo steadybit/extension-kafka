@@ -54,8 +54,8 @@ func (r *kafkaTopicDiscovery) DescribeTarget() discovery_kit_api.TargetDescripti
 				{Attribute: "kafka.topic.id"},
 				{Attribute: "kafka.topic.name"},
 				{Attribute: "kafka.topic.internal"},
-				{Attribute: "kafka.partitions.total"},
-				{Attribute: "kafka.partitions.replicas"},
+				{Attribute: "kafka.topic.partitions"},
+				{Attribute: "kafka.topic.replication-factor"},
 			},
 			OrderBy: []discovery_kit_api.OrderBy{
 				{
@@ -83,17 +83,17 @@ func (r *kafkaTopicDiscovery) DescribeAttributes() []discovery_kit_api.Attribute
 			},
 		},
 		{
-			Attribute: "kafka.partitions.total",
+			Attribute: "kafka.topic.partitions",
 			Label: discovery_kit_api.PluralLabel{
-				One:   "Kafka topic partitions total",
-				Other: "Kafka topic partitions totals",
+				One:   "Kafka topic partitions",
+				Other: "Kafka topic partitions",
 			},
 		},
 		{
-			Attribute: "kafka.partitions.replicas",
+			Attribute: "kafka.topic.replication-factor",
 			Label: discovery_kit_api.PluralLabel{
-				One:   "Kafka topic replicas total",
-				Other: "Kafka topic replicas totals",
+				One:   "Kafka topic replication factor",
+				Other: "Kafka topic replication factors",
 			},
 		},
 	}
@@ -142,8 +142,8 @@ func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 	attributes := make(map[string][]string)
 	attributes["kafka.topic.name"] = []string{topic.Topic}
 	attributes["kafka.topic.id"] = []string{fmt.Sprintf("%v", topic.ID)}
-	attributes["kafka.partitions.total"] = []string{fmt.Sprintf("%v", topic.Partitions.Numbers())}
-	attributes["kafka.partitions.replicas"] = []string{fmt.Sprintf("%v", topic.Partitions.NumReplicas())}
+	attributes["kafka.topic.partitions"] = []string{fmt.Sprintf("%v", topic.Partitions.Numbers())}
+	attributes["kafka.topic.replication-factor"] = []string{fmt.Sprintf("%v", topic.Partitions.NumReplicas())}
 
 	return discovery_kit_api.Target{
 		Id:         id,
