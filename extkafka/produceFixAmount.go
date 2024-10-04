@@ -131,7 +131,7 @@ func (l *produceMessageActionFixedAmount) Prepare(_ context.Context, state *Kafk
 }
 
 func checkEndedFixedAmount(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool {
-	result := executionRunData.requestCounter.Load() >= state.NumberOfRequests
+	result := executionRunData.requestCounter.Load() >= state.NumberOfRecords
 	return result
 }
 

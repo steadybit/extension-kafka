@@ -5,7 +5,6 @@ import (
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"time"
 )
 
 const (
@@ -22,24 +21,18 @@ const (
 )
 
 type KafkaBrokerAttackState struct {
-	NodeID                   string
 	Topic                    string
 	Partitions               []string
 	DelayBetweenRequestsInMS int64
 	SuccessRate              int
-	ResponseTimeMode         string
-	ResponseTime             *time.Duration
 	MaxConcurrent            int
-	GenerateRecord           bool
-	RecordKeyPrefix          string
-	RecordDuplication        bool
+	RecordKey                string
+	RecordValue              string
 	RecordPartition          int
 	RecordAttrs              uint8
-	NumberOfRequests         uint64
-	RequestSizeBytes         int64
-	ReadTimeout              time.Duration
+	NumberOfRecords          uint64
 	ExecutionID              uuid.UUID
-	Headers                  map[string]string
+	RecordHeaders            map[string]string
 }
 
 var KafkaClient *kgo.Client
@@ -54,8 +47,8 @@ var (
 	}
 	recordHeaders = action_kit_api.ActionParameter{
 		Name:        "recordHeaders",
-		Label:       "Record Headers",
-		Description: extutil.Ptr("The Record Headers."),
+		Label:       "Record RecordHeaders",
+		Description: extutil.Ptr("The Record RecordHeaders."),
 		Type:        action_kit_api.KeyValue,
 		Order:       extutil.Ptr(4),
 	}

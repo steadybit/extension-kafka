@@ -57,13 +57,13 @@ package extkafka
 //				ResponsesContains:        "test",
 //				SuccessRate:              100,
 //				MaxConcurrent:            10,
-//				NumberOfRequests:         5,
+//				NumberOfRecords:         5,
 //				ReadTimeout:              time.Second * 5,
 //				ExecutionID:              uuid.New(),
 //				Body:                     "test",
 //				URL:                      *url,
 //				Method:                   "GET",
-//				Headers:                  map[string]string{"test": "test"},
+//				RecordHeaders:                  map[string]string{"test": "test"},
 //				ConnectionTimeout:        time.Second * 5,
 //				FollowRedirects:          true,
 //			},
@@ -123,10 +123,10 @@ package extkafka
 //				assert.Equal(t, tt.wantedState.FollowRedirects, state.FollowRedirects)
 //				assert.Equal(t, tt.wantedState.ConnectionTimeout, state.ConnectionTimeout)
 //				assert.Equal(t, tt.wantedState.ExpectedStatusCodes, state.ExpectedStatusCodes)
-//				assert.Equal(t, tt.wantedState.Headers, state.Headers)
+//				assert.Equal(t, tt.wantedState.RecordHeaders, state.RecordHeaders)
 //				assert.Equal(t, tt.wantedState.MaxConcurrent, state.MaxConcurrent)
 //				assert.Equal(t, tt.wantedState.Method, state.Method)
-//				assert.Equal(t, tt.wantedState.NumberOfRequests, state.NumberOfRequests)
+//				assert.Equal(t, tt.wantedState.NumberOfRecords, state.NumberOfRecords)
 //				assert.Equal(t, tt.wantedState.ReadTimeout, state.ReadTimeout)
 //				assert.Equal(t, tt.wantedState.ResponsesContains, state.ResponsesContains)
 //				assert.Equal(t, tt.wantedState.SuccessRate, state.SuccessRate)

@@ -14,7 +14,6 @@ import (
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"strconv"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -35,17 +34,13 @@ var (
 
 func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) (*action_kit_api.PrepareResult, error) {
 	state.SuccessRate = extutil.ToInt(request.Config["successRate"])
-	state.ResponseTimeMode = extutil.ToString(request.Config["responseTimeMode"])
-	state.ResponseTime = extutil.Ptr(time.Duration(extutil.ToInt64(request.Config["responseTime"])) * time.Millisecond)
 	state.MaxConcurrent = extutil.ToInt(request.Config["maxConcurrent"])
 	if state.MaxConcurrent == 0 {
 		return nil, fmt.Errorf("max concurrent can't be zero")
 	}
-	state.NumberOfRequests = extutil.ToUInt64(request.Config["numberOfRequests"])
-	state.ReadTimeout = time.Duration(extutil.ToInt64(request.Config["readTimeout"])) * time.Millisecond
+	state.NumberOfRecords = extutil.ToUInt64(request.Config["numberOfRequests"])
 	state.ExecutionID = request.ExecutionId
 	state.Topic = extutil.ToString(request.Config["topic"])
-	state.RequestSizeBytes = extutil.ToInt64(request.Config["requestSizeBytes"])
 	if str, ok := request.Config["recordAttributes"]; ok {
 		i, err := strconv.ParseUint(str.(string), 0, 8)
 		if err != nil {
@@ -57,7 +52,7 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 
 	var err error
 	if _, ok := request.Config["recordHeaders"]; ok {
-		state.Headers, err = extutil.ToKeyValue(request.Config, "recordHeaders")
+		state.RecordHeaders, err = extutil.ToKeyValue(request.Config, "recordHeaders")
 		if err != nil {
 			log.Error().Err(err).Msg("Failed to parse headers")
 			return nil, err
@@ -102,24 +97,14 @@ func saveExecutionRunData(executionID uuid.UUID, executionRunData *ExecutionRunD
 }
 
 func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
-	// Generate a large payload
-	payloadSize := state.RequestSizeBytes * 1024
+	record := kgo.KeyStringRecord(state.RecordKey, state.RecordValue)
 
-	var key string
-	var value string
-
-	key = "steadybit"
-	value = strings.Repeat("Test data line.\n", int(payloadSize/16))
-
-	record := kgo.KeyStringRecord(key, value)
-
-	if state.Headers != nil {
-		for k, v := range state.Headers {
+	if state.RecordHeaders != nil {
+		for k, v := range state.RecordHeaders {
 			record.Headers = append(record.Headers, kgo.RecordHeader{Key: k, Value: []byte(v)})
 		}
 	}
 
-	log.Debug().Msg("Record created")
 	return record
 }
 
