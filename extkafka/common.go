@@ -5,6 +5,7 @@ import (
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"time"
 )
 
 const (
@@ -25,6 +26,7 @@ type KafkaBrokerAttackState struct {
 	Partitions               []string
 	DelayBetweenRequestsInMS int64
 	SuccessRate              int
+	Timeout                  time.Time
 	MaxConcurrent            int
 	RecordKey                string
 	RecordValue              string

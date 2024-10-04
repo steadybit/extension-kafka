@@ -33,12 +33,16 @@ var (
 )
 
 func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) (*action_kit_api.PrepareResult, error) {
+	duration := extutil.ToInt64(request.Config["duration"])
+	state.Timeout = time.Now().Add(time.Millisecond * time.Duration(duration))
 	state.SuccessRate = extutil.ToInt(request.Config["successRate"])
 	state.MaxConcurrent = extutil.ToInt(request.Config["maxConcurrent"])
 	if state.MaxConcurrent == 0 {
 		return nil, fmt.Errorf("max concurrent can't be zero")
 	}
 	state.NumberOfRecords = extutil.ToUInt64(request.Config["numberOfRequests"])
+	state.RecordKey = extutil.ToString(request.Config["recordKey"])
+	state.RecordValue = extutil.ToString(request.Config["recordValue"])
 	state.ExecutionID = request.ExecutionId
 	state.Topic = extutil.ToString(request.Config["topic"])
 	if str, ok := request.Config["recordAttributes"]; ok {
@@ -126,11 +130,7 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 			rec := createRecord(state)
 
 			var producedRecord *kgo.Record
-			before := time.Now()
 			producedRecord, err = client.ProduceSync(context.Background(), rec).First()
-			after := time.Now()
-			log.Debug().Msgf("Record have been produced in %v milliseconds", after.Sub(before).Milliseconds())
-
 			executionRunData.requestCounter.Add(1)
 
 			if err != nil {
@@ -150,8 +150,6 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 			} else {
 				// Successfully produced the record
 				recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
-				log.Debug().Msgf("Record have been produced at timestamp %s", producedRecord.Timestamp)
-				log.Debug().Msgf("Record producer latency: %v milliseconds", recordProducerLatency)
 				metricMap := map[string]string{
 					"topic":    rec.Topic,
 					"producer": strconv.Itoa(int(rec.ProducerID)),
@@ -170,6 +168,10 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 				executionRunData.metrics <- metric
 			}
 		}
+	}
+	err = client.Flush(context.Background())
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to flush")
 	}
 	defer client.Close()
 }
