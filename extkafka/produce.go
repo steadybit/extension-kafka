@@ -122,11 +122,12 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create client")
 	}
-
+	count := 1
 	for range executionRunData.jobs {
 		if !checkEnded(executionRunData, state) {
 			var started = time.Now()
 
+			log.Debug().Msgf("loop: %d", count)
 			rec := createRecord(state)
 
 			var producedRecord *kgo.Record
@@ -169,6 +170,7 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 				executionRunData.metrics <- metric
 			}
 		}
+		count++
 	}
 	err = client.Flush(context.Background())
 	if err != nil {

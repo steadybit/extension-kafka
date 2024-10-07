@@ -111,16 +111,16 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 	}
 }
 
-func getDelayBetweenRequestsInMsPeriodically(requestsPerSecond int64) int64 {
-	if requestsPerSecond > 0 {
-		return 1000 / requestsPerSecond
+func getDelayBetweenRequestsInMsPeriodically(recordsPerSecond int64) int64 {
+	if recordsPerSecond > 0 {
+		return 1000 / recordsPerSecond
 	} else {
 		return 1000 / 1
 	}
 }
 
 func (l *produceMessageActionPeriodically) Prepare(_ context.Context, state *KafkaBrokerAttackState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
-	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsPeriodically(extutil.ToInt64(request.Config["requestsPerSecond"]))
+	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsPeriodically(extutil.ToInt64(request.Config["recordsPerSecond"]))
 
 	return prepare(request, state, func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool { return false })
 }
