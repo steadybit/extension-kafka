@@ -38,7 +38,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 	return action_kit_api.ActionDescription{
 		Id:          TargetIDFixedAmount,
 		Label:       "HTTP (# of Requests)",
-		Description: "Calls an http endpoint a specified number of times and checks the response",
+		Description: "Produce a record and send it to broker a certain number of times",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaMessageFixedAmount),
 		Widgets: extutil.Ptr([]action_kit_api.Widget{
@@ -79,9 +79,9 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			//------------------------
 			repetitionControl,
 			{
-				Name:         "numberOfRequests",
-				Label:        "Number of Requests.",
-				Description:  extutil.Ptr("Fixed number of Requests, distributed to given duration"),
+				Name:         "numberOfRecords",
+				Label:        "Number of Records.",
+				Description:  extutil.Ptr("Fixed number of Records, distributed to given duration"),
 				Type:         action_kit_api.Integer,
 				Required:     extutil.Ptr(true),
 				DefaultValue: extutil.Ptr("1"),
@@ -125,7 +125,7 @@ func (l *produceMessageActionFixedAmount) Prepare(_ context.Context, state *Kafk
 	if extutil.ToInt64(request.Config["duration"]) == 0 {
 		return nil, errors.New("duration must be greater than 0")
 	}
-	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsFixedAmount(extutil.ToInt64(request.Config["duration"]), extutil.ToInt64(request.Config["numberOfRequests"]))
+	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsFixedAmount(extutil.ToInt64(request.Config["duration"]), extutil.ToInt64(request.Config["numberOfRecords"]))
 
 	return prepare(request, state, checkEndedFixedAmount)
 }

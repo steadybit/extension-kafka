@@ -40,7 +40,7 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	if state.MaxConcurrent == 0 {
 		return nil, fmt.Errorf("max concurrent can't be zero")
 	}
-	state.NumberOfRecords = extutil.ToUInt64(request.Config["numberOfRequests"])
+	state.NumberOfRecords = extutil.ToUInt64(request.Config["numberOfRecords"])
 	state.RecordKey = extutil.ToString(request.Config["recordKey"])
 	state.RecordValue = extutil.ToString(request.Config["recordValue"])
 	state.ExecutionID = request.ExecutionId
@@ -148,6 +148,7 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 					Timestamp: now,
 				}
 			} else {
+				log.Debug().Msg("Record Produced")
 				// Successfully produced the record
 				recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
 				metricMap := map[string]string{
