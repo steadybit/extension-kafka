@@ -37,7 +37,7 @@ func (l *produceMessageActionFixedAmount) NewEmptyState() KafkaBrokerAttackState
 func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          TargetIDFixedAmount,
-		Label:       "Produce (# number of messages)",
+		Label:       "Produce X records",
 		Description: "Produce a certain amount of kafka messages for a given duration",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaMessageFixedAmount),

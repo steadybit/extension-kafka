@@ -36,7 +36,7 @@ func (l *produceMessageActionPeriodically) NewEmptyState() KafkaBrokerAttackStat
 func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          TargetIDPeriodically,
-		Label:       "Produce (Messages / s)",
+		Label:       "Produce X records per second",
 		Description: "Produce kafka messages periodically (messages / s)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaMessagePeriodically),
@@ -51,7 +51,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 
 		// To clarify the purpose of the action:
 		//   Check: Will perform checks on the targets
-		Kind: action_kit_api.LoadTest,
+		Kind: action_kit_api.Check,
 
 		// How the action is controlled over time.
 		//   External: The agent takes care and calls stop then the time has passed. Requires a duration parameter. Use this when the duration is known in advance.
