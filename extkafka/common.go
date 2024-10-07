@@ -40,12 +40,28 @@ type KafkaBrokerAttackState struct {
 var KafkaClient *kgo.Client
 
 var (
-	recordKeyValue = action_kit_api.ActionParameter{
-		Name:        "recordKeyValue",
-		Label:       "Record key and value",
-		Description: extutil.Ptr("The Record Body."),
-		Type:        action_kit_api.KeyValue,
+	topic = action_kit_api.ActionParameter{
+		Name:        "topic",
+		Label:       "Topic",
+		Description: extutil.Ptr("The Topic to send records to"),
+		Type:        action_kit_api.String,
+		Order:       extutil.Ptr(1),
+		Required:    extutil.Ptr(true),
+	}
+	recordKey = action_kit_api.ActionParameter{
+		Name:        "recordKey",
+		Label:       "Record key",
+		Description: extutil.Ptr("The Record Key. If none is set, the partition will be choose with round-robin algorithm."),
+		Type:        action_kit_api.String,
+		Order:       extutil.Ptr(2),
+	}
+	recordValue = action_kit_api.ActionParameter{
+		Name:        "recordValue",
+		Label:       "Record value",
+		Description: extutil.Ptr("The Record Value."),
+		Type:        action_kit_api.String,
 		Order:       extutil.Ptr(3),
+		Required:    extutil.Ptr(true),
 	}
 	recordHeaders = action_kit_api.ActionParameter{
 		Name:        "recordHeaders",
@@ -58,7 +74,7 @@ var (
 		Name:  "repetitionControl",
 		Label: "Repetition Control",
 		Type:  action_kit_api.Header,
-		Order: extutil.Ptr(6),
+		Order: extutil.Ptr(5),
 	}
 	duration = action_kit_api.ActionParameter{
 		Name:         "duration",
@@ -67,13 +83,13 @@ var (
 		Type:         action_kit_api.Duration,
 		DefaultValue: extutil.Ptr("10s"),
 		Required:     extutil.Ptr(true),
-		Order:        extutil.Ptr(8),
+		Order:        extutil.Ptr(6),
 	}
 	resultVerification = action_kit_api.ActionParameter{
 		Name:  "resultVerification",
 		Label: "Result Verification",
 		Type:  action_kit_api.Header,
-		Order: extutil.Ptr(10),
+		Order: extutil.Ptr(7),
 	}
 	successRate = action_kit_api.ActionParameter{
 		Name:         "successRate",
@@ -82,7 +98,7 @@ var (
 		Type:         action_kit_api.Percentage,
 		DefaultValue: extutil.Ptr("100"),
 		Required:     extutil.Ptr(true),
-		Order:        extutil.Ptr(11),
+		Order:        extutil.Ptr(8),
 		MinValue:     extutil.Ptr(0),
 		MaxValue:     extutil.Ptr(100),
 	}
@@ -94,6 +110,6 @@ var (
 		DefaultValue: extutil.Ptr("5"),
 		Required:     extutil.Ptr(true),
 		Advanced:     extutil.Ptr(true),
-		Order:        extutil.Ptr(16),
+		Order:        extutil.Ptr(9),
 	}
 )

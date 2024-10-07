@@ -40,12 +40,12 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 		Description: "Produce kafka messages periodically (messages / s)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaMessagePeriodically),
-		Widgets: extutil.Ptr([]action_kit_api.Widget{
-			action_kit_api.PredefinedWidget{
-				Type:               action_kit_api.ComSteadybitWidgetPredefined,
-				PredefinedWidgetId: "com.steadybit.widget.predefined.HttpCheck",
-			},
-		}),
+		//Widgets: extutil.Ptr([]action_kit_api.Widget{
+		//	action_kit_api.PredefinedWidget{
+		//		Type:               action_kit_api.ComSteadybitWidgetPredefined,
+		//		PredefinedWidgetId: "com.steadybit.widget.predefined.HttpCheck",
+		//	},
+		//}),
 
 		Technology: extutil.Ptr("Kafka"),
 
@@ -64,7 +64,9 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			//------------------------
 			// Request Definition
 			//------------------------
-			recordKeyValue,
+			topic,
+			recordKey,
+			recordValue,
 			recordHeaders,
 			{
 				Name:  "-",

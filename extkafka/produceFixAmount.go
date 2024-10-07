@@ -37,16 +37,16 @@ func (l *produceMessageActionFixedAmount) NewEmptyState() KafkaBrokerAttackState
 func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          TargetIDFixedAmount,
-		Label:       "HTTP (# of Requests)",
-		Description: "Produce a record and send it to broker a certain number of times",
+		Label:       "Produce (# number of messages)",
+		Description: "Produce a certain amount of kafka messages for a given duration",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaMessageFixedAmount),
-		Widgets: extutil.Ptr([]action_kit_api.Widget{
-			action_kit_api.PredefinedWidget{
-				Type:               action_kit_api.ComSteadybitWidgetPredefined,
-				PredefinedWidgetId: "com.steadybit.widget.predefined.HttpCheck",
-			},
-		}),
+		//Widgets: extutil.Ptr([]action_kit_api.Widget{
+		//	action_kit_api.PredefinedWidget{
+		//		Type:               action_kit_api.ComSteadybitWidgetPredefined,
+		//		PredefinedWidgetId: "com.steadybit.widget.predefined.HttpCheck",
+		//	},
+		//}),
 
 		// Technology for the targets to appear in
 		Technology: extutil.Ptr("Kafka"),
@@ -66,7 +66,9 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			//------------------------
 			// Request Definition
 			//------------------------
-			recordKeyValue,
+			topic,
+			recordKey,
+			recordValue,
 			recordHeaders,
 			{
 				Name:  "-",

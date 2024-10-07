@@ -123,51 +123,52 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 		log.Error().Err(err).Msg("Failed to create client")
 	}
 	count := 1
+	log.Debug().Msgf("number of jobs for worker: %d", len(executionRunData.jobs))
 	for range executionRunData.jobs {
 		if !checkEnded(executionRunData, state) {
-			var started = time.Now()
+			//var started = time.Now()
 
 			log.Debug().Msgf("loop: %d", count)
 			rec := createRecord(state)
 
-			var producedRecord *kgo.Record
-			producedRecord, err = client.ProduceSync(context.Background(), rec).First()
+			//var producedRecord *kgo.Record
+			_, err = client.ProduceSync(context.Background(), rec).First()
 			executionRunData.requestCounter.Add(1)
 
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to produce record")
-				now := time.Now()
-				executionRunData.metrics <- action_kit_api.Metric{
-					Metric: map[string]string{
-						"topic":    rec.Topic,
-						"producer": strconv.Itoa(int(rec.ProducerID)),
-						"brokers":  config.Config.SeedBrokers,
-						"error":    err.Error(),
-					},
-					Name:      extutil.Ptr("producer_response_time"),
-					Value:     float64(now.Sub(started).Milliseconds()),
-					Timestamp: now,
-				}
+				//now := time.Now()
+				//executionRunData.metrics <- action_kit_api.Metric{
+				//	Metric: map[string]string{
+				//		"topic":    rec.Topic,
+				//		"producer": strconv.Itoa(int(rec.ProducerID)),
+				//		"brokers":  config.Config.SeedBrokers,
+				//		"error":    err.Error(),
+				//	},
+				//	Name:      extutil.Ptr("producer_response_time"),
+				//	Value:     float64(now.Sub(started).Milliseconds()),
+				//	Timestamp: now,
+				//}
 			} else {
 				log.Debug().Msg("Record Produced")
 				// Successfully produced the record
-				recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
-				metricMap := map[string]string{
-					"topic":    rec.Topic,
-					"producer": strconv.Itoa(int(rec.ProducerID)),
-					"brokers":  config.Config.SeedBrokers,
-					"error":    "",
-				}
+				//recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
+				//metricMap := map[string]string{
+				//	"topic":    rec.Topic,
+				//	"producer": strconv.Itoa(int(rec.ProducerID)),
+				//	"brokers":  config.Config.SeedBrokers,
+				//	"error":    "",
+				//}
 
 				executionRunData.requestSuccessCounter.Add(1)
 
-				metric := action_kit_api.Metric{
-					Name:      extutil.Ptr("record_latency"),
-					Metric:    metricMap,
-					Value:     recordProducerLatency,
-					Timestamp: producedRecord.Timestamp,
-				}
-				executionRunData.metrics <- metric
+				//metric := action_kit_api.Metric{
+				//	Name:      extutil.Ptr("record_latency"),
+				//	Metric:    metricMap,
+				//	Value:     recordProducerLatency,
+				//	Timestamp: producedRecord.Timestamp,
+				//}
+				//executionRunData.metrics <- metric
 			}
 		}
 		count++
