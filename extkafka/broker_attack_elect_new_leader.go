@@ -38,7 +38,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
-			TargetType: kafkaBrokerTargetId,
+			TargetType: kafkaTopicTargetId,
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "by topic  id",
@@ -47,25 +47,22 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 				},
 			}),
 		}),
-		Category:    extutil.Ptr("resource"),
+		Technology:  extutil.Ptr("Kafka"),
 		TimeControl: action_kit_api.TimeControlInstantaneous,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
-			{
-				Name:        "Topic",
-				Label:       "Topic of the partition(s) to elect new leader",
-				Description: extutil.Ptr("Topic where the partition must have a new leader"),
-				Type:        action_kit_api.String,
-				Required:    extutil.Ptr(true),
-				Order:       extutil.Ptr(1),
-			},
 			{
 				Name:        "Partition",
 				Label:       "Partition to elect new leader",
 				Description: extutil.Ptr("One or more partitions to trigger a new leader election"),
 				Type:        action_kit_api.StringArray,
-				Required:    extutil.Ptr(false),
-				Order:       extutil.Ptr(2),
+				Required:    extutil.Ptr(true),
+				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+					action_kit_api.ParameterOptionsFromTargetAttribute{
+						Attribute: "kafka.topic.partitions",
+					},
+				}),
+				Order: extutil.Ptr(2),
 			},
 		},
 	}
