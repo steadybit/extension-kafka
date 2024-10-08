@@ -15,30 +15,30 @@ import (
 	"github.com/steadybit/extension-kit/extutil"
 )
 
-type produceMessageActionFixedAmount struct{}
+type consumeMessageActionFixedAmount struct{}
 
 // Make sure Action implements all required interfaces
 var (
-	_ action_kit_sdk.Action[KafkaBrokerAttackState]           = (*produceMessageActionFixedAmount)(nil)
-	_ action_kit_sdk.ActionWithStatus[KafkaBrokerAttackState] = (*produceMessageActionFixedAmount)(nil)
+	_ action_kit_sdk.Action[KafkaBrokerAttackState]           = (*consumeMessageActionFixedAmount)(nil)
+	_ action_kit_sdk.ActionWithStatus[KafkaBrokerAttackState] = (*consumeMessageActionFixedAmount)(nil)
 
-	_ action_kit_sdk.ActionWithStop[KafkaBrokerAttackState] = (*produceMessageActionFixedAmount)(nil)
+	_ action_kit_sdk.ActionWithStop[KafkaBrokerAttackState] = (*consumeMessageActionFixedAmount)(nil)
 )
 
-func NewProduceMessageActionFixedAmount() action_kit_sdk.Action[KafkaBrokerAttackState] {
-	return &produceMessageActionFixedAmount{}
+func NewConsumeMessageActionFixedAmount() action_kit_sdk.Action[KafkaBrokerAttackState] {
+	return &consumeMessageActionFixedAmount{}
 }
 
-func (l *produceMessageActionFixedAmount) NewEmptyState() KafkaBrokerAttackState {
+func (l *consumeMessageActionFixedAmount) NewEmptyState() KafkaBrokerAttackState {
 	return KafkaBrokerAttackState{}
 }
 
 // Describe returns the action description for the platform with all required information.
-func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescription {
+func (l *consumeMessageActionFixedAmount) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          TargetIDProduceFixedAmount,
-		Label:       "Produce X records",
-		Description: "Produce a certain amount of kafka messages for a given duration",
+		Id:          TargetIDConsumeFixedAmount,
+		Label:       "Consume X records",
+		Description: "Consume a certain amount of kafka messages for a given duration",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaMessageFixedAmount),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -76,9 +76,6 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			//------------------------
 			// Request Definition
 			//------------------------
-			recordKey,
-			recordValue,
-			recordHeaders,
 			{
 				Name:  "-",
 				Label: "-",
@@ -124,38 +121,25 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 	}
 }
 
-func getDelayBetweenRequestsInMsFixedAmount(duration int64, numberOfRequests int64) int64 {
-	if duration > 0 && numberOfRequests > 0 {
-		return duration / (numberOfRequests)
-	} else {
-		return 1000 / 1
-	}
-}
-
-func (l *produceMessageActionFixedAmount) Prepare(_ context.Context, state *KafkaBrokerAttackState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (l *consumeMessageActionFixedAmount) Prepare(_ context.Context, state *KafkaBrokerAttackState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	if extutil.ToInt64(request.Config["duration"]) == 0 {
 		return nil, errors.New("duration must be greater than 0")
 	}
 	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsFixedAmount(extutil.ToInt64(request.Config["duration"]), extutil.ToInt64(request.Config["numberOfRecords"]))
 	state.Topic = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
-	return prepare(true, request, state, checkEndedFixedAmount)
-}
-
-func checkEndedFixedAmount(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool {
-	result := executionRunData.requestCounter.Load() >= state.NumberOfRecords
-	return result
+	return prepare(false, request, state, checkEndedFixedAmount)
 }
 
 // Start is called to start the action
 // You can mutate the state here.
 // You can use the result to return messages/errors/metrics or artifacts
-func (l *produceMessageActionFixedAmount) Start(_ context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StartResult, error) {
+func (l *consumeMessageActionFixedAmount) Start(_ context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StartResult, error) {
 	start(state)
 	return nil, nil
 }
 
 // Status is called to get the current status of the action
-func (l *produceMessageActionFixedAmount) Status(_ context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StatusResult, error) {
+func (l *consumeMessageActionFixedAmount) Status(_ context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StatusResult, error) {
 	executionRunData, err := loadExecutionRunData(state.ExecutionID)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to load execution run data")
@@ -176,10 +160,10 @@ func (l *produceMessageActionFixedAmount) Status(_ context.Context, state *Kafka
 	}, nil
 }
 
-func (l *produceMessageActionFixedAmount) Stop(_ context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StopResult, error) {
+func (l *consumeMessageActionFixedAmount) Stop(_ context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StopResult, error) {
 	return stop(state)
 }
 
-func (l *produceMessageActionFixedAmount) getExecutionRunData(executionID uuid.UUID) (*ExecutionRunData, error) {
+func (l *consumeMessageActionFixedAmount) getExecutionRunData(executionID uuid.UUID) (*ExecutionRunData, error) {
 	return loadExecutionRunData(executionID)
 }

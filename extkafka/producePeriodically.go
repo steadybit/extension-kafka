@@ -35,11 +35,21 @@ func (l *produceMessageActionPeriodically) NewEmptyState() KafkaBrokerAttackStat
 // Describe returns the action description for the platform with all required information.
 func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          TargetIDPeriodically,
+		Id:          TargetIDProducePeriodically,
 		Label:       "Produce X records per second",
 		Description: "Produce kafka messages periodically (messages / s)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaMessagePeriodically),
+		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+			TargetType: kafkaTopicTargetId,
+			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+				{
+					Label:       "by topic name",
+					Description: extutil.Ptr("Find topic by name"),
+					Query:       "kafka.topic.name=\"\"",
+				},
+			}),
+		}),
 		//Widgets: extutil.Ptr([]action_kit_api.Widget{
 		//	action_kit_api.PredefinedWidget{
 		//		Type:               action_kit_api.ComSteadybitWidgetPredefined,
@@ -64,7 +74,6 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			//------------------------
 			// Request Definition
 			//------------------------
-			topic,
 			recordKey,
 			recordValue,
 			recordHeaders,
@@ -123,8 +132,8 @@ func getDelayBetweenRequestsInMsPeriodically(recordsPerSecond int64) int64 {
 
 func (l *produceMessageActionPeriodically) Prepare(_ context.Context, state *KafkaBrokerAttackState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsPeriodically(extutil.ToInt64(request.Config["recordsPerSecond"]))
-
-	return prepare(request, state, func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool { return false })
+	state.Topic = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
+	return prepare(true, request, state, func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool { return false })
 }
 
 // Start is called to start the action

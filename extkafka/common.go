@@ -9,10 +9,12 @@ import (
 )
 
 const (
-	kafkaBrokerTargetId  = "com.steadybit.extension_kafka.broker"
-	kafkaTopicTargetId   = "com.steadybit.extension_kafka.topic"
-	TargetIDPeriodically = "com.steadybit.extension_kafka.produce.periodically"
-	TargetIDFixedAmount  = "com.steadybit.extension_kafka.produce.fixed_amount"
+	kafkaBrokerTargetId         = "com.steadybit.extension_kafka.broker"
+	kafkaTopicTargetId          = "com.steadybit.extension_kafka.topic"
+	TargetIDProducePeriodically = "com.steadybit.extension_kafka.produce.periodically"
+	TargetIDConsumePeriodically = "com.steadybit.extension_kafka.consume.periodically"
+	TargetIDProduceFixedAmount  = "com.steadybit.extension_kafka.produce.fixed_amount"
+	TargetIDConsumeFixedAmount  = "com.steadybit.extension_kafka.consume.fixed_amount"
 )
 
 const (
@@ -24,6 +26,7 @@ const (
 type KafkaBrokerAttackState struct {
 	Topic                    string
 	Partitions               []string
+	Offset                   int64
 	DelayBetweenRequestsInMS int64
 	SuccessRate              int
 	Timeout                  time.Time
@@ -79,7 +82,7 @@ var (
 	duration = action_kit_api.ActionParameter{
 		Name:         "duration",
 		Label:        "Duration",
-		Description:  extutil.Ptr("In which timeframe should the specified requests be executed?"),
+		Description:  extutil.Ptr("In which timeframe should the specified records be produced?"),
 		Type:         action_kit_api.Duration,
 		DefaultValue: extutil.Ptr("10s"),
 		Required:     extutil.Ptr(true),
@@ -94,7 +97,7 @@ var (
 	successRate = action_kit_api.ActionParameter{
 		Name:         "successRate",
 		Label:        "Required Success Rate",
-		Description:  extutil.Ptr("How many percent of the Request must be at least successful (in terms of the following response verifications) to continue the experiment execution? The result will be evaluated and the end of the given duration."),
+		Description:  extutil.Ptr("How many percent of the records must be at least successful (in terms of the following response verifications) to continue the experiment execution? The result will be evaluated and the end of the given duration."),
 		Type:         action_kit_api.Percentage,
 		DefaultValue: extutil.Ptr("100"),
 		Required:     extutil.Ptr(true),
@@ -105,7 +108,7 @@ var (
 	maxConcurrent = action_kit_api.ActionParameter{
 		Name:         "maxConcurrent",
 		Label:        "Max concurrent requests",
-		Description:  extutil.Ptr("Maximum count on parallel running requests. (min 1, max 10)"),
+		Description:  extutil.Ptr("Maximum count on parallel producing requests. (min 1, max 10)"),
 		Type:         action_kit_api.Integer,
 		DefaultValue: extutil.Ptr("5"),
 		Required:     extutil.Ptr(true),

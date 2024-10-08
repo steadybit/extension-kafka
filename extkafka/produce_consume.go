@@ -32,11 +32,14 @@ var (
 	ExecutionRunDataMap = sync.Map{} //make(map[uuid.UUID]*ExecutionRunData)
 )
 
-func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) (*action_kit_api.PrepareResult, error) {
+func prepare(produce bool, request action_kit_api.PrepareActionRequestBody, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) (*action_kit_api.PrepareResult, error) {
 	duration := extutil.ToInt64(request.Config["duration"])
 	state.Timeout = time.Now().Add(time.Millisecond * time.Duration(duration))
 	state.SuccessRate = extutil.ToInt(request.Config["successRate"])
 	state.MaxConcurrent = extutil.ToInt(request.Config["maxConcurrent"])
+	if !produce {
+		state.MaxConcurrent = 1
+	}
 	if state.MaxConcurrent == 0 {
 		return nil, fmt.Errorf("max concurrent can't be zero")
 	}
@@ -44,7 +47,6 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	state.RecordKey = extutil.ToString(request.Config["recordKey"])
 	state.RecordValue = extutil.ToString(request.Config["recordValue"])
 	state.ExecutionID = request.ExecutionId
-	state.Topic = extutil.ToString(request.Config["topic"])
 	if str, ok := request.Config["recordAttributes"]; ok {
 		i, err := strconv.ParseUint(str.(string), 0, 8)
 		if err != nil {
@@ -72,7 +74,11 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 
 	// create worker pool
 	for w := 1; w <= state.MaxConcurrent; w++ {
-		go requestWorker(executionRunData, state, checkEnded)
+		if produce {
+			go requestProducerWorker(executionRunData, state, checkEnded)
+		} else {
+			go requestConsumerWorker(executionRunData, state, checkEnded)
+		}
 	}
 	return nil, nil
 }
@@ -112,7 +118,7 @@ func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 	return record
 }
 
-func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
+func requestProducerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(config.Config.SeedBrokers),
 		kgo.DefaultProduceTopic(state.Topic),
@@ -122,13 +128,9 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create client")
 	}
-	count := 1
-	log.Debug().Msgf("number of jobs for worker: %d", len(executionRunData.jobs))
 	for range executionRunData.jobs {
 		if !checkEnded(executionRunData, state) {
 			//var started = time.Now()
-
-			log.Debug().Msgf("loop: %d", count)
 			rec := createRecord(state)
 
 			//var producedRecord *kgo.Record
@@ -150,7 +152,6 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 				//	Timestamp: now,
 				//}
 			} else {
-				log.Debug().Msg("Record Produced")
 				// Successfully produced the record
 				//recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
 				//metricMap := map[string]string{
@@ -171,13 +172,73 @@ func requestWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackS
 				//executionRunData.metrics <- metric
 			}
 		}
-		count++
 	}
 	err = client.Flush(context.Background())
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to flush")
 	}
 	defer client.Close()
+}
+
+func requestConsumerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(config.Config.SeedBrokers),
+		kgo.ConsumerGroup("steadybit-extension-kafka-"),
+		kgo.ConsumeTopics(state.Topic),
+	}
+
+	client, err := kgo.NewClient(opts...)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create client")
+	}
+	defer client.Close()
+	ctx := context.Background()
+
+	for range executionRunData.jobs {
+		// Variable to track if we've consumed a message
+		consumedMessage := false
+		if !checkEnded(executionRunData, state) {
+			for {
+
+				// Poll for records
+				fetches := client.PollFetches(ctx)
+				if fetches.IsClientClosed() {
+					break
+				}
+
+				// Handle errors
+				if errs := fetches.Errors(); len(errs) > 0 {
+					for _, e := range errs {
+						log.Error().Err(e.Err).Msgf("Error consuming from topic %s partition %d", e.Topic, e.Partition)
+						return
+					}
+					continue
+				}
+
+				// Process the records
+				fetches.EachRecord(func(record *kgo.Record) {
+					if !consumedMessage {
+						executionRunData.requestCounter.Add(1)
+
+						log.Debug().Msgf("Topic: %s, Partition: %d, Offset: %d\n",
+							record.Topic, record.Partition, record.Offset)
+						log.Debug().Msgf("Key: %s\n", string(record.Key))
+						log.Debug().Msgf("Value: %s\n", string(record.Value))
+						log.Debug().Msgf("Timestamp: %s\n", record.Timestamp)
+						log.Debug().Msgf("---")
+						consumedMessage = true
+
+						executionRunData.requestSuccessCounter.Add(1)
+					}
+
+				})
+			}
+			// Exit the loop after consuming one message
+			if consumedMessage {
+				break
+			}
+		}
+	}
 }
 
 func start(state *KafkaBrokerAttackState) {
