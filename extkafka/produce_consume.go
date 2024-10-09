@@ -183,7 +183,8 @@ func requestProducerWorker(executionRunData *ExecutionRunData, state *KafkaBroke
 func requestConsumerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.ConsumerGroup("steadybit-extension-kafka-"),
+		kgo.ConsumerGroup("steadybit-extension-kafka"),
+		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
 		kgo.ConsumeTopics(state.Topic),
 	}
 
@@ -192,51 +193,36 @@ func requestConsumerWorker(executionRunData *ExecutionRunData, state *KafkaBroke
 		log.Error().Err(err).Msg("Failed to create client")
 	}
 	defer client.Close()
-	ctx := context.Background()
 
-	for range executionRunData.jobs {
-		// Variable to track if we've consumed a message
-		consumedMessage := false
-		if !checkEnded(executionRunData, state) {
-			for {
-
-				// Poll for records
-				fetches := client.PollFetches(ctx)
-				if fetches.IsClientClosed() {
-					break
-				}
-
-				// Handle errors
-				if errs := fetches.Errors(); len(errs) > 0 {
-					for _, e := range errs {
-						log.Error().Err(e.Err).Msgf("Error consuming from topic %s partition %d", e.Topic, e.Partition)
-						return
-					}
-					continue
-				}
-
-				// Process the records
-				fetches.EachRecord(func(record *kgo.Record) {
-					if !consumedMessage {
-						executionRunData.requestCounter.Add(1)
-
-						log.Debug().Msgf("Topic: %s, Partition: %d, Offset: %d\n",
-							record.Topic, record.Partition, record.Offset)
-						log.Debug().Msgf("Key: %s\n", string(record.Key))
-						log.Debug().Msgf("Value: %s\n", string(record.Value))
-						log.Debug().Msgf("Timestamp: %s\n", record.Timestamp)
-						log.Debug().Msgf("---")
-						consumedMessage = true
-
-						executionRunData.requestSuccessCounter.Add(1)
-					}
-
-				})
-			}
-			// Exit the loop after consuming one message
-			if consumedMessage {
+	if !checkEnded(executionRunData, state) {
+		for range executionRunData.jobs {
+			// Poll for records
+			fetches := client.PollRecords(context.TODO(), 1)
+			if fetches.IsClientClosed() {
 				break
 			}
+
+			// Handle errors
+			if errs := fetches.Errors(); len(errs) > 0 {
+				for _, e := range errs {
+					log.Error().Err(e.Err).Msgf("Error consuming from topic %s partition %d", e.Topic, e.Partition)
+					return
+				}
+			}
+			executionRunData.requestCounter.Add(1)
+
+			// Process the records
+			fetches.EachRecord(func(record *kgo.Record) {
+				log.Debug().Msgf("Topic: %s, Partition: %d, Offset: %d\n",
+					record.Topic, record.Partition, record.Offset)
+				log.Debug().Msgf("Key: %s\n", string(record.Key))
+				log.Debug().Msgf("Value: %s\n", string(record.Value))
+				log.Debug().Msgf("Timestamp: %s\n", record.Timestamp)
+				log.Debug().Msgf("---")
+
+				executionRunData.requestSuccessCounter.Add(1)
+				return
+			})
 		}
 	}
 }

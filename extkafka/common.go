@@ -10,6 +10,7 @@ import (
 
 const (
 	kafkaBrokerTargetId         = "com.steadybit.extension_kafka.broker"
+	kafkaConsumerTargetId       = "com.steadybit.extension_kafka.consumer"
 	kafkaTopicTargetId          = "com.steadybit.extension_kafka.topic"
 	TargetIDProducePeriodically = "com.steadybit.extension_kafka.produce.periodically"
 	TargetIDConsumePeriodically = "com.steadybit.extension_kafka.consume.periodically"
@@ -38,6 +39,7 @@ type KafkaBrokerAttackState struct {
 	NumberOfRecords          uint64
 	ExecutionID              uuid.UUID
 	RecordHeaders            map[string]string
+	ConsumerGroup            string
 }
 
 var KafkaClient *kgo.Client

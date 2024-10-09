@@ -95,8 +95,8 @@ type ExtensionListResponse struct {
 func registerHandlers(ctx context.Context) {
 	discovery_kit_sdk.Register(extkafka.NewKafkaBrokerDiscovery(ctx))
 	discovery_kit_sdk.Register(extkafka.NewKafkaTopicDiscovery(ctx))
+	discovery_kit_sdk.Register(extkafka.NewKafkaConsumerGroupDiscovery(ctx))
 	action_kit_sdk.RegisterAction(extkafka.NewProduceMessageActionPeriodically())
-	action_kit_sdk.RegisterAction(extkafka.NewConsumeMessageActionFixedAmount())
 	action_kit_sdk.RegisterAction(extkafka.NewProduceMessageActionFixedAmount())
 	action_kit_sdk.RegisterAction(extkafka.NewKafkaBrokerElectNewLeaderAttack())
 

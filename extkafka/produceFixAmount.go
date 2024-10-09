@@ -138,10 +138,10 @@ func (l *produceMessageActionFixedAmount) Prepare(_ context.Context, state *Kafk
 	}
 	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsFixedAmount(extutil.ToInt64(request.Config["duration"]), extutil.ToInt64(request.Config["numberOfRecords"]))
 	state.Topic = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
-	return prepare(true, request, state, checkEndedFixedAmount)
+	return prepare(true, request, state, checkEndedProduceFixedAmount)
 }
 
-func checkEndedFixedAmount(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool {
+func checkEndedProduceFixedAmount(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool {
 	result := executionRunData.requestCounter.Load() >= state.NumberOfRecords
 	return result
 }
@@ -162,7 +162,7 @@ func (l *produceMessageActionFixedAmount) Status(_ context.Context, state *Kafka
 		return nil, err
 	}
 
-	completed := checkEndedFixedAmount(executionRunData, state)
+	completed := checkEndedProduceFixedAmount(executionRunData, state)
 	if completed {
 		stopTickers(executionRunData)
 		log.Info().Msg("Action completed")
