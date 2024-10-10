@@ -116,20 +116,27 @@ func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, erro
 	if err != nil {
 		return nil, fmt.Errorf("failed to list consumer groups: %v", err)
 	}
-	for _, group := range groups.Sorted() {
+
+	describedGroups, err := adminClient.DescribeGroups(ctx, groups.Groups()...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to describe consumer groups: %v", err)
+	}
+	for _, group := range describedGroups.Sorted() {
+
 		result = append(result, toConsumerGroupTarget(group))
 	}
 
 	return result, nil
 }
 
-func toConsumerGroupTarget(group kadm.ListedGroup) discovery_kit_api.Target {
+func toConsumerGroupTarget(group kadm.DescribedGroup) discovery_kit_api.Target {
 	id := fmt.Sprintf("%v", group.Group)
 
 	attributes := make(map[string][]string)
 	attributes["kafka.consumer-group.name"] = []string{fmt.Sprintf("%v", group.Group)}
 	attributes["kafka.consumer-group.coordinator"] = []string{fmt.Sprintf("%v", group.Coordinator)}
 	attributes["kafka.consumer-group.protocol-type"] = []string{group.ProtocolType}
+	attributes["kafka.consumer-group.topics"] = group.AssignedPartitions().Topics()
 
 	return discovery_kit_api.Target{
 		Id:         id,

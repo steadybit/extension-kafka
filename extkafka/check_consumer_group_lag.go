@@ -23,11 +23,10 @@ import (
 	"time"
 )
 
-type ConsumerGroupCheckAction struct{}
+type ConsumerGroupLagCheckAction struct{}
 
-type ConsumerGroupCheckState struct {
+type ConsumerGroupLagCheckState struct {
 	ConsumerGroupName string
-	TopicName         string
 	End               time.Time
 	ExpectedState     []string
 	StateCheckMode    string
@@ -36,19 +35,19 @@ type ConsumerGroupCheckState struct {
 
 // Make sure action implements all required interfaces
 var (
-	_ action_kit_sdk.Action[ConsumerGroupCheckState]           = (*ConsumerGroupCheckAction)(nil)
-	_ action_kit_sdk.ActionWithStatus[ConsumerGroupCheckState] = (*ConsumerGroupCheckAction)(nil)
+	_ action_kit_sdk.Action[ConsumerGroupLagCheckState]           = (*ConsumerGroupLagCheckAction)(nil)
+	_ action_kit_sdk.ActionWithStatus[ConsumerGroupLagCheckState] = (*ConsumerGroupLagCheckAction)(nil)
 )
 
-func NewConsumerGroupCheckAction() action_kit_sdk.Action[ConsumerGroupCheckState] {
-	return &ConsumerGroupCheckAction{}
+func NewConsumerGroupLagCheckAction() action_kit_sdk.Action[ConsumerGroupLagCheckState] {
+	return &ConsumerGroupLagCheckAction{}
 }
 
-func (m *ConsumerGroupCheckAction) NewEmptyState() ConsumerGroupCheckState {
-	return ConsumerGroupCheckState{}
+func (m *ConsumerGroupLagCheckAction) NewEmptyState() ConsumerGroupLagCheckState {
+	return ConsumerGroupLagCheckState{}
 }
 
-func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
+func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check", kafkaConsumerTargetId),
 		Label:       "Consumer Group Check",
@@ -78,6 +77,19 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 				DefaultValue: extutil.Ptr("30s"),
 				Order:        extutil.Ptr(1),
 				Required:     extutil.Ptr(true),
+			},
+			{
+				Name:        "Topic",
+				Label:       "Topic to track lag",
+				Description: extutil.Ptr("One or more topic to track lags"),
+				Type:        action_kit_api.StringArray,
+				Required:    extutil.Ptr(true),
+				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+					action_kit_api.ParameterOptionsFromTargetAttribute{
+						Attribute: "kafka.consumer-group.topics",
+					},
+				}),
+				Order: extutil.Ptr(2),
 			},
 			{
 				Name:        "expectedStateList",
@@ -163,7 +175,7 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 	}
 }
 
-func (m *ConsumerGroupCheckAction) Prepare(_ context.Context, state *ConsumerGroupCheckState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (m *ConsumerGroupLagCheckAction) Prepare(_ context.Context, state *ConsumerGroupLagCheckState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	consumerGroupName := extutil.MustHaveValue(request.Target.Attributes, "kafka.consumer-group.name")
 
 	duration := request.Config["duration"].(float64)
@@ -187,15 +199,15 @@ func (m *ConsumerGroupCheckAction) Prepare(_ context.Context, state *ConsumerGro
 	return nil, nil
 }
 
-func (m *ConsumerGroupCheckAction) Start(_ context.Context, _ *ConsumerGroupCheckState) (*action_kit_api.StartResult, error) {
+func (m *ConsumerGroupLagCheckAction) Start(_ context.Context, _ *ConsumerGroupLagCheckState) (*action_kit_api.StartResult, error) {
 	return nil, nil
 }
 
-func (m *ConsumerGroupCheckAction) Status(ctx context.Context, state *ConsumerGroupCheckState) (*action_kit_api.StatusResult, error) {
-	return ConsumerGroupCheckStatus(ctx, state)
+func (m *ConsumerGroupLagCheckAction) Status(ctx context.Context, state *ConsumerGroupLagCheckState) (*action_kit_api.StatusResult, error) {
+	return ConsumerGroupLagCheckStatus(ctx, state)
 }
 
-func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckState) (*action_kit_api.StatusResult, error) {
+func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagCheckState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
 	opts := []kgo.Opt{
@@ -213,26 +225,34 @@ func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckStat
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 
-	groups, err := adminClient.DescribeGroups(ctx, state.ConsumerGroupName)
+	lags, err := adminClient.Lag(ctx, state.ConsumerGroupName)
 	if err != nil {
 		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve consumer groups from Kafka for name %s. Full response: %v", state.ConsumerGroupName), err))
 	}
 
-	var group kadm.DescribedGroup
-	if len(groups.Sorted()) == 0 {
-		log.Err(err).Msgf("No consumer group with that name %s.", state.ConsumerGroupName)
-	} else if len(groups.Sorted()) > 1 {
-		log.Err(err).Msgf("More than 1 consumer group with that name %s.", state.ConsumerGroupName)
+	var groupLag kadm.DescribedGroupLag
+	if len(lags.Sorted()) == 0 {
+		log.Err(err).Msgf("No lags for consumer group with that name %s.", state.ConsumerGroupName)
+	} else if len(lags.Sorted()) > 1 {
+		log.Err(err).Msgf("More than 1 lag description for consumer group with that name %s.", state.ConsumerGroupName)
 	} else {
-		group = groups.Sorted()[0]
+		groupLag = lags.Sorted()[0]
 	}
 
+	if groupLag.FetchErr != nil {
+		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Error when fetching or describing the consumer group %s: %s", state.ConsumerGroupName, groupLag.FetchErr.Error()), groupLag.FetchErr))
+	}
+	if groupLag.DescribeErr != nil {
+		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Error when fetching or describing the consumer group %s: %s", state.ConsumerGroupName, groupLag.DescribeErr.Error()), groupLag.DescribeErr))
+
+	}
+  groupLag.Lag.TotalByTopic()
 	completed := now.After(state.End)
 	var checkError *action_kit_api.ActionKitError
 
 	if len(state.ExpectedState) > 0 {
 		if state.StateCheckMode == stateCheckModeAllTheTime {
-			if !slices.Contains(state.ExpectedState, group.State) {
+			if !slices.Contains(state.ExpectedState, group.FetchErr) {
 				checkError = extutil.Ptr(action_kit_api.ActionKitError{
 					Title: fmt.Sprintf("Consumer Group '%s' has state '%s' whereas '%s' is expected.",
 						group.Group,
@@ -257,7 +277,7 @@ func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckStat
 	}
 
 	metrics := []action_kit_api.Metric{
-		*toConsumerGroupMetric(group, now),
+		*toMetric(group, now),
 	}
 
 	return &action_kit_api.StatusResult{
@@ -267,11 +287,11 @@ func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckStat
 	}, nil
 }
 
-func toConsumerGroupMetric(group kadm.DescribedGroup, now time.Time) *action_kit_api.Metric {
+func toMetric(group kadm.DescribedGroupLag, now time.Time) *action_kit_api.Metric {
 	var tooltip string
 	var state string
 
-	tooltip = fmt.Sprintf("Consumer group state is: %s", group.State)
+	tooltip = fmt.Sprintf("Consumer group lag is: %s", group.)
 	if group.State == "Stable" {
 		state = "success"
 	} else if group.State == "Empty" {
