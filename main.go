@@ -99,6 +99,7 @@ func registerHandlers(ctx context.Context) {
 	action_kit_sdk.RegisterAction(extkafka.NewProduceMessageActionPeriodically())
 	action_kit_sdk.RegisterAction(extkafka.NewProduceMessageActionFixedAmount())
 	action_kit_sdk.RegisterAction(extkafka.NewKafkaBrokerElectNewLeaderAttack())
+	action_kit_sdk.RegisterAction(extkafka.NewConsumerGroupCheckAction())
 
 	exthttp.RegisterHttpHandler("/", exthttp.GetterAsHandler(getExtensionList))
 }

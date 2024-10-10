@@ -67,6 +67,13 @@ func (r *kafkaConsumerGroupDiscovery) DescribeTarget() discovery_kit_api.TargetD
 func (r *kafkaConsumerGroupDiscovery) DescribeAttributes() []discovery_kit_api.AttributeDescription {
 	return []discovery_kit_api.AttributeDescription{
 		{
+			Attribute: "kafka.consumer-group.name",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka consumer group name",
+				Other: "Kafka consumer group names",
+			},
+		},
+		{
 			Attribute: "kafka.consumer-group.coordinator",
 			Label: discovery_kit_api.PluralLabel{
 				One:   "Kafka consumer group coordinator",
@@ -120,6 +127,7 @@ func toConsumerGroupTarget(group kadm.ListedGroup) discovery_kit_api.Target {
 	id := fmt.Sprintf("%v", group.Group)
 
 	attributes := make(map[string][]string)
+	attributes["kafka.consumer-group.name"] = []string{fmt.Sprintf("%v", group.Group)}
 	attributes["kafka.consumer-group.coordinator"] = []string{fmt.Sprintf("%v", group.Coordinator)}
 	attributes["kafka.consumer-group.protocol-type"] = []string{group.ProtocolType}
 
