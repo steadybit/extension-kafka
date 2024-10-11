@@ -29,6 +29,7 @@ type ConsumerGroupLagCheckState struct {
 	Topic             string
 	End               time.Time
 	AcceptableLag     int64
+	StateCheckSuccess bool
 }
 
 // Make sure action implements all required interfaces
@@ -194,10 +195,12 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 
 	completed := now.After(state.End)
 	var checkError *action_kit_api.ActionKitError
-	if topicLag > state.AcceptableLag {
+	if topicLag < state.AcceptableLag {
+		state.StateCheckSuccess = true
+	}
+	if completed && !state.StateCheckSuccess {
 		checkError = extutil.Ptr(action_kit_api.ActionKitError{
-			Title: fmt.Sprintf("Consumer Group Lag '%d' is higher than acceptable threshold  '%d'.",
-				topicLag,
+			Title: fmt.Sprintf("Consumer Group Lag was higher once than acceptable threshold  '%d'.",
 				state.AcceptableLag),
 			Status: extutil.Ptr(action_kit_api.Failed),
 		})
@@ -219,7 +222,7 @@ func toMetric(topicLag int64, stateGroupLag *ConsumerGroupLagCheckState, now tim
 	var state string
 
 	if topicLag > stateGroupLag.AcceptableLag {
-		state = "warn"
+		state = "danger"
 	} else {
 		state = "success"
 	}
