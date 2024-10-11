@@ -86,6 +86,13 @@ func (r *kafkaConsumerGroupDiscovery) DescribeAttributes() []discovery_kit_api.A
 				Other: "Kafka consumer group protocol types",
 			},
 		},
+		{
+			Attribute: "kafka.consumer-group.topics",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka consumer group topic",
+				Other: "Kafka consumer group topics",
+			},
+		},
 	}
 }
 
@@ -134,7 +141,7 @@ func toConsumerGroupTarget(group kadm.DescribedGroup) discovery_kit_api.Target {
 
 	attributes := make(map[string][]string)
 	attributes["kafka.consumer-group.name"] = []string{fmt.Sprintf("%v", group.Group)}
-	attributes["kafka.consumer-group.coordinator"] = []string{fmt.Sprintf("%v", group.Coordinator)}
+	attributes["kafka.consumer-group.coordinator"] = []string{fmt.Sprintf("%v", group.Coordinator.Host)}
 	attributes["kafka.consumer-group.protocol-type"] = []string{group.ProtocolType}
 	attributes["kafka.consumer-group.topics"] = group.AssignedPartitions().Topics()
 

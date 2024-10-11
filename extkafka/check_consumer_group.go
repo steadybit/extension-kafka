@@ -51,8 +51,8 @@ func (m *ConsumerGroupCheckAction) NewEmptyState() ConsumerGroupCheckState {
 func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check", kafkaConsumerTargetId),
-		Label:       "Consumer Group Check",
-		Description: "check if the consumer group have errors",
+		Label:       "Check Consumer State",
+		Description: "check the consumer state",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{

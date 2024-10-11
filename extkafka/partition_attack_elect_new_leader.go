@@ -33,7 +33,7 @@ func (f kafkaBrokerElectNewLeaderAttack) NewEmptyState() KafkaBrokerAttackState 
 func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.elect-new-leader", kafkaTopicTargetId),
-		Label:       "Trigger Election for new leader",
+		Label:       "Elect New Leader",
 		Description: "Triggers election for a new leader for a given topic and partition(s)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
@@ -52,7 +52,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
 			{
-				Name:        "Partition",
+				Name:        "partitions",
 				Label:       "Partition to elect new leader",
 				Description: extutil.Ptr("One or more partitions to trigger a new leader election"),
 				Type:        action_kit_api.StringArray,
@@ -107,14 +107,14 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 		return nil, fmt.Errorf("failed to elect new leader for topic %s and partitions %d: %s", state.Topic, state.Partitions, err)
 	}
 
-	for topic, partitions := range results {
-		for partition, result := range partitions {
+	for t, parts := range results {
+		for partition, result := range parts {
 			if result.Err != nil {
 				return nil, fmt.Errorf("Error electing leader for topic '%s', partition %d: %v\n",
-					topic, partition, result.Err)
+					t, partition, result.Err)
 			} else {
 				fmt.Printf("Successfully elected leader for topic '%s', partition %d\n",
-					topic, partition)
+					t, partition)
 			}
 		}
 	}

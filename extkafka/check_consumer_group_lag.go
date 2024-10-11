@@ -19,7 +19,6 @@ import (
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"slices"
 	"time"
 )
 
@@ -27,10 +26,9 @@ type ConsumerGroupLagCheckAction struct{}
 
 type ConsumerGroupLagCheckState struct {
 	ConsumerGroupName string
+	Topic             string
 	End               time.Time
-	ExpectedState     []string
-	StateCheckMode    string
-	StateCheckSuccess bool
+	AcceptableLag     int64
 }
 
 // Make sure action implements all required interfaces
@@ -49,9 +47,9 @@ func (m *ConsumerGroupLagCheckAction) NewEmptyState() ConsumerGroupLagCheckState
 
 func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          fmt.Sprintf("%s.check", kafkaConsumerTargetId),
-		Label:       "Consumer Group Check",
-		Description: "check if the consumer group have errors",
+		Id:          fmt.Sprintf("%s.check-lag", kafkaConsumerTargetId),
+		Label:       "Check Topic Lag",
+		Description: "check if the consumer group have lags on a topic",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -79,10 +77,10 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 				Required:     extutil.Ptr(true),
 			},
 			{
-				Name:        "Topic",
+				Name:        "topic",
 				Label:       "Topic to track lag",
-				Description: extutil.Ptr("One or more topic to track lags"),
-				Type:        action_kit_api.StringArray,
+				Description: extutil.Ptr("One topic to track lags"),
+				Type:        action_kit_api.String,
 				Required:    extutil.Ptr(true),
 				Options: extutil.Ptr([]action_kit_api.ParameterOption{
 					action_kit_api.ParameterOptionsFromTargetAttribute{
@@ -92,63 +90,19 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 				Order: extutil.Ptr(2),
 			},
 			{
-				Name:        "expectedStateList",
-				Label:       "Expected State List",
-				Description: extutil.Ptr(""),
-				Type:        action_kit_api.StringArray,
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
-					action_kit_api.ExplicitParameterOption{
-						Label: "Unknown",
-						Value: "Unknown",
-					},
-					action_kit_api.ExplicitParameterOption{
-						Label: "PreparingRebalance",
-						Value: "PreparingRebalance",
-					},
-					action_kit_api.ExplicitParameterOption{
-						Label: "CompletingRebalance",
-						Value: "CompletingRebalance",
-					},
-					action_kit_api.ExplicitParameterOption{
-						Label: "Stable",
-						Value: "Stable",
-					},
-					action_kit_api.ExplicitParameterOption{
-						Label: "Dead",
-						Value: "Dead",
-					},
-					action_kit_api.ExplicitParameterOption{
-						Label: "Empty",
-						Value: "Empty",
-					},
-				}),
-				Required: extutil.Ptr(false),
-				Order:    extutil.Ptr(2),
-			},
-			{
-				Name:         "stateCheckMode",
-				Label:        "State Check Mode",
-				Description:  extutil.Ptr("How often should the state be checked ?"),
-				Type:         action_kit_api.String,
-				DefaultValue: extutil.Ptr(stateCheckModeAllTheTime),
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
-					action_kit_api.ExplicitParameterOption{
-						Label: "All the time",
-						Value: stateCheckModeAllTheTime,
-					},
-					action_kit_api.ExplicitParameterOption{
-						Label: "At least once",
-						Value: stateCheckModeAtLeastOnce,
-					},
-				}),
-				Required: extutil.Ptr(true),
-				Order:    extutil.Ptr(3),
+				Name:         "acceptableLag",
+				Label:        "Lag alert threshold",
+				Description:  extutil.Ptr("How much lag is acceptable for this topic"),
+				Type:         action_kit_api.Integer,
+				Required:     extutil.Ptr(true),
+				DefaultValue: extutil.Ptr("10"),
+				Order:        extutil.Ptr(3),
 			},
 		},
 		Widgets: extutil.Ptr([]action_kit_api.Widget{
 			action_kit_api.StateOverTimeWidget{
 				Type:  action_kit_api.ComSteadybitWidgetStateOverTime,
-				Title: "Kafka Consumer Group State",
+				Title: "Consumer Group Topic Lag",
 				Identity: action_kit_api.StateOverTimeWidgetIdentityConfig{
 					From: "kafka.consumer-group.name",
 				},
@@ -177,24 +131,14 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 
 func (m *ConsumerGroupLagCheckAction) Prepare(_ context.Context, state *ConsumerGroupLagCheckState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	consumerGroupName := extutil.MustHaveValue(request.Target.Attributes, "kafka.consumer-group.name")
+	state.Topic = extutil.ToString(request.Config["topic"])
+	state.AcceptableLag = extutil.ToInt64(request.Config["acceptableLag"])
 
 	duration := request.Config["duration"].(float64)
 	end := time.Now().Add(time.Millisecond * time.Duration(duration))
 
-	var expectedState []string
-	if request.Config["expectedStateList"] != nil {
-		expectedState = extutil.ToStringArray(request.Config["expectedStateList"])
-	}
-
-	var stateCheckMode string
-	if request.Config["stateCheckMode"] != nil {
-		stateCheckMode = fmt.Sprintf("%v", request.Config["stateCheckMode"])
-	}
-
 	state.ConsumerGroupName = consumerGroupName[0]
 	state.End = end
-	state.ExpectedState = expectedState
-	state.StateCheckMode = stateCheckMode
 
 	return nil, nil
 }
@@ -246,38 +190,21 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Error when fetching or describing the consumer group %s: %s", state.ConsumerGroupName, groupLag.DescribeErr.Error()), groupLag.DescribeErr))
 
 	}
-  groupLag.Lag.TotalByTopic()
+	topicLag := groupLag.Lag.TotalByTopic()[state.Topic].Lag
+
 	completed := now.After(state.End)
 	var checkError *action_kit_api.ActionKitError
-
-	if len(state.ExpectedState) > 0 {
-		if state.StateCheckMode == stateCheckModeAllTheTime {
-			if !slices.Contains(state.ExpectedState, group.FetchErr) {
-				checkError = extutil.Ptr(action_kit_api.ActionKitError{
-					Title: fmt.Sprintf("Consumer Group '%s' has state '%s' whereas '%s' is expected.",
-						group.Group,
-						group.State,
-						state.ExpectedState),
-					Status: extutil.Ptr(action_kit_api.Failed),
-				})
-			}
-		} else if state.StateCheckMode == stateCheckModeAtLeastOnce {
-			if slices.Contains(state.ExpectedState, group.State) {
-				state.StateCheckSuccess = true
-			}
-			if completed && !state.StateCheckSuccess {
-				checkError = extutil.Ptr(action_kit_api.ActionKitError{
-					Title: fmt.Sprintf("Consumer Group '%s' didn't have status '%s' at least once.",
-						group.Group,
-						state.ExpectedState),
-					Status: extutil.Ptr(action_kit_api.Failed),
-				})
-			}
-		}
+	if topicLag > state.AcceptableLag {
+		checkError = extutil.Ptr(action_kit_api.ActionKitError{
+			Title: fmt.Sprintf("Consumer Group Lag '%d' is higher than acceptable threshold  '%d'.",
+				topicLag,
+				state.AcceptableLag),
+			Status: extutil.Ptr(action_kit_api.Failed),
+		})
 	}
 
 	metrics := []action_kit_api.Metric{
-		*toMetric(group, now),
+		*toMetric(topicLag, state, now),
 	}
 
 	return &action_kit_api.StatusResult{
@@ -287,25 +214,23 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 	}, nil
 }
 
-func toMetric(group kadm.DescribedGroupLag, now time.Time) *action_kit_api.Metric {
+func toMetric(topicLag int64, stateGroupLag *ConsumerGroupLagCheckState, now time.Time) *action_kit_api.Metric {
 	var tooltip string
 	var state string
 
-	tooltip = fmt.Sprintf("Consumer group lag is: %s", group.)
-	if group.State == "Stable" {
+	if topicLag > stateGroupLag.AcceptableLag {
+		state = "warn"
+	} else {
 		state = "success"
-	} else if group.State == "Empty" {
-		state = "warn"
-	} else if group.State == "PreparingRebalance" {
-		state = "warn"
-	} else if group.State == "Dead" {
-		state = "danger"
 	}
+
+	tooltip = fmt.Sprintf("consumer %s lag for topic %s is %d", stateGroupLag.ConsumerGroupName, stateGroupLag.Topic, topicLag)
 
 	return extutil.Ptr(action_kit_api.Metric{
 		Name: extutil.Ptr("kafka_consumer_group_state"),
 		Metric: map[string]string{
-			"kafka.consumer-group.name": group.Group,
+			"kafka.topic.name":          stateGroupLag.Topic,
+			"kafka.consumer-group.name": stateGroupLag.ConsumerGroupName,
 			"url":                       "",
 			"state":                     state,
 			"tooltip":                   tooltip,
