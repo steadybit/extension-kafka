@@ -37,7 +37,6 @@ type KafkaBrokerAttackState struct {
 	RecordKey                string
 	RecordValue              string
 	RecordPartition          int
-	RecordAttrs              uint8
 	NumberOfRecords          uint64
 	ExecutionID              uuid.UUID
 	RecordHeaders            map[string]string

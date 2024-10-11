@@ -104,7 +104,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 
 	results, err := adminClient.ElectLeaders(ctx, kadm.ElectPreferredReplica, topicSet)
 	if err != nil {
-		return nil, fmt.Errorf("failed to elect new leader for topic %s and partitions %d: %s", state.Topic, state.Partitions, err)
+		return nil, fmt.Errorf("failed to elect new leader for topic %s and partitions %s: %s", state.Topic, state.Partitions, err)
 	}
 
 	for t, parts := range results {
@@ -122,7 +122,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
-			Message: fmt.Sprintf("Elect new leader for topic %s and partitions %d triggered", state.Topic, state.Partitions),
+			Message: fmt.Sprintf("Elect new leader for topic %s and partitions %s triggered", state.Topic, state.Partitions),
 		}},
 	}, nil
 

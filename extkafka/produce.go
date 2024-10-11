@@ -13,7 +13,6 @@ import (
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"strconv"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -47,14 +46,6 @@ func prepare(produce bool, request action_kit_api.PrepareActionRequestBody, stat
 	state.RecordKey = extutil.ToString(request.Config["recordKey"])
 	state.RecordValue = extutil.ToString(request.Config["recordValue"])
 	state.ExecutionID = request.ExecutionId
-	if str, ok := request.Config["recordAttributes"]; ok {
-		i, err := strconv.ParseUint(str.(string), 0, 8)
-		if err != nil {
-			log.Error().Err(err).Msg("Failed to parse record attributes")
-			return nil, err
-		}
-		state.RecordAttrs = uint8(i)
-	}
 
 	var err error
 	if _, ok := request.Config["recordHeaders"]; ok {

@@ -215,7 +215,7 @@ func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckStat
 
 	groups, err := adminClient.DescribeGroups(ctx, state.ConsumerGroupName)
 	if err != nil {
-		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve consumer groups from Kafka for name %s. Full response: %v", state.ConsumerGroupName), err))
+		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve consumer groups from Kafka for name %s. Full response: %v", state.ConsumerGroupName, err), err))
 	}
 
 	var group kadm.DescribedGroup
