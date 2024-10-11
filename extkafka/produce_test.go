@@ -16,16 +16,6 @@ import (
 
 func TestAction_Prepare(t *testing.T) {
 
-	//c, err := kfake.NewCluster(
-	//	kfake.Ports(9092, 9093, 9094),
-	//	kfake.SeedTopics(-1, "steadybit"),
-	//	kfake.NumBrokers(3),
-	//)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//defer c.Close()
-
 	tests := []struct {
 		name        string
 		requestBody action_kit_api.PrepareActionRequestBody
