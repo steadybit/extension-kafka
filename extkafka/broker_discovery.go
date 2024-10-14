@@ -125,8 +125,6 @@ func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	defer client.Close()
 
 	adminClient := kadm.NewClient(client)
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
 
 	// Create topic "franz-go" if it doesn't exist already
 	brokerDetails, err := adminClient.ListBrokers(ctx)

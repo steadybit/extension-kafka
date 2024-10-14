@@ -14,7 +14,6 @@ import (
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"strconv"
-	"time"
 )
 
 type kafkaBrokerElectNewLeaderAttack struct {
@@ -86,10 +85,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-
 	adminClient := kadm.NewClient(client)
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
 
 	// Parse partitions
 	partitions, err := sliceAtoi(state.Partitions)

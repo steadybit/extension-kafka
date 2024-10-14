@@ -210,10 +210,7 @@ func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckStat
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-
 	adminClient := kadm.NewClient(client)
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
 
 	groups, err := adminClient.DescribeGroups(ctx, state.ConsumerGroupName)
 	if err != nil {

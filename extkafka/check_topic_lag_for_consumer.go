@@ -167,10 +167,7 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-
 	adminClient := kadm.NewClient(client)
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
 
 	lags, err := adminClient.Lag(ctx, state.ConsumerGroupName)
 	if err != nil {

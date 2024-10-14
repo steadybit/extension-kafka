@@ -118,10 +118,7 @@ func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-
 	adminClient := kadm.NewClient(client)
-	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
-	defer cancel()
 
 	// Create topic "franz-go" if it doesn't exist already
 	topicDetails, err := adminClient.ListTopics(ctx)
