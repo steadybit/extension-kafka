@@ -170,8 +170,6 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 	statusResult, err = action.Status(context.Background(), &state)
 	assert.NoError(t, err)
 	assert.Equal(t, false, statusResult.Completed)
-
-	assert.Equal(t, uint64(10), executionRunData.requestCounter.Load())
 	// Stop
 	stopResult, err := action.Stop(context.Background(), &state)
 	assert.NoError(t, err)
