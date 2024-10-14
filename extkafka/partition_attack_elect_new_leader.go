@@ -106,10 +106,10 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 	for t, parts := range results {
 		for partition, result := range parts {
 			if result.Err != nil {
-				return nil, fmt.Errorf("Error electing leader for topic '%s', partition %d: %v\n",
+				return nil, fmt.Errorf("error electing leader for topic '%s', partition %d: %v",
 					t, partition, result.Err)
 			} else {
-				fmt.Printf("Successfully elected leader for topic '%s', partition %d\n",
+				fmt.Printf("successfully elected leader for topic '%s', partition %d",
 					t, partition)
 			}
 		}
