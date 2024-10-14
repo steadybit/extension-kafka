@@ -12,6 +12,7 @@ import (
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/twmb/franz-go/pkg/kfake"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -135,14 +136,14 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 			},
 		},
 		Config: map[string]interface{}{
-			"recordsPerSecond": 1,
-			"maxConcurrent":    4,
+			"recordsPerSecond": 2,
+			"maxConcurrent":    2,
 			"recordKey":        "steadybit5",
 			"recordValue":      "test5",
 			"recordHeaders": []any{
 				map[string]any{"key": "test", "value": "test"},
 			},
-			"duration": 5000,
+			"duration": 10000,
 		},
 		ExecutionId: uuid.New(),
 	})
@@ -175,7 +176,7 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, stopResult.Metrics)
 	assert.Nil(t, stopResult.Error)
-	assert.Equal(t, executionRunData.requestSuccessCounter.Load(), uint64(10))
+	assert.Equal(t, strconv.FormatUint(uint64(20), 10), strconv.FormatUint(executionRunData.requestSuccessCounter.Load(), 10))
 }
 
 func TestNewHTTPCheckActionPeriodically_All_Failure(t *testing.T) {
