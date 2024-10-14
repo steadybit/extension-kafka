@@ -177,6 +177,29 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 				Topic:             "steadybit",
 			},
 		},
+		{
+			name: "Should return status ko",
+			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
+				Target: &action_kit_api.Target{
+					Attributes: map[string][]string{
+						"kafka.consumer-group.name": {"steadybit"},
+					},
+				},
+				Config: map[string]interface{}{
+					"duration":      5000,
+					"topic":         "steadybit",
+					"acceptableLag": "1",
+				},
+				ExecutionId: uuid.New(),
+			}),
+
+			wantedState: &ConsumerGroupLagCheckState{
+				ConsumerGroupName: "steadybit",
+				AcceptableLag:     int64(1),
+				StateCheckSuccess: true,
+				Topic:             "steadybit",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -209,7 +232,13 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 				assert.Equal(t, tt.wantedState.AcceptableLag, state.AcceptableLag)
 				assert.Equal(t, tt.wantedState.Topic, state.Topic)
 				assert.Equal(t, tt.wantedState.ConsumerGroupName, state.ConsumerGroupName)
-				assert.Equal(t, true, statusResult.Completed)
+				for _, metric := range *statusResult.Metrics {
+					if tt.wantedState.AcceptableLag > 10 {
+						assert.Equal(t, "success", metric.Metric["state"], "Expected metric state to be 'danger'")
+					} else {
+						assert.Equal(t, "danger", metric.Metric["state"], "Expected metric state to be 'danger'")
+					}
+				}
 				assert.NotNil(t, state.End)
 			}
 		})
