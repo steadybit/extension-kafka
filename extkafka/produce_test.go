@@ -57,6 +57,11 @@ func TestAction_Prepare(t *testing.T) {
 		{
 			name: "Should return error for recordHeaders",
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
+				Target: &action_kit_api.Target{
+					Attributes: map[string][]string{
+						"kafka.topic.name": {"steadybit"},
+					},
+				},
 				Config: map[string]interface{}{
 					"action":        "prepare",
 					"maxConcurrent": 4,
@@ -70,6 +75,11 @@ func TestAction_Prepare(t *testing.T) {
 		{
 			name: "Should return error for maxConcurrent",
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
+				Target: &action_kit_api.Target{
+					Attributes: map[string][]string{
+						"kafka.topic.name": {"steadybit"},
+					},
+				},
 				Config: map[string]interface{}{
 					"action":        "prepare",
 					"maxConcurrent": 0,
@@ -86,7 +96,7 @@ func TestAction_Prepare(t *testing.T) {
 			state := KafkaBrokerAttackState{}
 			request := tt.requestBody
 			//When
-			_, err := prepare(true, request, &state, func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool { return false })
+			_, err := prepare(request, &state, func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool { return false })
 
 			//Then
 			if tt.wantedError != nil {

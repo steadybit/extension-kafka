@@ -137,8 +137,8 @@ func (l *produceMessageActionFixedAmount) Prepare(_ context.Context, state *Kafk
 		return nil, errors.New("duration must be greater than 0")
 	}
 	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsFixedAmount(extutil.ToInt64(request.Config["duration"]), extutil.ToInt64(request.Config["numberOfRecords"]))
-	state.Topic = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
-	return prepare(true, request, state, checkEndedProduceFixedAmount)
+
+	return prepare(request, state, checkEndedProduceFixedAmount)
 }
 
 func checkEndedProduceFixedAmount(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool {

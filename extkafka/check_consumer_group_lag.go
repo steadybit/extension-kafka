@@ -131,14 +131,16 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 }
 
 func (m *ConsumerGroupLagCheckAction) Prepare(_ context.Context, state *ConsumerGroupLagCheckState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
-	consumerGroupName := extutil.MustHaveValue(request.Target.Attributes, "kafka.consumer-group.name")
+	if len(request.Target.Attributes["kafka.consumer-group.name"]) == 0 {
+		return nil, fmt.Errorf("the target is missing the kafka.consumer-group.name attribute")
+	}
 	state.Topic = extutil.ToString(request.Config["topic"])
 	state.AcceptableLag = extutil.ToInt64(request.Config["acceptableLag"])
 
 	duration := request.Config["duration"].(float64)
 	end := time.Now().Add(time.Millisecond * time.Duration(duration))
 
-	state.ConsumerGroupName = consumerGroupName[0]
+	state.ConsumerGroupName = request.Target.Attributes["kafka.consumer-group.name"][0]
 	state.End = end
 
 	return nil, nil

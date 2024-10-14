@@ -164,7 +164,9 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 }
 
 func (m *ConsumerGroupCheckAction) Prepare(_ context.Context, state *ConsumerGroupCheckState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
-	consumerGroupName := extutil.MustHaveValue(request.Target.Attributes, "kafka.consumer-group.name")
+	if len(request.Target.Attributes["kafka.consumer-group.name"]) == 0 {
+		return nil, fmt.Errorf("the target is missing the kafka.consumer-group.name attribute")
+	}
 
 	duration := request.Config["duration"].(float64)
 	end := time.Now().Add(time.Millisecond * time.Duration(duration))
@@ -179,7 +181,7 @@ func (m *ConsumerGroupCheckAction) Prepare(_ context.Context, state *ConsumerGro
 		stateCheckMode = fmt.Sprintf("%v", request.Config["stateCheckMode"])
 	}
 
-	state.ConsumerGroupName = consumerGroupName[0]
+	state.ConsumerGroupName = request.Target.Attributes["kafka.consumer-group.name"][0]
 	state.End = end
 	state.ExpectedState = expectedState
 	state.StateCheckMode = stateCheckMode

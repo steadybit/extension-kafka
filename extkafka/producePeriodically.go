@@ -132,8 +132,7 @@ func getDelayBetweenRequestsInMsPeriodically(recordsPerSecond int64) int64 {
 
 func (l *produceMessageActionPeriodically) Prepare(_ context.Context, state *KafkaBrokerAttackState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.DelayBetweenRequestsInMS = getDelayBetweenRequestsInMsPeriodically(extutil.ToInt64(request.Config["recordsPerSecond"]))
-	state.Topic = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
-	return prepare(true, request, state, func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool { return false })
+	return prepare(request, state, func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool { return false })
 }
 
 // Start is called to start the action

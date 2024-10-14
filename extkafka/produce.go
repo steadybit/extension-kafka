@@ -31,14 +31,17 @@ var (
 	ExecutionRunDataMap = sync.Map{} //make(map[uuid.UUID]*ExecutionRunData)
 )
 
-func prepare(produce bool, request action_kit_api.PrepareActionRequestBody, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) (*action_kit_api.PrepareResult, error) {
+func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) (*action_kit_api.PrepareResult, error) {
+	if len(request.Target.Attributes["kafka.topic.name"]) == 0 {
+		return nil, fmt.Errorf("the target is missing the kafka.topic.name attribute")
+	}
+	state.Topic = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
+
 	duration := extutil.ToInt64(request.Config["duration"])
 	state.Timeout = time.Now().Add(time.Millisecond * time.Duration(duration))
 	state.SuccessRate = extutil.ToInt(request.Config["successRate"])
 	state.MaxConcurrent = extutil.ToInt(request.Config["maxConcurrent"])
-	if !produce {
-		state.MaxConcurrent = 1
-	}
+
 	if state.MaxConcurrent == 0 {
 		return nil, fmt.Errorf("max concurrent can't be zero")
 	}
@@ -65,11 +68,7 @@ func prepare(produce bool, request action_kit_api.PrepareActionRequestBody, stat
 
 	// create worker pool
 	for w := 1; w <= state.MaxConcurrent; w++ {
-		if produce {
-			go requestProducerWorker(executionRunData, state, checkEnded)
-		} else {
-			go requestConsumerWorker(executionRunData, state, checkEnded)
-		}
+		go requestProducerWorker(executionRunData, state, checkEnded)
 	}
 	return nil, nil
 }
@@ -171,52 +170,52 @@ func requestProducerWorker(executionRunData *ExecutionRunData, state *KafkaBroke
 	defer client.Close()
 }
 
-func requestConsumerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.ConsumerGroup("steadybit-extension-kafka"),
-		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
-		kgo.ConsumeTopics(state.Topic),
-	}
-
-	client, err := kgo.NewClient(opts...)
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to create client")
-	}
-	defer client.Close()
-
-	if !checkEnded(executionRunData, state) {
-		for range executionRunData.jobs {
-			// Poll for records
-			fetches := client.PollRecords(context.TODO(), 1)
-			if fetches.IsClientClosed() {
-				break
-			}
-
-			// Handle errors
-			if errs := fetches.Errors(); len(errs) > 0 {
-				for _, e := range errs {
-					log.Error().Err(e.Err).Msgf("Error consuming from topic %s partition %d", e.Topic, e.Partition)
-					return
-				}
-			}
-			executionRunData.requestCounter.Add(1)
-
-			// Process the records
-			fetches.EachRecord(func(record *kgo.Record) {
-				log.Debug().Msgf("Topic: %s, Partition: %d, Offset: %d\n",
-					record.Topic, record.Partition, record.Offset)
-				log.Debug().Msgf("Key: %s\n", string(record.Key))
-				log.Debug().Msgf("Value: %s\n", string(record.Value))
-				log.Debug().Msgf("Timestamp: %s\n", record.Timestamp)
-				log.Debug().Msgf("---")
-
-				executionRunData.requestSuccessCounter.Add(1)
-				return
-			})
-		}
-	}
-}
+//func requestConsumerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
+//	opts := []kgo.Opt{
+//		kgo.SeedBrokers(config.Config.SeedBrokers),
+//		kgo.ConsumerGroup("steadybit-extension-kafka"),
+//		kgo.ConsumeResetOffset(kgo.NewOffset().AtStart()),
+//		kgo.ConsumeTopics(state.Topic),
+//	}
+//
+//	client, err := kgo.NewClient(opts...)
+//	if err != nil {
+//		log.Error().Err(err).Msg("Failed to create client")
+//	}
+//	defer client.Close()
+//
+//	if !checkEnded(executionRunData, state) {
+//		for range executionRunData.jobs {
+//			// Poll for records
+//			fetches := client.PollRecords(context.TODO(), 1)
+//			if fetches.IsClientClosed() {
+//				break
+//			}
+//
+//			// Handle errors
+//			if errs := fetches.Errors(); len(errs) > 0 {
+//				for _, e := range errs {
+//					log.Error().Err(e.Err).Msgf("Error consuming from topic %s partition %d", e.Topic, e.Partition)
+//					return
+//				}
+//			}
+//			executionRunData.requestCounter.Add(1)
+//
+//			// Process the records
+//			fetches.EachRecord(func(record *kgo.Record) {
+//				log.Debug().Msgf("Topic: %s, Partition: %d, Offset: %d\n",
+//					record.Topic, record.Partition, record.Offset)
+//				log.Debug().Msgf("Key: %s\n", string(record.Key))
+//				log.Debug().Msgf("Value: %s\n", string(record.Value))
+//				log.Debug().Msgf("Timestamp: %s\n", record.Timestamp)
+//				log.Debug().Msgf("---")
+//
+//				executionRunData.requestSuccessCounter.Add(1)
+//				return
+//			})
+//		}
+//	}
+//}
 
 func start(state *KafkaBrokerAttackState) {
 	executionRunData, err := loadExecutionRunData(state.ExecutionID)

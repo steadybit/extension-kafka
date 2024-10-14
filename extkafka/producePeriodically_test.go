@@ -8,6 +8,7 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
+	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/twmb/franz-go/pkg/kfake"
@@ -15,7 +16,17 @@ import (
 	"time"
 )
 
-func TestNewHTTPCheckActionPeriodically_Prepare(t *testing.T) {
+func TestNewProduceMessageActionPeriodically_Describe(t *testing.T) {
+	action := produceMessageActionPeriodically{}
+
+	description := action.Describe()
+
+	assert.Equal(t, "Produce X records per second", description.Label)
+	assert.Equal(t, "Produce kafka messages periodically (messages / s)", description.Description)
+	assert.Equal(t, kafkaTopicTargetId, description.TargetSelection.TargetType)
+}
+
+func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 	action := produceMessageActionPeriodically{}
 
 	tests := []struct {
@@ -54,6 +65,27 @@ func TestNewHTTPCheckActionPeriodically_Prepare(t *testing.T) {
 				DelayBetweenRequestsInMS: 1000,
 				RecordHeaders:            map[string]string{"test": "test"},
 			},
+		},
+		{
+			name: "Should return error",
+			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
+				Target: &action_kit_api.Target{
+					Attributes: map[string][]string{},
+				},
+				Config: map[string]interface{}{
+					"recordsPerSecond": 1,
+					"maxConcurrent":    4,
+					"recordKey":        "steadybit5",
+					"recordValue":      "test5",
+					"recordHeaders": []any{
+						map[string]any{"key": "test", "value": "test"},
+					},
+					"duration": 10000,
+				},
+				ExecutionId: uuid.New(),
+			}),
+
+			wantedError: extension_kit.ToError("the target is missing the kafka.topic.name attribute", nil),
 		},
 	}
 	for _, tt := range tests {
