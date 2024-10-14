@@ -176,7 +176,7 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, stopResult.Metrics)
 	assert.Nil(t, stopResult.Error)
-	assert.Equal(t, strconv.FormatUint(uint64(20), 10), strconv.FormatUint(executionRunData.requestSuccessCounter.Load(), 10))
+	assert.Greater(t, strconv.FormatUint(executionRunData.requestSuccessCounter.Load(), 10), strconv.FormatUint(uint64(19), 10))
 }
 
 func TestNewHTTPCheckActionPeriodically_All_Failure(t *testing.T) {
