@@ -40,8 +40,7 @@ func TestNewHTTPCheckActionFixedAmount_Prepare(t *testing.T) {
 					"recordHeaders": []any{
 						map[string]any{"key": "test", "value": "test"},
 					},
-					"recordAttributes": "243",
-					"duration":         10000,
+					"duration": 10000,
 				},
 				ExecutionId: uuid.New(),
 			}),
@@ -178,9 +177,8 @@ func TestNewHTTPCheckActionFixedAmount_All_Failure(t *testing.T) {
 			"recordHeaders": []any{
 				map[string]any{"key": "test", "value": "test"},
 			},
-			"recordAttributes": "243",
-			"duration":         10000,
-			"successRate":      100,
+			"duration":    10000,
+			"successRate": 100,
 		},
 		ExecutionId: uuid.New(),
 	})
