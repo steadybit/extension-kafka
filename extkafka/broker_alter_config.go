@@ -174,7 +174,7 @@ func (k *KafkaBrokerAlterConfigAttack) Start(ctx context.Context, state *KafkaAl
 
 }
 
-func (e *KafkaBrokerAlterConfigAttack) Stop(ctx context.Context, state *KafkaAlterConfigState) (*action_kit_api.StopResult, error) {
+func (k *KafkaBrokerAlterConfigAttack) Stop(ctx context.Context, state *KafkaAlterConfigState) (*action_kit_api.StopResult, error) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(config.Config.SeedBrokers),
 		kgo.DefaultProduceTopic("steadybit"),
