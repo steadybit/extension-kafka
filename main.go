@@ -100,7 +100,7 @@ func registerHandlers(ctx context.Context) {
 	action_kit_sdk.RegisterAction(extkafka.NewKafkaBrokerElectNewLeaderAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewConsumerGroupCheckAction())
 	action_kit_sdk.RegisterAction(extkafka.NewConsumerGroupLagCheckAction())
-	action_kit_sdk.RegisterAction(extkafka.NewAlterLimitConnectionCreateRateAttack())
+	action_kit_sdk.RegisterAction(extkafka.NewDeleteRecordsAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewAlterMaxMessageBytesAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewAlterNumberIOThreadsAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewAlterNumberNetworkThreadsAttack())

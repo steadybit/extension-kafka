@@ -137,7 +137,7 @@ func (k *AlterMessageMaxBytesAttack) Start(ctx context.Context, state *AlterMess
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
-			Message: fmt.Sprintf("Alter config max.connection.creation.rate with value %s (initial value was: %s) for broker node-id: %v", state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
+			Message: fmt.Sprintf("Alter config "+MessageMaxBytes+" with value %s (initial value was: %s) for broker node-id: %v", state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
 		}},
 	}, nil
 
