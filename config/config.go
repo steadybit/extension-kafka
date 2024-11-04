@@ -15,6 +15,12 @@ import (
 type Specification struct {
 	// variable STEADYBIT_EXTENSION_SEED_BROKERS="localhost:9092"
 	SeedBrokers string `json:"seedBrokers" required:"true" split_words:"true"`
+	// variable STEADYBIT_EXTENSION_SASL_MECHANISM="PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512."
+	SaslMechanism string `json:"saslMechanism" required:"false" split_words:"true"`
+	// variable STEADYBIT_EXTENSION_SASL_USER="USER"
+	SaslUser string `json:"saslUser" required:"false" split_words:"true"`
+	// variable STEADYBIT_EXTENSION_SASL_PASSWORD="PASSWORD"
+	SaslPassword string `json:"saslPassword" required:"false" split_words:"true"`
 	// This is just a sample configuration value. You can remove it. To be set, you would set the environment
 	// variable STEADYBIT_EXTENSION_ROBOT_NAMES="R2-D2,C-3PO".
 	RobotNames []string `json:"robotNames" split_words:"true" required:"true" default:"Bender,Terminator,R2-D2"`

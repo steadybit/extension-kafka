@@ -13,12 +13,10 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
-	"github.com/steadybit/extension-kafka/config"
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"github.com/twmb/franz-go/pkg/kgo"
 	"slices"
 	"time"
 )
@@ -200,19 +198,13 @@ func (m *ConsumerGroupCheckAction) Status(ctx context.Context, state *ConsumerGr
 func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.ClientID("steadybit"),
-	}
-
-	client, err := kgo.NewClient(opts...)
+	client, err := CreateNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-	adminClient := kadm.NewClient(client)
 
-	groups, err := adminClient.DescribeGroups(ctx, state.ConsumerGroupName)
+	groups, err := client.DescribeGroups(ctx, state.ConsumerGroupName)
 	if err != nil {
 		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve consumer groups from Kafka for name %s. Full response: %v", state.ConsumerGroupName, err), err))
 	}

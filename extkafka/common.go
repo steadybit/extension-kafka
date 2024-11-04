@@ -1,10 +1,15 @@
 package extkafka
 
 import (
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
+	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extutil"
+	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/twmb/franz-go/pkg/sasl/plain"
+	"github.com/twmb/franz-go/pkg/sasl/scram"
 	"time"
 )
 
@@ -13,9 +18,7 @@ const (
 	kafkaConsumerTargetId       = "com.steadybit.extension_kafka.consumer"
 	kafkaTopicTargetId          = "com.steadybit.extension_kafka.topic"
 	TargetIDProducePeriodically = "com.steadybit.extension_kafka.produce.periodically"
-	TargetIDConsumePeriodically = "com.steadybit.extension_kafka.consume.periodically"
 	TargetIDProduceFixedAmount  = "com.steadybit.extension_kafka.produce.fixed_amount"
-	TargetIDConsumeFixedAmount  = "com.steadybit.extension_kafka.consume.fixed_amount"
 )
 
 const (
@@ -42,8 +45,6 @@ type KafkaBrokerAttackState struct {
 	RecordHeaders            map[string]string
 	ConsumerGroup            string
 }
-
-var KafkaClient *kgo.Client
 
 var (
 	topic = action_kit_api.ActionParameter{
@@ -119,3 +120,52 @@ var (
 		Order:        extutil.Ptr(9),
 	}
 )
+
+func CreateNewClient() (*kgo.Client, error) {
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(config.Config.SeedBrokers),
+		kgo.DefaultProduceTopic("steadybit"),
+		kgo.ClientID("steadybit"),
+	}
+
+	if config.Config.SaslMechanism != "" {
+		switch saslMechanism := config.Config.SaslMechanism; saslMechanism {
+		case kadm.ScramSha256.String():
+			opts = append(opts, []kgo.Opt{
+				kgo.SASL(scram.Auth{
+					User: config.Config.SaslUser,
+					Pass: config.Config.SaslPassword,
+				}.AsSha256Mechanism()),
+			}...)
+		case kadm.ScramSha512.String():
+			opts = append(opts, []kgo.Opt{
+				kgo.SASL(scram.Auth{
+					User: config.Config.SaslUser,
+					Pass: config.Config.SaslPassword,
+				}.AsSha512Mechanism()),
+			}...)
+		default:
+			opts = append(opts, []kgo.Opt{
+				kgo.SASL(plain.Auth{
+					User: config.Config.SaslUser,
+					Pass: config.Config.SaslPassword,
+				}.AsMechanism()),
+			}...)
+		}
+	}
+
+	client, err := kgo.NewClient(opts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
+	}
+
+	return client, nil
+}
+
+func CreateNewAdminClient() (*kadm.Client, error) {
+	client, err := CreateNewClient()
+	if err != nil {
+		return nil, err
+	}
+	return kadm.NewClient(client), nil
+}

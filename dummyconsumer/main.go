@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/twmb/franz-go/pkg/sasl/plain"
 )
 
 func main() {
@@ -12,8 +14,12 @@ func main() {
 	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
 	cl, err := kgo.NewClient(
 		kgo.SeedBrokers(seeds...),
-		kgo.ConsumerGroup("my-group-identifier"),
+		kgo.ConsumerGroup("dummy"),
 		kgo.ConsumeTopics("steadybit"),
+		kgo.SASL(plain.Auth{
+			User: "consumer",
+			Pass: "consumer-secret",
+		}.AsMechanism()),
 	)
 	if err != nil {
 		panic(err)
@@ -28,7 +34,7 @@ func main() {
 		if errs := fetches.Errors(); len(errs) > 0 {
 			// All errors are retried internally when fetching, but non-retriable errors are
 			// returned from polls so that users can notice and take action.
-			panic(fmt.Sprint(errs))
+			log.Info().Msg(fmt.Sprint(errs))
 		}
 
 		// We can iterate through a record iterator...

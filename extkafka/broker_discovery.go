@@ -12,7 +12,6 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"github.com/twmb/franz-go/pkg/kgo"
 	"time"
 )
 
@@ -112,22 +111,14 @@ func (r *kafkaBrokerDiscovery) DiscoverTargets(ctx context.Context) ([]discovery
 func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	result := make([]discovery_kit_api.Target, 0, 20)
 
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic("steadybit"),
-		kgo.ClientID("steadybit"),
-	}
-
-	client, err := kgo.NewClient(opts...)
+	client, err := CreateNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
 
-	adminClient := kadm.NewClient(client)
-
 	// Create topic "franz-go" if it doesn't exist already
-	brokerDetails, err := adminClient.ListBrokers(ctx)
+	brokerDetails, err := client.ListBrokers(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list topics: %v", err)
 	}

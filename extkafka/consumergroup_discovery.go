@@ -12,7 +12,6 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"github.com/twmb/franz-go/pkg/kgo"
 	"time"
 )
 
@@ -103,25 +102,19 @@ func (r *kafkaConsumerGroupDiscovery) DiscoverTargets(ctx context.Context) ([]di
 func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	result := make([]discovery_kit_api.Target, 0, 20)
 
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.ClientID("steadybit"),
-	}
-
-	client, err := kgo.NewClient(opts...)
+	client, err := CreateNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-	adminClient := kadm.NewClient(client)
 
 	// Create topic "franz-go" if it doesn't exist already
-	groups, err := adminClient.ListGroups(ctx)
+	groups, err := client.ListGroups(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list consumer groups: %v", err)
 	}
 
-	describedGroups, err := adminClient.DescribeGroups(ctx, groups.Groups()...)
+	describedGroups, err := client.DescribeGroups(ctx, groups.Groups()...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to describe consumer groups: %v", err)
 	}

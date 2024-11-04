@@ -26,7 +26,6 @@ import (
 	"github.com/steadybit/extension-kit/extlogging"
 	"github.com/steadybit/extension-kit/extruntime"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"github.com/twmb/franz-go/pkg/kgo"
 	_ "go.uber.org/automaxprocs" // Importing automaxprocs automatically adjusts GOMAXPROCS.
 	_ "net/http/pprof"           //allow pprof
 	"os"
@@ -164,30 +163,23 @@ func getAdviceRefs() []advice_kit_api.DescribingEndpointReference {
 }
 
 func initKafkaClient() {
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic("steadybit"),
-		kgo.ClientID("steadybit"),
-	}
-
-	var err error
-	extkafka.KafkaClient, err = kgo.NewClient(opts...)
+	client, err := extkafka.CreateNewClient()
 	if err != nil {
 		log.Fatal().Err(err).Msgf("Failed to initialize kafka client: %s", err.Error())
 	}
-	defer extkafka.KafkaClient.Close()
+	defer client.Close()
 
-	err = extkafka.KafkaClient.Ping(context.Background())
+	err = client.Ping(context.Background())
 	if err != nil {
 		log.Fatal().Err(err).Msgf("Failed to reach brokers: %s", err.Error())
 	}
 
 	// Create a test topic
 	// Step 2: Create Admin Client for Topic Management
-	admin := kadm.NewClient(extkafka.KafkaClient)
+	admin := kadm.NewClient(client)
 	defer admin.Close()
 
-	// Step 3: Define topic parameters
+	//Step 3: Define topic parameters
 	topicName := "steadybit"
 
 	// Step 4: Create the topic using the Admin client
@@ -205,6 +197,13 @@ func initKafkaClient() {
 			fmt.Printf("Topic %s created successfully\n", res.Topic)
 		}
 	}
+	acl := kadm.NewACLs().
+		ResourcePatternType(kadm.ACLPatternLiteral).
+		Topics("*").
+		Groups("dummy").
+		Operations(kadm.OpRead, kadm.OpWrite, kadm.OpDescribe).
+		Allow("User:consumer")
+	admin.CreateACLs(ctx, acl)
 
 	//// Generate a large payload (e.g., 1 MB)
 	//payload := make([]byte, 0, 1*1024*1024)

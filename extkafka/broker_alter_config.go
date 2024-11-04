@@ -96,7 +96,7 @@ func (k *KafkaBrokerAlterConfigAttack) Describe() action_kit_api.ActionDescripti
 	}
 }
 
-func (k *KafkaBrokerAlterConfigAttack) Prepare(ctx context.Context, state *KafkaAlterConfigState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (k *KafkaBrokerAlterConfigAttack) Prepare(_ context.Context, state *KafkaAlterConfigState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	var err error
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
 	if _, ok := request.Config["brokerConfigs"]; ok {
@@ -112,18 +112,10 @@ func (k *KafkaBrokerAlterConfigAttack) Prepare(ctx context.Context, state *Kafka
 }
 
 func (k *KafkaBrokerAlterConfigAttack) Start(ctx context.Context, state *KafkaAlterConfigState) (*action_kit_api.StartResult, error) {
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic("steadybit"),
-		kgo.ClientID("steadybit"),
-	}
-
-	client, err := kgo.NewClient(opts...)
+	adminClient, err := CreateNewAdminClient()
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
+		return nil, err
 	}
-	defer client.Close()
-	adminClient := kadm.NewClient(client)
 
 	// Get the initial value
 	configs, err := adminClient.DescribeBrokerConfigs(ctx, state.BrokerID)
@@ -146,7 +138,7 @@ func (k *KafkaBrokerAlterConfigAttack) Start(ctx context.Context, state *KafkaAl
 		return nil, err
 	}
 	if state.InitialBrokerConfigValue == "" {
-		log.Warn().Msgf("No initial value found for configuration key: %s, for broker node-id: %s", state.BrokerConfigKey, state.BrokerID)
+		log.Warn().Msgf("No initial value found for configuration key: %s, for broker node-id: %d", state.BrokerConfigKey, state.BrokerID)
 	}
 
 	// If initial value is retrieved without errors, proceed with alter config

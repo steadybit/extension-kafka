@@ -8,11 +8,9 @@ import (
 	"fmt"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
-	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"github.com/twmb/franz-go/pkg/kgo"
 	"strconv"
 )
 
@@ -74,18 +72,11 @@ func (f kafkaBrokerElectNewLeaderAttack) Prepare(_ context.Context, state *Kafka
 }
 
 func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StartResult, error) {
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic("steadybit"),
-		kgo.ClientID("steadybit"),
-	}
-
-	client, err := kgo.NewClient(opts...)
+	client, err := CreateNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-	adminClient := kadm.NewClient(client)
 
 	// Parse partitions
 	partitions, err := sliceAtoi(state.Partitions)
@@ -98,7 +89,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 
 	topicSet.Add(state.Topic, partitions...)
 
-	results, err := adminClient.ElectLeaders(ctx, kadm.ElectPreferredReplica, topicSet)
+	results, err := client.ElectLeaders(ctx, kadm.ElectPreferredReplica, topicSet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to elect new leader for topic %s and partitions %s: %s", state.Topic, state.Partitions, err)
 	}

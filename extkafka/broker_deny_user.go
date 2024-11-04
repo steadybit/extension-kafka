@@ -9,29 +9,27 @@ import (
 	"fmt"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
-	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type KafkaConsumerDenyAccessAttack struct{}
 
-type KafkaDenyHostsState struct {
+type KafkaDenyUserState struct {
 	ConsumerGroup string
 	Topic         string
 	User          string
 }
 
-var _ action_kit_sdk.Action[KafkaDenyHostsState] = (*KafkaConsumerDenyAccessAttack)(nil)
+var _ action_kit_sdk.Action[KafkaDenyUserState] = (*KafkaConsumerDenyAccessAttack)(nil)
 
-func NewKafkaConsumerDenyAccessAttack() action_kit_sdk.Action[KafkaDenyHostsState] {
+func NewKafkaConsumerDenyAccessAttack() action_kit_sdk.Action[KafkaDenyUserState] {
 	return &KafkaConsumerDenyAccessAttack{}
 }
 
-func (k *KafkaConsumerDenyAccessAttack) NewEmptyState() KafkaDenyHostsState {
-	return KafkaDenyHostsState{}
+func (k *KafkaConsumerDenyAccessAttack) NewEmptyState() KafkaDenyUserState {
+	return KafkaDenyUserState{}
 }
 
 func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescription {
@@ -87,7 +85,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 	}
 }
 
-func (k *KafkaConsumerDenyAccessAttack) Prepare(ctx context.Context, state *KafkaDenyHostsState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (k *KafkaConsumerDenyAccessAttack) Prepare(_ context.Context, state *KafkaDenyUserState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	if len(request.Target.Attributes["kafka.consumer-group.name"]) == 0 {
 		return nil, fmt.Errorf("the target is missing the kafka.consumer-group.name attribute")
 	}
@@ -98,28 +96,21 @@ func (k *KafkaConsumerDenyAccessAttack) Prepare(ctx context.Context, state *Kafk
 	return nil, nil
 }
 
-func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaDenyHostsState) (*action_kit_api.StartResult, error) {
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic("steadybit"),
-		kgo.ClientID("steadybit"),
-	}
-
-	client, err := kgo.NewClient(opts...)
+func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaDenyUserState) (*action_kit_api.StartResult, error) {
+	client, err := CreateNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-	adminClient := kadm.NewClient(client)
 
 	acl := kadm.NewACLs().
 		ResourcePatternType(kadm.ACLPatternLiteral).
 		Topics(state.Topic).
 		Groups(state.ConsumerGroup).
 		Operations(kadm.OpRead, kadm.OpWrite, kadm.OpDescribe).
-		Deny(state.User)
+		Deny("User:" + state.User).DenyHosts()
 
-	results, err := adminClient.CreateACLs(ctx, acl)
+	results, err := client.CreateACLs(ctx, acl)
 	if err != nil {
 		return nil, err
 	}
@@ -143,28 +134,21 @@ func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaD
 
 }
 
-func (k *KafkaConsumerDenyAccessAttack) Stop(ctx context.Context, state *KafkaDenyHostsState) (*action_kit_api.StopResult, error) {
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic("steadybit"),
-		kgo.ClientID("steadybit"),
-	}
-
-	client, err := kgo.NewClient(opts...)
+func (k *KafkaConsumerDenyAccessAttack) Stop(ctx context.Context, state *KafkaDenyUserState) (*action_kit_api.StopResult, error) {
+	client, err := CreateNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
-	adminClient := kadm.NewClient(client)
 
 	acl := kadm.NewACLs().
 		ResourcePatternType(kadm.ACLPatternLiteral).
 		Topics(state.Topic).
 		Groups(state.ConsumerGroup).
 		Operations(kadm.OpRead, kadm.OpWrite, kadm.OpDescribe).
-		Deny(state.User)
+		Deny("User:" + state.User).DenyHosts()
 
-	results, err := adminClient.DeleteACLs(ctx, acl)
+	results, err := client.DeleteACLs(ctx, acl)
 	if err != nil {
 		return nil, err
 	}

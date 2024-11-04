@@ -10,7 +10,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
-	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"sync"
@@ -109,12 +108,7 @@ func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 }
 
 func requestProducerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic(state.Topic),
-		kgo.ClientID("steadybit"),
-	}
-	client, err := kgo.NewClient(opts...)
+	client, err := CreateNewClient()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create client")
 	}
