@@ -95,6 +95,7 @@ func (k *DeleteRecordsAttack) Start(ctx context.Context, state *DeleteRecordsSta
 	if err != nil {
 		return nil, err
 	}
+	defer adminClient.Close()
 
 	// Get Current offset
 	endOffsets, err := adminClient.ListEndOffsets(ctx, state.TopicName)

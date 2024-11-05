@@ -136,7 +136,6 @@ var (
 func createNewClient() (*kgo.Client, error) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(config.Config.SeedBrokers),
-		kgo.DefaultProduceTopic("steadybit"),
 		kgo.ClientID("steadybit"),
 	}
 
