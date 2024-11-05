@@ -216,6 +216,9 @@ func saveConfig(ctx context.Context, configName string, brokerID int32) (string,
 
 func alterConfig(ctx context.Context, configName string, configValue string, brokerID int32) error {
 	adminClient, err := createNewAdminClient()
+	if err != nil {
+		return err
+	}
 	defer adminClient.Close()
 
 	responses, err := adminClient.AlterBrokerConfigs(ctx, []kadm.AlterConfig{{Name: configName, Value: extutil.Ptr(configValue)}}, brokerID)

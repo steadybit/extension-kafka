@@ -224,7 +224,7 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 			}
 
 			// Completed
-			statusResult, errStatus = action.Status(context.TODO(), &state)
+			_, errStatus = action.Status(context.TODO(), &state)
 			//Then
 			if tt.wantedState != nil {
 				assert.NoError(t, errPrepare)
