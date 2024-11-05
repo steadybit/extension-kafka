@@ -96,7 +96,7 @@ func (k *KafkaConsumerDenyAccessAttack) Prepare(_ context.Context, state *KafkaD
 }
 
 func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaDenyUserState) (*action_kit_api.StartResult, error) {
-	client, err := CreateNewAdminClient()
+	client, err := createNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
@@ -134,7 +134,7 @@ func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaD
 }
 
 func (k *KafkaConsumerDenyAccessAttack) Stop(ctx context.Context, state *KafkaDenyUserState) (*action_kit_api.StopResult, error) {
-	client, err := CreateNewAdminClient()
+	client, err := createNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

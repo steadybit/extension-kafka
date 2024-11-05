@@ -1,8 +1,11 @@
 package extkafka
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extutil"
@@ -10,6 +13,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
+	"strconv"
 	"time"
 )
 
@@ -121,7 +125,7 @@ var (
 	}
 )
 
-func CreateNewClient() (*kgo.Client, error) {
+func createNewClient() (*kgo.Client, error) {
 	opts := []kgo.Opt{
 		kgo.SeedBrokers(config.Config.SeedBrokers),
 		kgo.DefaultProduceTopic("steadybit"),
@@ -162,10 +166,64 @@ func CreateNewClient() (*kgo.Client, error) {
 	return client, nil
 }
 
-func CreateNewAdminClient() (*kadm.Client, error) {
-	client, err := CreateNewClient()
+func createNewAdminClient() (*kadm.Client, error) {
+	client, err := createNewClient()
 	if err != nil {
 		return nil, err
 	}
 	return kadm.NewClient(client), nil
+}
+
+func saveConfig(ctx context.Context, configName string, brokerID int32) (string, error) {
+	var initialValue string
+	adminClient, err := createNewAdminClient()
+	if err != nil {
+		return "", err
+	}
+	// Get the initial value
+	configs, err := adminClient.DescribeBrokerConfigs(ctx, brokerID)
+	if err != nil {
+		return "", err
+	}
+	_, err = configs.On(strconv.FormatInt(int64(brokerID), 10), func(resourceConfig *kadm.ResourceConfig) error {
+
+		for i := range resourceConfig.Configs {
+			if resourceConfig.Configs[i].Key == configName {
+				initialValue = resourceConfig.Configs[i].MaybeValue()
+				// Found!
+				break
+			}
+		}
+
+		return err
+	})
+	if err != nil {
+		return "", err
+	}
+	if initialValue == "" {
+		log.Warn().Msgf("No initial value found for configuration key: "+configName+", for broker node-id: %d", brokerID)
+	}
+
+	return initialValue, nil
+}
+
+func alterConfig(ctx context.Context, configName string, configValue string, brokerID int32) error {
+	adminClient, err := createNewAdminClient()
+	defer adminClient.Close()
+
+	responses, err := adminClient.AlterBrokerConfigs(ctx, []kadm.AlterConfig{{Name: configName, Value: extutil.Ptr(configValue)}}, brokerID)
+	if err != nil {
+		return err
+	}
+	var errs []error
+	for _, response := range responses {
+		if response.Err != nil {
+			detailedError := errors.New(response.Err.Error() + " Response from Broker: " + response.ErrMessage)
+			errs = append(errs, detailedError)
+		}
+	}
+	if len(errs) > 0 {
+		return errors.Join(errs...)
+	}
+	return nil
 }

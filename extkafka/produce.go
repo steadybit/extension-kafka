@@ -108,7 +108,7 @@ func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 }
 
 func requestProducerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
-	client, err := CreateNewClient()
+	client, err := createNewClient()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create client")
 	}

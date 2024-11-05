@@ -91,7 +91,7 @@ func (k *DeleteRecordsAttack) Prepare(_ context.Context, state *DeleteRecordsSta
 func (k *DeleteRecordsAttack) Start(ctx context.Context, state *DeleteRecordsState) (*action_kit_api.StartResult, error) {
 	var errs []error
 
-	adminClient, err := CreateNewAdminClient()
+	adminClient, err := createNewAdminClient()
 	if err != nil {
 		return nil, err
 	}

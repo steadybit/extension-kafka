@@ -6,7 +6,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	_ "github.com/KimMachineGun/automemlimit" // By default, it sets `GOMEMLIMIT` to 90% of cgroup's memory limit.
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -24,6 +23,9 @@ import (
 	"github.com/steadybit/extension-kit/extlogging"
 	"github.com/steadybit/extension-kit/extruntime"
 	"github.com/twmb/franz-go/pkg/kadm"
+	"github.com/twmb/franz-go/pkg/kgo"
+	"github.com/twmb/franz-go/pkg/sasl/plain"
+	"github.com/twmb/franz-go/pkg/sasl/scram"
 	_ "go.uber.org/automaxprocs" // Importing automaxprocs automatically adjusts GOMAXPROCS.
 	_ "net/http/pprof"           //allow pprof
 	"os"
@@ -50,7 +52,7 @@ func main() {
 	// configuration obtained from environment variables.
 	config.ParseConfiguration()
 	config.ValidateConfiguration()
-	initKafkaClient()
+	testBrokerConnection()
 
 	//This will start /health/liveness and /health/readiness endpoints on port 8081 for use with kubernetes
 	//The port can be configured using the STEADYBIT_EXTENSION_HEALTH_PORT environment variable
@@ -102,6 +104,7 @@ func registerHandlers(ctx context.Context) {
 	action_kit_sdk.RegisterAction(extkafka.NewAlterMaxMessageBytesAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewAlterNumberIOThreadsAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewAlterNumberNetworkThreadsAttack())
+	action_kit_sdk.RegisterAction(extkafka.NewAlterLimitConnectionCreateRateAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewKafkaConsumerDenyAccessAttack())
 
 	exthttp.RegisterHttpHandler("/", exthttp.GetterAsHandler(getExtensionList))
@@ -138,10 +141,42 @@ func getExtensionList() ExtensionListResponse {
 	}
 }
 
-func initKafkaClient() {
-	client, err := extkafka.CreateNewClient()
+func testBrokerConnection() {
+	opts := []kgo.Opt{
+		kgo.SeedBrokers(config.Config.SeedBrokers),
+		kgo.DefaultProduceTopic("steadybit"),
+		kgo.ClientID("steadybit"),
+	}
+
+	if config.Config.SaslMechanism != "" {
+		switch saslMechanism := config.Config.SaslMechanism; saslMechanism {
+		case kadm.ScramSha256.String():
+			opts = append(opts, []kgo.Opt{
+				kgo.SASL(scram.Auth{
+					User: config.Config.SaslUser,
+					Pass: config.Config.SaslPassword,
+				}.AsSha256Mechanism()),
+			}...)
+		case kadm.ScramSha512.String():
+			opts = append(opts, []kgo.Opt{
+				kgo.SASL(scram.Auth{
+					User: config.Config.SaslUser,
+					Pass: config.Config.SaslPassword,
+				}.AsSha512Mechanism()),
+			}...)
+		default:
+			opts = append(opts, []kgo.Opt{
+				kgo.SASL(plain.Auth{
+					User: config.Config.SaslUser,
+					Pass: config.Config.SaslPassword,
+				}.AsMechanism()),
+			}...)
+		}
+	}
+
+	client, err := kgo.NewClient(opts...)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("Failed to initialize kafka client: %s", err.Error())
+		log.Fatal().Err(err).Msgf("failed to initialize kafka client: %s", err.Error())
 	}
 	defer client.Close()
 
@@ -149,51 +184,41 @@ func initKafkaClient() {
 	if err != nil {
 		log.Fatal().Err(err).Msgf("Failed to reach brokers: %s", err.Error())
 	}
-
-	// Create a test topic
-	// Step 2: Create Admin Client for Topic Management
-	admin := kadm.NewClient(client)
-	defer admin.Close()
-
-	//Step 3: Define topic parameters
-	topicName := "steadybit"
-
-	// Step 4: Create the topic using the Admin client
-	ctx := context.Background()
-	result, err := admin.CreateTopics(ctx, -1, -1, nil, topicName)
-	if err != nil {
-		log.Fatal().Err(err).Msgf("Failed to create topic: %v", err)
-	}
-
-	// Step 5: Check the result of the topic creation
-	for _, res := range result {
-		if res.Err != nil {
-			fmt.Printf("Failed to create topic %s: %v\n", res.Topic, res.Err)
-		} else {
-			fmt.Printf("Topic %s created successfully\n", res.Topic)
-		}
-	}
-	acl := kadm.NewACLs().
-		ResourcePatternType(kadm.ACLPatternLiteral).
-		Topics("*").
-		Groups("dummy").
-		Operations(kadm.OpRead, kadm.OpWrite, kadm.OpDescribe).
-		Allow("User:consumer")
-	admin.CreateACLs(ctx, acl)
-
-	//// Generate a large payload (e.g., 1 MB)
-	//payload := make([]byte, 0, 1*1024*1024)
-	//_, err = rand.Read(payload)
-	//if err != nil {
-	//	log.Fatal().Err(err).Msgf("Failed to produce records: %s", err.Error())
-	//}
-	//
-	//record := &kgo.Record{
-	//	Topic: "steadybit",
-	//	Value: payload,
-	//}
-	//results := extkafka.KafkaClient.ProduceSync(context.TODO(), record)
-	//if results.FirstErr() != nil {
-	//	log.Fatal().Err(err).Msgf("Failed to produce records: %s", results.FirstErr())
-	//}
+	//initTestData(client)
 }
+
+//func initTestData(client *kgo.Client) {
+//	admin := kadm.NewClient(client)
+//	defer admin.Close()
+//
+//	//Step 3: Define topic parameters
+//	topicName := "steadybit"
+//
+//	// Step 4: Create the topic using the Admin client
+//	ctx := context.Background()
+//	result, err := admin.CreateTopics(ctx, -1, -1, nil, topicName)
+//	if err != nil {
+//		log.Fatal().Err(err).Msgf("Failed to create topic: %v", err)
+//	}
+//
+//	// Step 5: Check the result of the topic creation
+//	for _, res := range result {
+//		if res.Err != nil {
+//			fmt.Printf("Failed to create topic %s: %v\n", res.Topic, res.Err)
+//		} else {
+//			fmt.Printf("Topic %s created successfully\n", res.Topic)
+//		}
+//	}
+//
+//	// Create ACL for dummy client
+//	acl := kadm.NewACLs().
+//		ResourcePatternType(kadm.ACLPatternLiteral).
+//		Topics("*").
+//		Groups("dummy").
+//		Operations(kadm.OpRead, kadm.OpWrite, kadm.OpDescribe).
+//		Allow("User:consumer")
+//	_, err = admin.CreateACLs(ctx, acl)
+//	if err != nil {
+//		return
+//	}
+//}

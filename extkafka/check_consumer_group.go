@@ -198,7 +198,7 @@ func (m *ConsumerGroupCheckAction) Status(ctx context.Context, state *ConsumerGr
 func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
-	client, err := CreateNewAdminClient()
+	client, err := createNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

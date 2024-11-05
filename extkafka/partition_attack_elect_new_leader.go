@@ -72,7 +72,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Prepare(_ context.Context, state *Kafka
 }
 
 func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StartResult, error) {
-	client, err := CreateNewAdminClient()
+	client, err := createNewAdminClient()
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
