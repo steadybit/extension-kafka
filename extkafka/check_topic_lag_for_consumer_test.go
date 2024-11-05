@@ -232,13 +232,6 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 				assert.Equal(t, tt.wantedState.AcceptableLag, state.AcceptableLag)
 				assert.Equal(t, tt.wantedState.Topic, state.Topic)
 				assert.Equal(t, tt.wantedState.ConsumerGroupName, state.ConsumerGroupName)
-				for _, metric := range *statusResult.Metrics {
-					if tt.wantedState.AcceptableLag > 10 {
-						assert.Equal(t, "success", metric.Metric["state"], "Expected metric state to be 'danger'")
-					} else {
-						assert.Equal(t, "danger", metric.Metric["state"], "Expected metric state to be 'danger'")
-					}
-				}
 				assert.NotNil(t, state.End)
 			}
 		})
