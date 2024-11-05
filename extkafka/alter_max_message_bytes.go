@@ -55,14 +55,7 @@ func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
-			{
-				Label:        "Duration",
-				Description:  extutil.Ptr("The duration of the action. The broker configuration will be reverted at the end of the action."),
-				Name:         "duration",
-				Type:         action_kit_api.Duration,
-				DefaultValue: extutil.Ptr("60s"),
-				Required:     extutil.Ptr(true),
-			},
+			durationAlter,
 			{
 				Label:        "Max bytes per message",
 				Description:  extutil.Ptr("Set a very low max bytes per message to simulate message size rejections."),

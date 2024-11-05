@@ -55,14 +55,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
-			{
-				Label:        "Duration",
-				Description:  extutil.Ptr("The duration of the action. The broker configuration will be reverted at the end of the action."),
-				Name:         "duration",
-				Type:         action_kit_api.Duration,
-				DefaultValue: extutil.Ptr("60s"),
-				Required:     extutil.Ptr(true),
-			},
+			durationAlter,
 			{
 				Label:        "Connection creation rate",
 				Description:  extutil.Ptr("Limit the connection creation rate to simulate slow acceptance of new connections."),

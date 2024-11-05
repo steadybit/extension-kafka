@@ -55,14 +55,7 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
-			{
-				Label:        "Duration",
-				Description:  extutil.Ptr("The duration of the action. The broker configuration will be reverted at the end of the action."),
-				Name:         "duration",
-				Type:         action_kit_api.Duration,
-				DefaultValue: extutil.Ptr("60s"),
-				Required:     extutil.Ptr(true),
-			},
+			durationAlter,
 			{
 				Label:        "Number of IO Threads",
 				Description:  extutil.Ptr("Reduce the number of I/O threads to limit the broker’s capacity to perform disk operations, potentially causing increased latency or request timeouts."),
@@ -77,7 +70,7 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 
 func (k *AlterNumberIOThreadsAttack) Prepare(_ context.Context, state *AlterNumberIOThreadsState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
-	state.BrokerConfigValue = extutil.ToString(request.Config["max_bytes"])
+	state.BrokerConfigValue = extutil.ToString(request.Config["io_threads"])
 
 	return nil, nil
 }
