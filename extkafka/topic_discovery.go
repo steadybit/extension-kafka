@@ -51,9 +51,7 @@ func (r *kafkaTopicDiscovery) DescribeTarget() discovery_kit_api.TargetDescripti
 		Table: discovery_kit_api.Table{
 			Columns: []discovery_kit_api.Column{
 				{Attribute: "steadybit.label"},
-				{Attribute: "kafka.topic.id"},
 				{Attribute: "kafka.topic.name"},
-				{Attribute: "kafka.topic.internal"},
 				{Attribute: "kafka.topic.partitions"},
 				{Attribute: "kafka.topic.replication-factor"},
 			},
@@ -70,12 +68,6 @@ func (r *kafkaTopicDiscovery) DescribeTarget() discovery_kit_api.TargetDescripti
 func (r *kafkaTopicDiscovery) DescribeAttributes() []discovery_kit_api.AttributeDescription {
 	return []discovery_kit_api.AttributeDescription{
 		{
-			Attribute: "kafka.topic.id",
-			Label: discovery_kit_api.PluralLabel{
-				One:   "Kafka topic id",
-				Other: "Kafka topic ids",
-			},
-		}, {
 			Attribute: "kafka.topic.name",
 			Label: discovery_kit_api.PluralLabel{
 				One:   "Kafka topic name",
@@ -118,8 +110,10 @@ func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
 		return nil, fmt.Errorf("failed to list topics: %v", err)
 	}
 
-	for _, topic := range topicDetails {
-		result = append(result, toTopicTarget(topic))
+	for _, t := range topicDetails {
+		if !t.IsInternal {
+			result = append(result, toTopicTarget(t))
+		}
 	}
 
 	return result, nil
@@ -127,7 +121,6 @@ func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
 
 func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 	label := topic.Topic
-	id := fmt.Sprintf("%v", topic.ID)
 
 	partitions := make([]string, len(topic.Partitions))
 
@@ -137,12 +130,11 @@ func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 
 	attributes := make(map[string][]string)
 	attributes["kafka.topic.name"] = []string{topic.Topic}
-	attributes["kafka.topic.id"] = []string{fmt.Sprintf("%v", topic.ID)}
 	attributes["kafka.topic.partitions"] = partitions
 	attributes["kafka.topic.replication-factor"] = []string{fmt.Sprintf("%v", topic.Partitions.NumReplicas())}
 
 	return discovery_kit_api.Target{
-		Id:         id,
+		Id:         label,
 		Label:      label,
 		TargetType: kafkaTopicTargetId,
 		Attributes: attributes,

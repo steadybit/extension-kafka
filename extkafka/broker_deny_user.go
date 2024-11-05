@@ -79,7 +79,6 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 						Attribute: "kafka.consumer-group.topics",
 					},
 				}),
-				Order: extutil.Ptr(2),
 			},
 		},
 	}

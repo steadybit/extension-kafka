@@ -41,7 +41,7 @@ func main() {
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			record := iter.Next()
-			fmt.Println(string(record.Value), "from an iterator!")
+			fmt.Printf("%s from an iterator! Offset: %d\n", record.Value, record.Offset)
 		}
 
 	}
