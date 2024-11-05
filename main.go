@@ -17,8 +17,6 @@ import (
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
 	"github.com/steadybit/event-kit/go/event_kit_api"
 	"github.com/steadybit/extension-kafka/config"
-	"github.com/steadybit/extension-kafka/extadvice/robot_maintenance"
-	"github.com/steadybit/extension-kafka/extevents"
 	"github.com/steadybit/extension-kafka/extkafka"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/exthealth"
@@ -137,32 +135,7 @@ func getExtensionList() ExtensionListResponse {
 		// See this document to learn more about the discovery list:
 		// https://github.com/steadybit/discovery-kit/blob/main/docs/discovery-api.md#index-response
 		DiscoveryList: discovery_kit_sdk.GetDiscoveryList(),
-
-		// See this document to learn more about the event listener list:
-		// https://github.com/steadybit/event-kit/blob/main/docs/event-api.md#event-listeners-list
-		EventListenerList: extevents.GetEventListenerList(),
-
-		// See this document to learn more about the advice list:
-		// https://github.com/steadybit/advice-kit/blob/main/docs/advice-api.md#index-response
-		AdviceList: advice_kit_api.AdviceList{
-			Advice: getAdviceRefs(),
-		},
 	}
-}
-
-func getAdviceRefs() []advice_kit_api.DescribingEndpointReference {
-	var refs []advice_kit_api.DescribingEndpointReference
-	refs = make([]advice_kit_api.DescribingEndpointReference, 0)
-	for _, adviceId := range config.Config.ActiveAdviceList {
-		// Maintenance advice
-		if adviceId == "*" || adviceId == robot_maintenance.RobotMaintenanceID {
-			refs = append(refs, advice_kit_api.DescribingEndpointReference{
-				Method: "GET",
-				Path:   "/advice/robot-maintenance",
-			})
-		}
-	}
-	return refs
 }
 
 func initKafkaClient() {

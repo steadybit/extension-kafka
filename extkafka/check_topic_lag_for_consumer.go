@@ -17,6 +17,7 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
+	"strconv"
 	"time"
 )
 
@@ -99,26 +100,47 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 			},
 		},
 		Widgets: extutil.Ptr([]action_kit_api.Widget{
-			action_kit_api.StateOverTimeWidget{
-				Type:  action_kit_api.ComSteadybitWidgetStateOverTime,
-				Title: "Consumer Group Topic Lag",
-				Identity: action_kit_api.StateOverTimeWidgetIdentityConfig{
-					From: "kafka.consumer-group.name",
+			action_kit_api.LineChartWidget{
+				Type:  action_kit_api.ComSteadybitWidgetLineChart,
+				Title: "Consumer Group Lag",
+				Identity: action_kit_api.LineChartWidgetIdentityConfig{
+					MetricName: "kafka_consumer_group_lag",
+					From:       "id",
+					Mode:       action_kit_api.ComSteadybitWidgetLineChartIdentityModeSelect,
 				},
-				Label: action_kit_api.StateOverTimeWidgetLabelConfig{
-					From: "kafka.consumer-group.name",
-				},
-				State: action_kit_api.StateOverTimeWidgetStateConfig{
-					From: "state",
-				},
-				Tooltip: action_kit_api.StateOverTimeWidgetTooltipConfig{
-					From: "tooltip",
-				},
-				Url: extutil.Ptr(action_kit_api.StateOverTimeWidgetUrlConfig{
-					From: extutil.Ptr("url"),
+				Grouping: extutil.Ptr(action_kit_api.LineChartWidgetGroupingConfig{
+					ShowSummary: extutil.Ptr(true),
+					Groups: []action_kit_api.LineChartWidgetGroup{
+						{
+							Title: "Under Acceptable Lag",
+							Color: "success",
+							Matcher: action_kit_api.LineChartWidgetGroupMatcherFallback{
+								Type: action_kit_api.ComSteadybitWidgetLineChartGroupMatcherFallback,
+							},
+						},
+						{
+							Title: "Lag Constraint Violated",
+							Color: "warn",
+							Matcher: action_kit_api.LineChartWidgetGroupMatcherKeyEqualsValue{
+								Type:  action_kit_api.ComSteadybitWidgetLineChartGroupMatcherKeyEqualsValue,
+								Key:   "lag_constraints_fulfilled",
+								Value: "false",
+							},
+						},
+					},
 				}),
-				Value: extutil.Ptr(action_kit_api.StateOverTimeWidgetValueConfig{
-					Hide: extutil.Ptr(true),
+				Tooltip: extutil.Ptr(action_kit_api.LineChartWidgetTooltipConfig{
+					MetricValueTitle: extutil.Ptr("Lag"),
+					AdditionalContent: []action_kit_api.LineChartWidgetTooltipContent{
+						{
+							From:  "consumer",
+							Title: "Consumer",
+						},
+						{
+							From:  "topic",
+							Title: "Topic",
+						},
+					},
 				}),
 			},
 		}),
@@ -209,27 +231,15 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 }
 
 func toMetric(topicLag int64, stateGroupLag *ConsumerGroupLagCheckState, now time.Time) *action_kit_api.Metric {
-	var tooltip string
-	var state string
-
-	if topicLag > stateGroupLag.AcceptableLag {
-		state = "danger"
-	} else {
-		state = "success"
-	}
-
-	tooltip = fmt.Sprintf("consumer %s lag for topic %s is %d", stateGroupLag.ConsumerGroupName, stateGroupLag.Topic, topicLag)
-
 	return extutil.Ptr(action_kit_api.Metric{
-		Name: extutil.Ptr("kafka_consumer_group_state"),
+		Name: extutil.Ptr("kafka_consumer_group_lag"),
 		Metric: map[string]string{
-			"kafka.topic.name":          stateGroupLag.Topic,
-			"kafka.consumer-group.name": stateGroupLag.ConsumerGroupName,
-			"url":                       "",
-			"state":                     state,
-			"tooltip":                   tooltip,
+			"lag_constraints_fulfilled": strconv.FormatBool(topicLag < stateGroupLag.AcceptableLag),
+			"consumer":                  stateGroupLag.ConsumerGroupName,
+			"topic":                     stateGroupLag.Topic,
+			"id":                        stateGroupLag.ConsumerGroupName + "-" + stateGroupLag.Topic,
 		},
 		Timestamp: now,
-		Value:     0,
+		Value:     float64(topicLag),
 	})
 }
