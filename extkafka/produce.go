@@ -97,6 +97,7 @@ func saveExecutionRunData(executionID uuid.UUID, executionRunData *ExecutionRunD
 
 func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 	record := kgo.KeyStringRecord(state.RecordKey, state.RecordValue)
+	record.Topic = state.Topic
 
 	if state.RecordHeaders != nil {
 		for k, v := range state.RecordHeaders {
