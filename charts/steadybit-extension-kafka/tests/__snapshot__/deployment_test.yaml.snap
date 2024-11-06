@@ -28,6 +28,14 @@ manifest should match snapshot using podAnnotations and Labels:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -38,7 +46,7 @@ manifest should match snapshot using podAnnotations and Labels:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -48,7 +56,7 @@ manifest should match snapshot using podAnnotations and Labels:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -100,6 +108,14 @@ manifest should match snapshot with TLS:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -114,7 +130,7 @@ manifest should match snapshot with TLS:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -124,7 +140,7 @@ manifest should match snapshot with TLS:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -183,6 +199,14 @@ manifest should match snapshot with extra env vars:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -200,7 +224,7 @@ manifest should match snapshot with extra env vars:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -210,7 +234,7 @@ manifest should match snapshot with extra env vars:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -264,6 +288,14 @@ manifest should match snapshot with extra labels:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -274,7 +306,7 @@ manifest should match snapshot with extra labels:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -284,7 +316,7 @@ manifest should match snapshot with extra labels:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -336,6 +368,14 @@ manifest should match snapshot with mutual TLS:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -352,7 +392,7 @@ manifest should match snapshot with mutual TLS:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -362,7 +402,7 @@ manifest should match snapshot with mutual TLS:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -428,6 +468,14 @@ manifest should match snapshot with mutual TLS using containerPaths:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -444,7 +492,7 @@ manifest should match snapshot with mutual TLS using containerPaths:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -454,7 +502,7 @@ manifest should match snapshot with mutual TLS using containerPaths:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -506,6 +554,14 @@ manifest should match snapshot with podSecurityContext:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -516,7 +572,7 @@ manifest should match snapshot with podSecurityContext:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -526,7 +582,7 @@ manifest should match snapshot with podSecurityContext:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -580,6 +636,14 @@ manifest should match snapshot with priority class:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -590,7 +654,7 @@ manifest should match snapshot with priority class:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -600,7 +664,7 @@ manifest should match snapshot with priority class:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -653,6 +717,14 @@ manifest should match snapshot without TLS:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_SEED_BROKERS
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_USER
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_PASSWORD
+                  value: null
+                - name: STEADYBIT_EXTENSION_SASL_MECHANISM
+                  value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -663,7 +735,7 @@ manifest should match snapshot without TLS:
                 failureThreshold: 5
                 httpGet:
                   path: /health/liveness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
@@ -673,7 +745,7 @@ manifest should match snapshot without TLS:
                 failureThreshold: 3
                 httpGet:
                   path: /health/readiness
-                  port: 8081
+                  port: 8084
                 initialDelaySeconds: 10
                 periodSeconds: 10
                 successThreshold: 1
