@@ -51,22 +51,6 @@ func TestWithMinikube(t *testing.T) {
 			Name: "validate Actions",
 			Test: validateActions,
 		},
-		//{
-		//	Name: "alert rule check meets expectations",
-		//	Test: testAlertRuleCheckNormal(server, "normal", "normal", ""),
-		//},
-		//{
-		//	Name: "alert rule check fails expectations",
-		//	Test: testAlertRuleCheckFiring(server, "firing", "firing", ""),
-		//},
-		//{
-		//	Name: "alert rule check fails expectations",
-		//	Test: testAlertRuleCheckInactive(server, "inactive", "inactive", ""),
-		//},
-		//{
-		//	Name: "alert rule check errors",
-		//	Test: testAlertRuleCheck(server, "STATUS-500", "", action_kit_api.Failed),
-		//},
 	})
 }
 
