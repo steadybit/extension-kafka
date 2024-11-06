@@ -86,6 +86,7 @@ func helmInstallLocalStack(minikube *e2e.Minikube) error {
 		"--kube-context", minikube.Profile,
 		"--set", "sasl.client.passwords=steadybit",
 		"--namespace=default",
+		"--timeout=10m0s",
 		"my-kafka", "bitnami/kafka ", "--wait").CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to install helm chart: %s: %s", err, out)
