@@ -120,7 +120,7 @@ func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	// Create topic "franz-go" if it doesn't exist already
 	brokerDetails, err := client.ListBrokers(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list topics: %v", err)
+		return nil, fmt.Errorf("failed to list brokers: %v", err)
 	}
 	for _, broker := range brokerDetails {
 		result = append(result, toBrokerTarget(broker))

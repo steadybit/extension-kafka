@@ -30,6 +30,7 @@ import (
 	_ "net/http/pprof"           //allow pprof
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -57,7 +58,7 @@ func main() {
 	//This will start /health/liveness and /health/readiness endpoints on port 8081 for use with kubernetes
 	//The port can be configured using the STEADYBIT_EXTENSION_HEALTH_PORT environment variable
 	exthealth.SetReady(false)
-	exthealth.StartProbes(8081)
+	exthealth.StartProbes(8084)
 
 	ctx, cancel := SignalCanceledContext()
 
@@ -78,7 +79,7 @@ func main() {
 		// The port can be configured externally through the
 		// STEADYBIT_EXTENSION_PORT environment variable.
 		// We suggest that you keep port 8080 as the default.
-		Port: 8080,
+		Port: 8083,
 	})
 }
 
@@ -143,7 +144,7 @@ func getExtensionList() ExtensionListResponse {
 
 func testBrokerConnection() {
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
+		kgo.SeedBrokers(strings.Split(config.Config.SeedBrokers, ",")...),
 		kgo.DefaultProduceTopic("steadybit"),
 		kgo.ClientID("steadybit"),
 	}
@@ -184,6 +185,7 @@ func testBrokerConnection() {
 	if err != nil {
 		log.Fatal().Err(err).Msgf("Failed to reach brokers: %s", err.Error())
 	}
+	log.Info().Msg("Successfully reached the brokers.")
 	//initTestData(client)
 }
 

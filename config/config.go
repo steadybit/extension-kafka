@@ -20,17 +20,10 @@ type Specification struct {
 	// variable STEADYBIT_EXTENSION_SASL_USER="USER"
 	SaslUser string `json:"saslUser" required:"false" split_words:"true"`
 	// variable STEADYBIT_EXTENSION_SASL_PASSWORD="PASSWORD"
-	SaslPassword string `json:"saslPassword" required:"false" split_words:"true"`
-	// This is just a sample configuration value. You can remove it. To be set, you would set the environment
-	// variable STEADYBIT_EXTENSION_ROBOT_NAMES="R2-D2,C-3PO".
-	RobotNames []string `json:"robotNames" split_words:"true" required:"true" default:"Bender,Terminator,R2-D2"`
-	// variable STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_ROBOT="robot.label.a,robot.tags.*".
-	DiscoveryAttributesExcludesRobot []string `json:"discoveryAttributesExcludesRobot" split_words:"true" required:"false"`
-	// variable STEADYBIT_EXTENSION_ACTIVE_ADVICE_LIST="robot_maintenance". To activate all advice, set the value to "*". To exclude some advice, set the value to e.g. "com.steadybit.extension_scaffold.advice.robot-maintenance".
-	ActiveAdviceList               []string `required:"false" split_words:"true" default:"*"`
-	DiscoveryIntervalConsumerGroup int      `json:"discoveryIntervalKafkaConsumerGroup" split_words:"true" required:"false" default:"30"`
-	DiscoveryIntervalKafkaBroker   int      `json:"discoveryIntervalKafkaBroker" split_words:"true" required:"false" default:"30"`
-	DiscoveryIntervalKafkaTopic    int      `json:"discoveryIntervalKafkaTopic" split_words:"true" required:"false" default:"30"`
+	SaslPassword                   string `json:"saslPassword" required:"false" split_words:"true"`
+	DiscoveryIntervalConsumerGroup int    `json:"discoveryIntervalKafkaConsumerGroup" split_words:"true" required:"false" default:"30"`
+	DiscoveryIntervalKafkaBroker   int    `json:"discoveryIntervalKafkaBroker" split_words:"true" required:"false" default:"30"`
+	DiscoveryIntervalKafkaTopic    int    `json:"discoveryIntervalKafkaTopic" split_words:"true" required:"false" default:"30"`
 }
 
 var (

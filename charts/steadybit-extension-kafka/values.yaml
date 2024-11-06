@@ -10,6 +10,14 @@ image:
   # image.pullPolicy -- Specifies when to pull the image container.
   pullPolicy: IfNotPresent
 
+kafka:
+  seedBrokers: ""
+  auth:
+    saslMechanism: ""
+    saslUser: ""
+    saslPassword: ""
+    existingSecret: null
+
 tls:
   server:
     certificate:

@@ -5,6 +5,7 @@ package extkafka
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
@@ -108,18 +109,15 @@ func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, erro
 	}
 	defer client.Close()
 
-	// Create topic "franz-go" if it doesn't exist already
-	groups, err := client.ListGroups(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to list consumer groups: %v", err)
-	}
-
-	describedGroups, err := client.DescribeGroups(ctx, groups.Groups()...)
-	if err != nil {
+	var seList *kadm.ShardErrors
+	describedGroups, err := client.DescribeGroups(ctx)
+	switch {
+	case err == nil:
+	case errors.As(err, &seList):
+	default:
 		return nil, fmt.Errorf("failed to describe consumer groups: %v", err)
 	}
 	for _, group := range describedGroups.Sorted() {
-
 		result = append(result, toConsumerGroupTarget(group))
 	}
 

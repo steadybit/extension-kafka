@@ -14,6 +14,7 @@ import (
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -135,7 +136,7 @@ var (
 
 func createNewClient() (*kgo.Client, error) {
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(config.Config.SeedBrokers),
+		kgo.SeedBrokers(strings.Split(config.Config.SeedBrokers, ",")...),
 		kgo.ClientID("steadybit"),
 	}
 
