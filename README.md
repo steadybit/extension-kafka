@@ -44,7 +44,7 @@ docker run \
 ### Using Helm in Kubernetes
 
 ```sh
-helm repo add steadybit-extension-grafana https://steadybit.github.io/extension-kafka
+helm repo add steadybit-extension-kafka https://steadybit.github.io/extension-kafka
 helm repo update
 helm upgrade steadybit-extension-kafka \
     --install \
@@ -53,7 +53,7 @@ helm upgrade steadybit-extension-kafka \
     --create-namespace \
     --namespace steadybit-agent \
     --set kafka.seedBrokers="localhost:9092" \
-    steadybit-extension-grafana/steadybit-extension-grafana
+    steadybit-extension-kafka/steadybit-extension-kafka
 ```
 
 ## Register the extension
