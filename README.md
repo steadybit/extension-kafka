@@ -1,48 +1,47 @@
 # Steadybit extension-kafka
 
-TODO describe what your extension is doing here from a user perspective.
+A [Steadybit](https://www.steadybit.com/) extension to integrate [Kafka](https://kafka.apache.org/) into Steadybit.
 
-TODO optionally add your extension to the [Reliability Hub](https://hub.steadybit.com/) by creating
-a [pull request](https://github.com/steadybit/reliability-hub-db) and add a link to this README.
+Learn about the capabilities of this extension in our [Reliability Hub](https://hub.steadybit.com/extension/com.steadybit.extension_kafka).
+
+## Prerequisites
+
+The extension-kafka is using these capacities, thus may need elevated rights on kafka side :
+- List brokers / topics / consumer groups / offsets
+- Elect leaders for partitions
+- Alter broker configuration
+- Create / Delete ACLs
+- Delete Records
 
 ## Configuration
 
-| Environment Variable                                      | Helm value                           | Meaning                                                                                                               | Required | Default                 |
-|-----------------------------------------------------------|--------------------------------------|-----------------------------------------------------------------------------------------------------------------------|----------|-------------------------|
-| `STEADYBIT_EXTENSION_ROBOT_NAMES`                         |                                      | Comma-separated list of discoverable robots                                                                           | yes      | Bender,Terminator,R2-D2 |
-| `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_ROBOT` | `discovery.attributes.excludes.robot | List of Robot Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*" | no       |                         |
+| Environment Variable                 | Helm value                 | Meaning                                                                                               | Required | Default |
+|--------------------------------------|----------------------------|-------------------------------------------------------------------------------------------------------|----------|---------|
+| `STEADYBIT_EXTENSION_SEED_BROKERS`   | `kafka.seedBrokers`        | Brokers hosts (without scheme) with port separated by comma (example: "localhost:9092,localhost:9093" | yes      |         |
+| `STEADYBIT_EXTENSION_SASL_MECHANISM` | `kafka.auth.saslMechanism` | PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512                                                                | no       |         |
+| `STEADYBIT_EXTENSION_SASL_USER`      | `kafka.auth.saslUser`      | Sasl User                                                                                             | no       |         |
+| `STEADYBIT_EXTENSION_SASL_PASSWORD`  | `kafka.auth.saslPassword`  | Sasl Password                                                                                         | no       |         |
+
 
 The extension supports all environment variables provided by [steadybit/extension-kit](https://github.com/steadybit/extension-kit#environment-variables).
 
 ## Installation
 
-### Kubernetes
+### Using Docker
 
-Detailed information about agent and extension installation in kubernetes can also be found in
-our [documentation](https://docs.steadybit.com/install-and-configure/install-agent/install-on-kubernetes).
-
-#### Recommended (via agent helm chart)
-
-All extensions provide a helm chart that is also integrated in the
-[helm-chart](https://github.com/steadybit/helm-charts/tree/main/charts/steadybit-agent) of the agent.
-
-You must provide additional values to activate this extension.
-
-```
---set extension-kafka.enabled=true \
+```sh
+docker run \
+  --rm \
+  -p 8080 \
+  --name steadybit-extension-kafka \
+  --env STEADYBIT_EXTENSION_SEED_BROKERS="localhost:9092" \
+  ghcr.io/steadybit/extension-kafka:latest
 ```
 
-Additional configuration options can be found in
-the [helm-chart](https://github.com/steadybit/extension-kafka/blob/main/charts/steadybit-extension-kafka/values.yaml) of the
-extension.
+### Using Helm in Kubernetes
 
-#### Alternative (via own helm chart)
-
-If you need more control, you can install the extension via its
-dedicated [helm-chart](https://github.com/steadybit/extension-kafka/blob/main/charts/steadybit-extension-kafka).
-
-```bash
-helm repo add steadybit-extension-kafka https://steadybit.github.io/extension-kafka
+```sh
+helm repo add steadybit-extension-grafana https://steadybit.github.io/extension-kafka
 helm repo update
 helm upgrade steadybit-extension-kafka \
     --install \
@@ -50,20 +49,18 @@ helm upgrade steadybit-extension-kafka \
     --timeout 5m0s \
     --create-namespace \
     --namespace steadybit-agent \
-    steadybit-extension-kafka/steadybit-extension-kafka
+    --set kafka.seedBrokers="localhost:9092" \
+    steadybit-extension-grafana/steadybit-extension-grafana
 ```
 
-### Linux Package
+## Register the extension
 
-Please use
-our [agent-linux.sh script](https://docs.steadybit.com/install-and-configure/install-agent/install-on-linux-hosts)
-to install the extension on your Linux machine. The script will download the latest version of the extension and install
-it using the package manager.
+Make sure to register the extension on the Steadybit platform. Please refer to the [documentation](https://docs.steadybit.com/integrate-with-steadybit/extensions/extension-installation) for more information.
 
-After installing, configure the extension by editing `/etc/steadybit/extension-kafka` and then restart the service.
+## FAQ
 
-## Extension registration
+### The extension-grafana is unauthorized to fetch data from grafana (status code 401)
 
-Make sure that the extension is registered with the agent. In most cases this is done automatically. Please refer to
-the [documentation](https://docs.steadybit.com/install-and-configure/install-agent/extension-discovery) for more
-information about extension registration and how to verify.
+Do you provide the service account token to the extension ? Does the token still exists on Grafana ?
+
+_warning: If you want the service account token to survive a Grafana pod deletion or restart, you need to [persist the Grafana data in a DB](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#database)._
