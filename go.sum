@@ -20,6 +20,7 @@ github.com/docker/go-units v0.5.0 h1:69rxXcBk27SvSaaxTtLh/8llcHD8vYHT7WSdRZ/jvr4
 github.com/docker/go-units v0.5.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/elastic/go-sysinfo v1.14.1 h1:BpY/Utfz75oKSpsQnbAJmmlnT3gBV9WFsopBEYgjhZY=
 github.com/elastic/go-sysinfo v1.14.1/go.mod h1:FKUXnZWhnYI0ueO7jhsGV3uQJ5hiz8OqM5b3oGyaRr8=
+github.com/elastic/go-sysinfo v1.14.2/go.mod h1:jPSuTgXG+dhhh0GKIyI2Cso+w5lPJ5PvVqKlL8LV/Hk=
 github.com/elastic/go-windows v1.0.2 h1:yoLLsAsV5cfg9FLhZ9EXZ2n2sQFKeDYrHenkcivY4vI=
 github.com/elastic/go-windows v1.0.2/go.mod h1:bGcDpBzXgYSqM0Gx3DM4+UxFj300SZLixie9u9ixLM8=
 github.com/emicklei/go-restful/v3 v3.11.0 h1:rAQeMHw1c7zTmncogyy8VvRZwtkmkZ4FxERmMY4rD+g=
@@ -179,6 +180,7 @@ github.com/steadybit/event-kit/go/event_kit_api v1.4.1 h1:IbD3Ujim0osr+VkcgsuQTD
 github.com/steadybit/event-kit/go/event_kit_api v1.4.1/go.mod h1:SilUGxfSKOu0hTJcLDrjdjo2Pm0ZLIMUrugCK9nSQ6o=
 github.com/steadybit/extension-kit v1.8.15 h1:FG7sJ1u1rdCQVQ3HyWoX+vi45A9aXvzXIUaq4hTwtWo=
 github.com/steadybit/extension-kit v1.8.15/go.mod h1:8nJK6mgwdKyopjh5yeiSHUiEGRYHhZiSNeU0hbcM+Io=
+github.com/steadybit/extension-kit v1.8.19/go.mod h1:fPu9AA1yA92VTZCOT+JE5EEAiTFgnb8Sfut5sKloeo0=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.4.0/go.mod h1:YvHI0jy2hoMjB+UWwv71VJQ9isScKT/TqJzVSSt89Yw=
 github.com/stretchr/objx v0.5.0/go.mod h1:Yh+to48EsGEfYuaHDzXPcE3xhTkx73EhmCGUpEOglKo=
