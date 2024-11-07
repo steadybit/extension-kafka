@@ -266,7 +266,7 @@ manifest should match snapshot with extra labels:
       labels:
         steadybit.com/discovery-disabled: "true"
         steadybit.com/extension: "true"
-        tags.datadoghq.com/service: steadybit-extension
+        tags.datadoghq.com/service: steadybit-extension-kafka
       name: RELEASE-NAME-steadybit-extension-kafka
       namespace: NAMESPACE
     spec:
@@ -284,7 +284,7 @@ manifest should match snapshot with extra labels:
             app.kubernetes.io/name: steadybit-extension-kafka
             steadybit.com/discovery-disabled: "true"
             steadybit.com/extension: "true"
-            tags.datadoghq.com/service: steadybit-extension
+            tags.datadoghq.com/service: steadybit-extension-kafka
         spec:
           containers:
             - env:

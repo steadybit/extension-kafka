@@ -65,7 +65,7 @@ tests:
   - it: manifest should match snapshot with extra labels
     set:
       extraLabels:
-        tags.datadoghq.com/service: steadybit-extension
+        tags.datadoghq.com/service: steadybit-extension-kafka
     asserts:
       - matchSnapshot: {}
   - it: manifest should match snapshot with podSecurityContext

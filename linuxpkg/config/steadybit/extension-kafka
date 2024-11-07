@@ -1,0 +1,12 @@
+STEADYBIT_LOG_LEVEL=info
+STEADYBIT_LOG_FORMAT=text
+STEADYBIT_EXTENSION_UNIX_SOCKET=/run/steadybit/extension-kafka.sock
+#
+# TODO:
+# If you have a kafka auth mechanism, please provide the environment variables.
+# For more information visit https://github.com/steadybit/extension-kafka
+#
+STEADYBIT_EXTENSION_SEED_BROKERS=
+STEADYBIT_EXTENSION_SASL_MECHANISM=
+STEADYBIT_EXTENSION_SASL_USER=
+STEADYBIT_EXTENSION_SASL_PASSWORD=

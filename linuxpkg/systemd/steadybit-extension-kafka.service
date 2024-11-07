@@ -1,0 +1,18 @@
+[Unit]
+Description="steadybit extension kafka"
+After=syslog.target
+
+[Service]
+Type=simple
+ExecStart=/opt/steadybit/extension-kafka/extension-kafka
+EnvironmentFile=/etc/steadybit/extension-kafka
+User=steadybit
+Group=steadybit
+SuccessExitStatus=0 143
+Restart=on-failure
+RestartSec=5s
+StandardOutput=append:/var/log/steadybit-extension-kafka.log
+StandardError=append:/var/log/steadybit-extension-kafka.log
+
+[Install]
+WantedBy=multi-user.target

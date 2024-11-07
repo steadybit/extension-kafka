@@ -1,0 +1,4 @@
+unixSocket: /run/steadybit/extension-kafka.sock
+types:
+  - ACTION
+  - DISCOVERY
