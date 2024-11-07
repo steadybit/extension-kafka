@@ -20,10 +20,13 @@ type Specification struct {
 	// variable STEADYBIT_EXTENSION_SASL_USER="USER"
 	SaslUser string `json:"saslUser" required:"false" split_words:"true"`
 	// variable STEADYBIT_EXTENSION_SASL_PASSWORD="PASSWORD"
-	SaslPassword                   string `json:"saslPassword" required:"false" split_words:"true"`
-	DiscoveryIntervalConsumerGroup int    `json:"discoveryIntervalKafkaConsumerGroup" split_words:"true" required:"false" default:"30"`
-	DiscoveryIntervalKafkaBroker   int    `json:"discoveryIntervalKafkaBroker" split_words:"true" required:"false" default:"30"`
-	DiscoveryIntervalKafkaTopic    int    `json:"discoveryIntervalKafkaTopic" split_words:"true" required:"false" default:"30"`
+	SaslPassword                              string   `json:"saslPassword" required:"false" split_words:"true"`
+	DiscoveryIntervalConsumerGroup            int      `json:"discoveryIntervalKafkaConsumerGroup" split_words:"true" required:"false" default:"30"`
+	DiscoveryIntervalKafkaBroker              int      `json:"discoveryIntervalKafkaBroker" split_words:"true" required:"false" default:"30"`
+	DiscoveryIntervalKafkaTopic               int      `json:"discoveryIntervalKafkaTopic" split_words:"true" required:"false" default:"30"`
+	DiscoveryAttributesExcludesBrokers        []string `json:"discoveryAttributesExcludesBrokers" split_words:"true" required:"false"`
+	DiscoveryAttributesExcludesTopics         []string `json:"discoveryAttributesExcludesTopics" split_words:"true" required:"false"`
+	DiscoveryAttributesExcludesConsumerGroups []string `json:"discoveryAttributesExcludesConsumerGroups" split_words:"true" required:"false"`
 }
 
 var (

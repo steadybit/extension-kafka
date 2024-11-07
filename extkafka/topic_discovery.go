@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
+	"github.com/steadybit/discovery-kit/go/discovery_kit_commons"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
@@ -116,7 +117,7 @@ func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
 		}
 	}
 
-	return result, nil
+	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesTopics), nil
 }
 
 func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {

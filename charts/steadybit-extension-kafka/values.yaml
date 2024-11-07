@@ -128,5 +128,9 @@ extraEnvFrom: []
 discovery:
   attributes:
     excludes:
-      # discovery.attributes.excludes.robot -- List of attributes to exclude from Robot discovery.
-      robot: []
+      # discovery.attributes.excludes.broker -- List of attributes to exclude from Kafka Broker discovery.
+      broker: []
+      # discovery.attributes.excludes.topic -- List of attributes to exclude from Kafka Topic discovery.
+      topic: []
+      # discovery.attributes.excludes.consumer-group -- List of attributes to exclude from Kafka Consumer Group discovery.
+      consumer: []

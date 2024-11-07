@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
+	"github.com/steadybit/discovery-kit/go/discovery_kit_commons"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
@@ -126,7 +127,7 @@ func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 		result = append(result, toBrokerTarget(broker))
 	}
 
-	return result, nil
+	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesBrokers), nil
 }
 
 func toBrokerTarget(broker kadm.BrokerDetail) discovery_kit_api.Target {

@@ -15,12 +15,15 @@ The extension-kafka is using these capacities, thus may need elevated rights on 
 
 ## Configuration
 
-| Environment Variable                 | Helm value                 | Meaning                                                                                               | Required | Default |
-|--------------------------------------|----------------------------|-------------------------------------------------------------------------------------------------------|----------|---------|
-| `STEADYBIT_EXTENSION_SEED_BROKERS`   | `kafka.seedBrokers`        | Brokers hosts (without scheme) with port separated by comma (example: "localhost:9092,localhost:9093" | yes      |         |
-| `STEADYBIT_EXTENSION_SASL_MECHANISM` | `kafka.auth.saslMechanism` | PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512                                                                | no       |         |
-| `STEADYBIT_EXTENSION_SASL_USER`      | `kafka.auth.saslUser`      | Sasl User                                                                                             | no       |         |
-| `STEADYBIT_EXTENSION_SASL_PASSWORD`  | `kafka.auth.saslPassword`  | Sasl Password                                                                                         | no       |         |
+| Environment Variable                                                | Helm value                               | Meaning                                                                                                                | Required | Default |
+|---------------------------------------------------------------------|------------------------------------------|------------------------------------------------------------------------------------------------------------------------|----------|---------|
+| `STEADYBIT_EXTENSION_SEED_BROKERS`                                  | `kafka.seedBrokers`                      | Brokers hosts (without scheme) with port separated by comma (example: "localhost:9092,localhost:9093"                  | yes      |         |
+| `STEADYBIT_EXTENSION_SASL_MECHANISM`                                | `kafka.auth.saslMechanism`               | PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512                                                                                 | no       |         |
+| `STEADYBIT_EXTENSION_SASL_USER`                                     | `kafka.auth.saslUser`                    | Sasl User                                                                                                              | no       |         |
+| `STEADYBIT_EXTENSION_SASL_PASSWORD`                                 | `kafka.auth.saslPassword`                | Sasl Password                                                                                                          | no       |         |
+| `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_BROKERS`         | `discovery.attributes.excludes.broker`   | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*" | no       |         |
+| `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_TOPICS`          | `discovery.attributes.excludes.topic`    | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*" | no       |         |
+| `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_CONSUMER_GROUPS` | `discovery.attributes.excludes.consumer` | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*" | no       |         |
 
 
 The extension supports all environment variables provided by [steadybit/extension-kit](https://github.com/steadybit/extension-kit#environment-variables).
@@ -56,11 +59,3 @@ helm upgrade steadybit-extension-kafka \
 ## Register the extension
 
 Make sure to register the extension on the Steadybit platform. Please refer to the [documentation](https://docs.steadybit.com/integrate-with-steadybit/extensions/extension-installation) for more information.
-
-## FAQ
-
-### The extension-grafana is unauthorized to fetch data from grafana (status code 401)
-
-Do you provide the service account token to the extension ? Does the token still exists on Grafana ?
-
-_warning: If you want the service account token to survive a Grafana pod deletion or restart, you need to [persist the Grafana data in a DB](https://grafana.com/docs/grafana/latest/setup-grafana/configure-grafana/#database)._

@@ -55,6 +55,18 @@ spec:
               memory: {{ .Values.resources.limits.memory }}
               cpu: {{ .Values.resources.limits.cpu }}
           env:
+            {{- if .Values.discovery.attributes.excludes.broker }}
+            - name: STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_BROKERS
+              value: {{ join "," .Values.discovery.attributes.excludes.broker | quote }}
+            {{- end }}
+            {{- if .Values.discovery.attributes.excludes.topic }}
+            - name: STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_TOPICS
+              value: {{ join "," .Values.discovery.attributes.excludes.topic | quote }}
+            {{- end }}
+            {{- if .Values.discovery.attributes.excludes.consumer }}
+            - name: STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_CONSUMER_GROUPS
+              value: {{ join "," .Values.discovery.attributes.excludes.consumer | quote }}
+            {{- end }}
             - name: STEADYBIT_EXTENSION_SEED_BROKERS
               value: {{ .Values.kafka.seedBrokers }}
             - name: STEADYBIT_EXTENSION_SASL_USER

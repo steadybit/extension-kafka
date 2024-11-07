@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
+	"github.com/steadybit/discovery-kit/go/discovery_kit_commons"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
@@ -121,7 +122,7 @@ func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, erro
 		result = append(result, toConsumerGroupTarget(group))
 	}
 
-	return result, nil
+	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesConsumerGroups), nil
 }
 
 func toConsumerGroupTarget(group kadm.DescribedGroup) discovery_kit_api.Target {
