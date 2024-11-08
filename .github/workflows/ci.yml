@@ -59,4 +59,4 @@ jobs:
           context: ./test-dataset/dummyconsumer/
           file: ./test-dataset/dummyconsumer/Dockerfile
           push: true
-          tags: steadybit/extension-kafka-dummyconsumer:latest
+          tags: steadybit/extension-kafka:dummyconsumer
