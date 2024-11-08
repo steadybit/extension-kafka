@@ -44,7 +44,8 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
+		Technology:  extutil.Ptr("Message Queue"),
+		Category:    extutil.Ptr("Kafka"),
 		TimeControl: action_kit_api.TimeControlInstantaneous,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{

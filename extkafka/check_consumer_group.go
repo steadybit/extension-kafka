@@ -64,7 +64,8 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
+		Technology:  extutil.Ptr("Message Queue"),
+		Category:    extutil.Ptr("Kafka"),
 		Kind:        action_kit_api.Check,
 		TimeControl: action_kit_api.TimeControlInternal,
 		Parameters: []action_kit_api.ActionParameter{

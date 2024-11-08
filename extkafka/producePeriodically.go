@@ -56,9 +56,8 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 		//		PredefinedWidgetId: "com.steadybit.widget.predefined.HttpCheck",
 		//	},
 		//}),
-
-		Technology: extutil.Ptr("Kafka"),
-
+		Technology: extutil.Ptr("Message Queue"),
+		Category:   extutil.Ptr("Kafka"),
 		// To clarify the purpose of the action:
 		//   Check: Will perform checks on the targets
 		Kind: action_kit_api.Check,

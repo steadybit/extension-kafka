@@ -59,7 +59,8 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 		//}),
 
 		// Technology for the targets to appear in
-		Technology: extutil.Ptr("Kafka"),
+		Technology: extutil.Ptr("Message Queue"),
+		Category:   extutil.Ptr("Kafka"),
 
 		// To clarify the purpose of the action:
 		//   Check: Will perform checks on the targets
