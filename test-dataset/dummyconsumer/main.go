@@ -6,21 +6,49 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
+	"os"
+	"strings"
 )
 
 func main() {
-	seeds := []string{"localhost:9092"}
+	// Configure
+	seeds, _ := os.LookupEnv("STEADYBIT_DUMMY_SEED_BROKERS")
+	if seeds == "" {
+		seeds = "kafka-demo.steadybit-demo.svc.cluster.local:9092"
+	}
+
+	saslUser, _ := os.LookupEnv("STEADYBIT_DUMMY_SASL_USER")
+	if saslUser == "" {
+		saslUser = "user1"
+	}
+
+	saslPassword, _ := os.LookupEnv("STEADYBIT_DUMMY_SASL_PASSWORD")
+	if saslPassword == "" {
+		saslPassword = "steadybit"
+	}
+
+	topic, _ := os.LookupEnv("STEADYBIT_DUMMY_TOPIC")
+	if topic == "" {
+		topic = "steadybit-demo"
+	}
+
+	consumer, _ := os.LookupEnv("STEADYBIT_DUMMY_CONSUMER_NAME")
+	if consumer == "" {
+		consumer = "steadybit-demo-consumer"
+	}
+
 	// One client can both produce and consume!
 	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
 	cl, err := kgo.NewClient(
-		kgo.SeedBrokers(seeds...),
-		kgo.ConsumerGroup("dummy"),
-		kgo.ConsumeTopics("steadybit"),
+		kgo.SeedBrokers(strings.Split(seeds, ",")...),
+		kgo.ConsumerGroup(consumer),
+		kgo.ConsumeTopics(topic),
 		kgo.SASL(plain.Auth{
-			User: "consumer",
-			Pass: "consumer-secret",
+			User: saslUser,
+			Pass: saslPassword,
 		}.AsMechanism()),
 	)
+	log.Info().Msgf("Initiating consumer with kafka config: brokers %s, consumer name %s on topic %s with user %s", seeds, consumer, topic, saslUser)
 	if err != nil {
 		panic(err)
 	}
