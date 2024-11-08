@@ -85,6 +85,7 @@ func helmInstallLocalStack(minikube *e2e.Minikube) error {
 		"upgrade", "--install",
 		"--kube-context", minikube.Profile,
 		"--set", "sasl.client.passwords=steadybit",
+		"--set", "controller.replicaCount=1",
 		"--namespace=default",
 		"--timeout=15m0s",
 		"my-kafka", "bitnami/kafka ", "--wait").CombinedOutput()
