@@ -22,6 +22,7 @@ import (
 	"github.com/steadybit/extension-kit/exthttp"
 	"github.com/steadybit/extension-kit/extlogging"
 	"github.com/steadybit/extension-kit/extruntime"
+	"github.com/steadybit/extension-kit/extsignals"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
@@ -64,9 +65,14 @@ func main() {
 
 	registerHandlers(ctx)
 
-	action_kit_sdk.InstallSignalHandler(func(o os.Signal) {
-		cancel()
+	extsignals.AddSignalHandler(extsignals.SignalHandler{
+		Handler: func(signal os.Signal) {
+			cancel()
+		},
+		Order: extsignals.OrderStopCustom,
+		Name:  "custom-extension-kafka",
 	})
+	extsignals.ActivateSignalHandlers()
 
 	//This will register the coverage endpoints for the extension (used by action_kit_test)
 	action_kit_sdk.RegisterCoverageEndpoints()
