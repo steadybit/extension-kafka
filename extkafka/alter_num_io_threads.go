@@ -71,7 +71,7 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 
 func (k *AlterNumberIOThreadsAttack) Prepare(_ context.Context, state *AlterNumberIOThreadsState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
-	state.BrokerConfigValue = fmt.Sprintf("%f", request.Config["io_threads"])
+	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["io_threads"])
 
 	return nil, nil
 }

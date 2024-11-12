@@ -71,7 +71,7 @@ func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription
 
 func (k *AlterMessageMaxBytesAttack) Prepare(_ context.Context, state *AlterMessageMaxBytesState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
-	state.BrokerConfigValue = fmt.Sprintf("%f", request.Config["max_bytes"])
+	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["max_bytes"])
 
 	return nil, nil
 }
