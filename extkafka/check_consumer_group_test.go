@@ -41,7 +41,7 @@ func TestCheckConsumerGroup_Describe(t *testing.T) {
 			assert.Equal(t, "Check Consumer State", response.Label)
 			assert.Equal(t, kafkaConsumerTargetId, response.TargetSelection.TargetType)
 			assert.Equal(t, fmt.Sprintf("%s.check", kafkaConsumerTargetId), response.Id)
-			assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+			assert.Equal(t, extutil.Ptr("Message Queue"), response.Technology)
 		})
 	}
 }
