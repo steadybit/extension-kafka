@@ -21,7 +21,7 @@ type AlterLimitConnectionCreateRateState struct {
 }
 
 const (
-	LimitConnectionRate = "message.max.bytes"
+	LimitConnectionRate = "max.connection.creation.rate"
 )
 
 var _ action_kit_sdk.Action[AlterLimitConnectionCreateRateState] = (*AlterLimitConnectionCreateRateAttack)(nil)
