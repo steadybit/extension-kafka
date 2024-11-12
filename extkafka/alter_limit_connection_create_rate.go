@@ -71,7 +71,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 
 func (k *AlterLimitConnectionCreateRateAttack) Prepare(_ context.Context, state *AlterLimitConnectionCreateRateState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
-	state.BrokerConfigValue = extutil.ToString(request.Config["connection_rate"])
+	state.BrokerConfigValue = fmt.Sprintf("%f", request.Config["connection_rate"])
 
 	return nil, nil
 }
