@@ -39,7 +39,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 		Label:       "Produce X records per second",
 		Description: "Produce kafka messages periodically (messages / s)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaMessagePeriodically),
+		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
 			TargetType: kafkaTopicTargetId,
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{

@@ -40,7 +40,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 		Label:       "Produce X records",
 		Description: "Produce a certain amount of kafka messages for a given duration",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaMessageFixedAmount),
+		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
 			TargetType: kafkaTopicTargetId,
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
