@@ -58,9 +58,9 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 		Parameters: []action_kit_api.ActionParameter{
 			durationAlter,
 			{
-				Label:        "Number of IO Networks",
+				Label:        "Number of Network Threads",
 				Description:  extutil.Ptr("Reduce the num.network.threads to limit the broker’s ability to process network requests."),
-				Name:         "io_networks",
+				Name:         "network_threads",
 				Type:         action_kit_api.Integer,
 				DefaultValue: extutil.Ptr("4"),
 				Required:     extutil.Ptr(true),
@@ -71,7 +71,7 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 
 func (k *AlterNumberNetworkThreadsAttack) Prepare(_ context.Context, state *AlterNumberNetworkThreadsState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
-	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["io_networks"])
+	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["network_threads"])
 
 	return nil, nil
 }
