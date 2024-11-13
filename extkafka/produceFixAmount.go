@@ -64,7 +64,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 
 		// To clarify the purpose of the action:
 		//   Check: Will perform checks on the targets
-		Kind: action_kit_api.Check,
+		Kind: action_kit_api.Attack,
 
 		// How the action is controlled over time.
 		//   External: The agent takes care and calls stop then the time has passed. Requires a duration parameter. Use this when the duration is known in advance.
