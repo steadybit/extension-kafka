@@ -75,8 +75,8 @@ var (
 	}
 	recordHeaders = action_kit_api.ActionParameter{
 		Name:        "recordHeaders",
-		Label:       "Record RecordHeaders",
-		Description: extutil.Ptr("The Record RecordHeaders."),
+		Label:       "Record Headers",
+		Description: extutil.Ptr("The Record Headers."),
 		Type:        action_kit_api.KeyValue,
 		Order:       extutil.Ptr(4),
 	}
