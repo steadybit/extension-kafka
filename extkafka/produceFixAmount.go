@@ -86,10 +86,6 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 				Type:  action_kit_api.Separator,
 				Order: extutil.Ptr(5),
 			},
-			//------------------------
-			// Repitions
-			//------------------------
-			repetitionControl,
 			{
 				Name:         "numberOfRecords",
 				Label:        "Number of Records.",
@@ -106,12 +102,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 				Type:  action_kit_api.Separator,
 				Order: extutil.Ptr(9),
 			},
-			//------------------------
-			// Result Verification
-			//------------------------
-			resultVerification,
 			successRate,
-
 			//------------------------
 			// Additional Settings
 			//------------------------

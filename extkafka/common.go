@@ -80,12 +80,6 @@ var (
 		Type:        action_kit_api.KeyValue,
 		Order:       extutil.Ptr(4),
 	}
-	repetitionControl = action_kit_api.ActionParameter{
-		Name:  "repetitionControl",
-		Label: "Repetition Control",
-		Type:  action_kit_api.Header,
-		Order: extutil.Ptr(5),
-	}
 	durationAlter = action_kit_api.ActionParameter{
 		Label:        "Duration",
 		Description:  extutil.Ptr("The duration of the action. The broker configuration will be reverted at the end of the action."),
@@ -102,12 +96,6 @@ var (
 		DefaultValue: extutil.Ptr("10s"),
 		Required:     extutil.Ptr(true),
 		Order:        extutil.Ptr(6),
-	}
-	resultVerification = action_kit_api.ActionParameter{
-		Name:  "resultVerification",
-		Label: "Result Verification",
-		Type:  action_kit_api.Header,
-		Order: extutil.Ptr(7),
 	}
 	successRate = action_kit_api.ActionParameter{
 		Name:         "successRate",

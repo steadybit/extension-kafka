@@ -82,10 +82,6 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 				Type:  action_kit_api.Separator,
 				Order: extutil.Ptr(5),
 			},
-			//------------------------
-			// Repetitions
-			//------------------------
-			repetitionControl,
 			{
 				Name:         "recordsPerSecond",
 				Label:        "Records per second",
@@ -102,10 +98,6 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 				Type:  action_kit_api.Separator,
 				Order: extutil.Ptr(9),
 			},
-			//------------------------
-			// Result Verification
-			//------------------------
-			resultVerification,
 			successRate,
 
 			//------------------------
