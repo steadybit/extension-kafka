@@ -49,7 +49,7 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check-lag", kafkaConsumerTargetId),
 		Label:       "Check Topic Lag",
-		Description: "check if the consumer group have lags on a topic",
+		Description: "Check the consumer lag for a given topic (lag is calculated by the difference between topic offset and consumer offset)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{

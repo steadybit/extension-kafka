@@ -30,8 +30,8 @@ func (f kafkaBrokerElectNewLeaderAttack) NewEmptyState() KafkaBrokerAttackState 
 func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.elect-new-leader", kafkaTopicTargetId),
-		Label:       "Elect New Leader",
-		Description: "Triggers election for a new leader for a given topic and partition(s)",
+		Label:       "Trigger Partition Leader Election",
+		Description: "Trigger election for a new leader for a given topic and partition(s)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{

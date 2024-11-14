@@ -37,7 +37,7 @@ func TestCheckTopicLag_Describe(t *testing.T) {
 			response := action.Describe()
 
 			//Then
-			assert.Equal(t, "check if the consumer group have lags on a topic", response.Description)
+			assert.Equal(t, "Check the consumer lag for a given topic (lag is calculated by the difference between topic offset and consumer offset)", response.Description)
 			assert.Equal(t, "Check Topic Lag", response.Label)
 			assert.Equal(t, kafkaConsumerTargetId, response.TargetSelection.TargetType)
 			assert.Equal(t, fmt.Sprintf("%s.check-lag", kafkaConsumerTargetId), response.Id)

@@ -50,7 +50,7 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check", kafkaConsumerTargetId),
 		Label:       "Check Consumer State",
-		Description: "check the consumer state",
+		Description: "Check the consumer state",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{

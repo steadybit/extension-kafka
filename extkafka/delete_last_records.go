@@ -59,7 +59,7 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 		Parameters: []action_kit_api.ActionParameter{
 			{
 				Name:        "partitions",
-				Label:       "Partition to delete records (move the offset to the new targeted one)",
+				Label:       "Partition to issue delete records requests",
 				Description: extutil.Ptr("One or more partitions to delete the records"),
 				Type:        action_kit_api.StringArray,
 				Required:    extutil.Ptr(true),

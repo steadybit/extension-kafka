@@ -37,7 +37,7 @@ func TestCheckConsumerGroup_Describe(t *testing.T) {
 			response := action.Describe()
 
 			//Then
-			assert.Equal(t, "check the consumer state", response.Description)
+			assert.Equal(t, "Check the consumer state", response.Description)
 			assert.Equal(t, "Check Consumer State", response.Label)
 			assert.Equal(t, kafkaConsumerTargetId, response.TargetSelection.TargetType)
 			assert.Equal(t, fmt.Sprintf("%s.check", kafkaConsumerTargetId), response.Id)
