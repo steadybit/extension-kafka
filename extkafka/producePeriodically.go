@@ -6,6 +6,7 @@ package extkafka
 
 import (
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
@@ -35,7 +36,7 @@ func (l *produceMessageActionPeriodically) NewEmptyState() KafkaBrokerAttackStat
 // Describe returns the action description for the platform with all required information.
 func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          TargetIDProducePeriodically,
+		Id:          fmt.Sprintf("%s.produce-periodically", kafkaTopicTargetId),
 		Label:       "Produce (Records / s)",
 		Description: "Produce records periodically (records per second)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),

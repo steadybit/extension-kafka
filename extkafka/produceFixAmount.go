@@ -7,6 +7,7 @@ package extkafka
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
@@ -36,7 +37,7 @@ func (l *produceMessageActionFixedAmount) NewEmptyState() KafkaBrokerAttackState
 // Describe returns the action description for the platform with all required information.
 func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          TargetIDProduceFixedAmount,
+		Id:          fmt.Sprintf("%s.produce-fixed-amount", kafkaTopicTargetId),
 		Label:       "Produce (# of Records)",
 		Description: "Produce a certain amount of kafka records for a given duration",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
