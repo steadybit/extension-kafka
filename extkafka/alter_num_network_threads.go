@@ -36,9 +36,9 @@ func (k *AlterNumberNetworkThreadsAttack) NewEmptyState() AlterNumberNetworkThre
 
 func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          fmt.Sprintf("%s.network-threads", kafkaBrokerTargetId),
-		Label:       "Alter Network Threads Number",
-		Description: "Alter the number of network threads",
+		Id:          fmt.Sprintf("%s.limit-network-threads", kafkaBrokerTargetId),
+		Label:       "Limit Network Threads",
+		Description: "Limit the number of network threads",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -51,7 +51,7 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Message Queue"),
+		Technology:  extutil.Ptr("Kafka"),
 		Category:    extutil.Ptr("Kafka"),
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,

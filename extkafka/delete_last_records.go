@@ -52,7 +52,7 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Message Queue"),
+		Technology:  extutil.Ptr("Kafka"),
 		Category:    extutil.Ptr("Kafka"),
 		TimeControl: action_kit_api.TimeControlInstantaneous,
 		Kind:        action_kit_api.Attack,

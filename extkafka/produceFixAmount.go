@@ -37,8 +37,8 @@ func (l *produceMessageActionFixedAmount) NewEmptyState() KafkaBrokerAttackState
 func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          TargetIDProduceFixedAmount,
-		Label:       "Produce X records",
-		Description: "Produce a certain amount of kafka messages for a given duration",
+		Label:       "Produce (# of Records)",
+		Description: "Produce a certain amount of kafka records for a given duration",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -59,7 +59,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 		//}),
 
 		// Technology for the targets to appear in
-		Technology: extutil.Ptr("Message Queue"),
+		Technology: extutil.Ptr("Kafka"),
 		Category:   extutil.Ptr("Kafka"),
 
 		// To clarify the purpose of the action:

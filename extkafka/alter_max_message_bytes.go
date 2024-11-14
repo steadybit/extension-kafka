@@ -36,9 +36,9 @@ func (k *AlterMessageMaxBytesAttack) NewEmptyState() AlterMessageMaxBytesState {
 
 func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          fmt.Sprintf("%s.message-max-bytes", kafkaBrokerTargetId),
-		Label:       "Alter Max Bytes Per Message",
-		Description: "Alter the max bytes allowed per message",
+		Id:          fmt.Sprintf("%s.reduce-message-max-bytes", kafkaBrokerTargetId),
+		Label:       "Reduce Message Batch Size",
+		Description: "Reduce the max bytes allowed per message",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -51,7 +51,7 @@ func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Message Queue"),
+		Technology:  extutil.Ptr("Kafka"),
 		Category:    extutil.Ptr("Kafka"),
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,

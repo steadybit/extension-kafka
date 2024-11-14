@@ -37,8 +37,8 @@ func (k *AlterLimitConnectionCreateRateAttack) NewEmptyState() AlterLimitConnect
 func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.limit-connection-create", kafkaBrokerTargetId),
-		Label:       "Alter Connection Create Rate",
-		Description: "Change the Connection Create Rate",
+		Label:       "Limit Connection Create Rate",
+		Description: "Limit the Connection Create Rate",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -51,7 +51,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Message Queue"),
+		Technology:  extutil.Ptr("Kafka"),
 		Category:    extutil.Ptr("Kafka"),
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,

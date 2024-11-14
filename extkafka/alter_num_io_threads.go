@@ -36,9 +36,9 @@ func (k *AlterNumberIOThreadsAttack) NewEmptyState() AlterNumberIOThreadsState {
 
 func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          fmt.Sprintf("%s.io-threads", kafkaBrokerTargetId),
-		Label:       "Alter IO Threads Number",
-		Description: "Alter the number of IO threads",
+		Id:          fmt.Sprintf("%s.limit-io-threads", kafkaBrokerTargetId),
+		Label:       "Limit IO Threads",
+		Description: "Limit the number of IO threads",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -51,7 +51,7 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Message Queue"),
+		Technology:  extutil.Ptr("Kafka"),
 		Category:    extutil.Ptr("Kafka"),
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,

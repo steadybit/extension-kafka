@@ -36,7 +36,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.deny-access", kafkaConsumerTargetId),
 		Label:       "Deny Access",
-		Description: "Deny access for one or many consumer groups to all hosts",
+		Description: "Deny access to a topic for one or many consumer groups on all kafka hosts",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -49,7 +49,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Message Queue"),
+		Technology:  extutil.Ptr("Kafka"),
 		Category:    extutil.Ptr("Kafka"),
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,

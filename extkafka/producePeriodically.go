@@ -36,8 +36,8 @@ func (l *produceMessageActionPeriodically) NewEmptyState() KafkaBrokerAttackStat
 func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          TargetIDProducePeriodically,
-		Label:       "Produce X records per second",
-		Description: "Produce kafka messages periodically (messages / s)",
+		Label:       "Produce (Records / s)",
+		Description: "Produce records periodically (records per second)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
@@ -56,7 +56,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 		//		PredefinedWidgetId: "com.steadybit.widget.predefined.HttpCheck",
 		//	},
 		//}),
-		Technology: extutil.Ptr("Message Queue"),
+		Technology: extutil.Ptr("Kafka"),
 		Category:   extutil.Ptr("Kafka"),
 		// To clarify the purpose of the action:
 		//   Check: Will perform checks on the targets
