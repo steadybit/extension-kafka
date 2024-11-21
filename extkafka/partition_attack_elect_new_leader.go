@@ -132,7 +132,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 					Level:   extutil.Ptr(action_kit_api.Warn),
 					Message: fmt.Sprintf("Error while electing leader for topic '%s', partition %d, error is: %s", t, partition, result.Err.Error()),
 				})
-				errs = append(errs, result.Err)
+				errs = append(errs, errors.New(fmt.Sprintf("Error while electing leader for topic '%s', partition %d, error is: %s", t, partition, result.Err.Error())))
 			} else {
 				messages = append(messages, action_kit_api.Message{
 					Level:   extutil.Ptr(action_kit_api.Info),
