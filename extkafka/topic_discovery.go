@@ -53,7 +53,7 @@ func (r *kafkaTopicDiscovery) DescribeTarget() discovery_kit_api.TargetDescripti
 			Columns: []discovery_kit_api.Column{
 				{Attribute: "steadybit.label"},
 				{Attribute: "kafka.topic.name"},
-				{Attribute: "kafka.topic.partitions"},
+				{Attribute: "kafka.topic.partitions-leaders"},
 				{Attribute: "kafka.topic.replication-factor"},
 			},
 			OrderBy: []discovery_kit_api.OrderBy{
@@ -85,8 +85,8 @@ func (r *kafkaTopicDiscovery) DescribeAttributes() []discovery_kit_api.Attribute
 		{
 			Attribute: "kafka.topic.partitions-leaders",
 			Label: discovery_kit_api.PluralLabel{
-				One:   "Kafka topic partitions",
-				Other: "Kafka topic partitions",
+				One:   "Kafka topic partitions leaders",
+				Other: "Kafka topic partitions leaders",
 			},
 		},
 		{
