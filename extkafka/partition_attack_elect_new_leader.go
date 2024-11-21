@@ -5,6 +5,7 @@ package extkafka
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
@@ -123,6 +124,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 		return nil, fmt.Errorf("failed to elect new leader for topic %s and partitions %s: %s", state.Topic, state.Partitions, err)
 	}
 	var errorElectLeader action_kit_api.ActionKitError
+	var errs []error
 	for t, parts := range results {
 		for partition, result := range parts {
 			if result.Err != nil {
@@ -130,7 +132,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 					Level:   extutil.Ptr(action_kit_api.Warn),
 					Message: fmt.Sprintf("Error while electing leader for topic '%s', partition %d, error is: %s", t, partition, result.Err.Error()),
 				})
-				errorElectLeader = action_kit_api.ActionKitError{Title: fmt.Sprintf("Election failed for partition %d", partition), Detail: extutil.Ptr(result.Err.Error())}
+				errs = append(errs, result.Err)
 			} else {
 				messages = append(messages, action_kit_api.Message{
 					Level:   extutil.Ptr(action_kit_api.Info),
@@ -138,6 +140,9 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 				})
 			}
 		}
+	}
+	if len(errs) > 0 {
+		errorElectLeader = action_kit_api.ActionKitError{Title: "Election failed for partition(s)", Detail: extutil.Ptr(errors.Join(errs...).Error())}
 	}
 
 	return &action_kit_api.StartResult{
