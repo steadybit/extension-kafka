@@ -19,11 +19,9 @@ import (
 )
 
 const (
-	kafkaBrokerTargetId         = "com.steadybit.extension_kafka.broker"
-	kafkaConsumerTargetId       = "com.steadybit.extension_kafka.consumer"
-	kafkaTopicTargetId          = "com.steadybit.extension_kafka.topic"
-	TargetIDProducePeriodically = "com.steadybit.extension_kafka.produce.periodically"
-	TargetIDProduceFixedAmount  = "com.steadybit.extension_kafka.produce.fixed_amount"
+	kafkaBrokerTargetId   = "com.steadybit.extension_kafka.broker"
+	kafkaConsumerTargetId = "com.steadybit.extension_kafka.consumer"
+	kafkaTopicTargetId    = "com.steadybit.extension_kafka.topic"
 )
 
 const (
@@ -47,6 +45,7 @@ type KafkaBrokerAttackState struct {
 	ExecutionID              uuid.UUID
 	RecordHeaders            map[string]string
 	ConsumerGroup            string
+	ElectLeadersHow          string
 }
 
 var (
