@@ -54,6 +54,8 @@ func (r *kafkaTopicDiscovery) DescribeTarget() discovery_kit_api.TargetDescripti
 				{Attribute: "steadybit.label"},
 				{Attribute: "kafka.topic.name"},
 				{Attribute: "kafka.topic.partitions-leaders"},
+				{Attribute: "kafka.topic.partitions-replicas"},
+				{Attribute: "kafka.topic.partitions-isr"},
 				{Attribute: "kafka.topic.replication-factor"},
 			},
 			OrderBy: []discovery_kit_api.OrderBy{
@@ -87,6 +89,20 @@ func (r *kafkaTopicDiscovery) DescribeAttributes() []discovery_kit_api.Attribute
 			Label: discovery_kit_api.PluralLabel{
 				One:   "Kafka topic partitions leaders",
 				Other: "Kafka topic partitions leaders",
+			},
+		},
+		{
+			Attribute: "kafka.topic.partitions-replicas",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka topic partitions replicas",
+				Other: "Kafka topic partitions replicas",
+			},
+		},
+		{
+			Attribute: "kafka.topic.partitions-isr",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka topic partitions in-sync-replicas",
+				Other: "Kafka topic partitions in-sync-replicas",
 			},
 		},
 		{
@@ -132,6 +148,8 @@ func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 
 	partitions := make([]string, len(topic.Partitions))
 	partitionsLeaders := make([]string, len(topic.Partitions))
+	partitionsReplicas := make([]string, len(topic.Partitions))
+	partitionsInSyncReplicas := make([]string, len(topic.Partitions))
 
 	for i, partDetail := range topic.Partitions.Sorted() {
 		partitions[i] = strconv.FormatInt(int64(partDetail.Partition), 10)
@@ -141,10 +159,20 @@ func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 		partitionsLeaders[i] = strconv.FormatInt(int64(partDetail.Partition), 10) + "->leader=" + strconv.FormatInt(int64(partDetail.Leader), 10)
 	}
 
+	for i, partDetail := range topic.Partitions.Sorted() {
+		partitionsReplicas[i] = strconv.FormatInt(int64(partDetail.Partition), 10) + "->replicas=" + fmt.Sprintf("%v", partDetail.Replicas)
+	}
+
+	for i, partDetail := range topic.Partitions.Sorted() {
+		partitionsInSyncReplicas[i] = strconv.FormatInt(int64(partDetail.Partition), 10) + "->in-sync-replicas=" + fmt.Sprintf("%v", partDetail.ISR)
+	}
+
 	attributes := make(map[string][]string)
 	attributes["kafka.topic.name"] = []string{topic.Topic}
 	attributes["kafka.topic.partitions"] = partitions
 	attributes["kafka.topic.partitions-leaders"] = partitionsLeaders
+	attributes["kafka.topic.partitions-replicas"] = partitionsReplicas
+	attributes["kafka.topic.partitions-isr"] = partitionsReplicas
 	attributes["kafka.topic.replication-factor"] = []string{fmt.Sprintf("%v", topic.Partitions.NumReplicas())}
 
 	return discovery_kit_api.Target{

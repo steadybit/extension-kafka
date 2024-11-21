@@ -91,7 +91,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 
 	topicSet.Add(state.Topic, partitions...)
 
-	results, err := client.ElectLeaders(ctx, kadm.ElectLiveReplica, topicSet)
+	results, err := client.ElectLeaders(ctx, kadm.ElectPreferredReplica, topicSet)
 	if err != nil {
 		return nil, fmt.Errorf("failed to elect new leader for topic %s and partitions %s: %s", state.Topic, state.Partitions, err)
 	}
