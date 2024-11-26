@@ -32,7 +32,7 @@ const (
 
 type KafkaBrokerAttackState struct {
 	Topic                    string
-	Partitions               []string
+	Partitions               string
 	Offset                   int64
 	DelayBetweenRequestsInMS int64
 	SuccessRate              int
@@ -46,6 +46,9 @@ type KafkaBrokerAttackState struct {
 	RecordHeaders            map[string]string
 	ConsumerGroup            string
 	ElectLeadersHow          string
+	PartitionsInSyncReplicas []string
+	PartitionsReplicas       []string
+	PartitionsLeaders        []string
 }
 
 var (

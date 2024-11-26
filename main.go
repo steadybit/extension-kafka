@@ -113,6 +113,7 @@ func registerHandlers(ctx context.Context) {
 	action_kit_sdk.RegisterAction(extkafka.NewAlterNumberNetworkThreadsAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewAlterLimitConnectionCreateRateAttack())
 	action_kit_sdk.RegisterAction(extkafka.NewKafkaConsumerDenyAccessAttack())
+	action_kit_sdk.RegisterAction(extkafka.NewPartitionsCheckAction())
 
 	exthttp.RegisterHttpHandler("/", exthttp.GetterAsHandler(getExtensionList))
 }

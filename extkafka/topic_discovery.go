@@ -172,7 +172,7 @@ func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 	attributes["kafka.topic.partitions"] = partitions
 	attributes["kafka.topic.partitions-leaders"] = partitionsLeaders
 	attributes["kafka.topic.partitions-replicas"] = partitionsReplicas
-	attributes["kafka.topic.partitions-isr"] = partitionsReplicas
+	attributes["kafka.topic.partitions-isr"] = partitionsInSyncReplicas
 	attributes["kafka.topic.replication-factor"] = []string{fmt.Sprintf("%v", topic.Partitions.NumReplicas())}
 
 	return discovery_kit_api.Target{
