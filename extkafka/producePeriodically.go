@@ -81,6 +81,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 				Name:  "-",
 				Label: "-",
 				Type:  action_kit_api.Separator,
+				Order: extutil.Ptr(5),
 			},
 			{
 				Name:         "recordsPerSecond",
@@ -95,6 +96,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 				Name:  "-",
 				Label: "-",
 				Type:  action_kit_api.Separator,
+				Order: extutil.Ptr(9),
 			},
 			successRate,
 
