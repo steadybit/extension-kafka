@@ -201,7 +201,7 @@ func TestNewHTTPCheckActionPeriodically_All_Failure(t *testing.T) {
 		},
 		Config: map[string]interface{}{
 			"recordsPerSecond": 1,
-			"maxConcurrent":    4,
+			"maxConcurrent":    1,
 			"recordKey":        "steadybit5",
 			"recordValue":      "test5",
 			"recordHeaders": []any{
