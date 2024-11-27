@@ -62,7 +62,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check-partitions", kafkaTopicTargetId),
 		Label:       "Check Partitions",
-		Description: "Check for topic partitions changes like leader, in-sync-replicas, replicas and offline replicas",
+		Description: "Check topic partitions changes for leader, in-sync-replicas, replicas and offline replicas",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
 		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
