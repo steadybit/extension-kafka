@@ -75,7 +75,6 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 				Description:  extutil.Ptr(""),
 				Type:         action_kit_api.Duration,
 				DefaultValue: extutil.Ptr("30s"),
-				Order:        extutil.Ptr(1),
 				Required:     extutil.Ptr(true),
 			},
 			{
@@ -110,7 +109,6 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 					},
 				}),
 				Required: extutil.Ptr(false),
-				Order:    extutil.Ptr(2),
 			},
 			{
 				Name:         "stateCheckMode",
@@ -129,7 +127,6 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 					},
 				}),
 				Required: extutil.Ptr(true),
-				Order:    extutil.Ptr(3),
 			},
 		},
 		Widgets: extutil.Ptr([]action_kit_api.Widget{

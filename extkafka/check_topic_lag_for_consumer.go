@@ -75,7 +75,6 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 				Description:  extutil.Ptr(""),
 				Type:         action_kit_api.Duration,
 				DefaultValue: extutil.Ptr("30s"),
-				Order:        extutil.Ptr(1),
 				Required:     extutil.Ptr(true),
 			},
 			{
@@ -89,7 +88,6 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 						Attribute: "kafka.consumer-group.topics",
 					},
 				}),
-				Order: extutil.Ptr(2),
 			},
 			{
 				Name:         "acceptableLag",
@@ -98,7 +96,6 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 				Type:         action_kit_api.Integer,
 				Required:     extutil.Ptr(true),
 				DefaultValue: extutil.Ptr("10"),
-				Order:        extutil.Ptr(3),
 			},
 		},
 		Widgets: extutil.Ptr([]action_kit_api.Widget{

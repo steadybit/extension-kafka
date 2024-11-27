@@ -85,7 +85,6 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 				Name:  "-",
 				Label: "-",
 				Type:  action_kit_api.Separator,
-				Order: extutil.Ptr(5),
 			},
 			{
 				Name:         "numberOfRecords",
@@ -94,14 +93,12 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 				Type:         action_kit_api.Integer,
 				Required:     extutil.Ptr(true),
 				DefaultValue: extutil.Ptr("1"),
-				Order:        extutil.Ptr(7),
 			},
 			duration,
 			{
 				Name:  "-",
 				Label: "-",
 				Type:  action_kit_api.Separator,
-				Order: extutil.Ptr(9),
 			},
 			successRate,
 			//------------------------
