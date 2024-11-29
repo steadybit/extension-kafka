@@ -8,11 +8,13 @@ import (
 	"context"
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
+	"github.com/steadybit/extension-kafka/config"
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/twmb/franz-go/pkg/kfake"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -117,7 +119,6 @@ func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 
 func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 	c, err := kfake.NewCluster(
-		kfake.Ports(9092, 9093, 9094),
 		kfake.SeedTopics(-1, "steadybit"),
 		kfake.NumBrokers(3),
 	)
@@ -126,6 +127,8 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 	}
 	defer c.Close()
 
+	seeds := c.ListenAddrs()
+	config.Config.SeedBrokers = strings.Join(seeds, ",")
 	//prepare the action
 	action := produceMessageActionPeriodically{}
 	state := action.NewEmptyState()
@@ -181,7 +184,6 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 
 func TestNewHTTPCheckActionPeriodically_All_Failure(t *testing.T) {
 	c, err := kfake.NewCluster(
-		kfake.Ports(9092, 9093, 9094),
 		kfake.SeedTopics(-1, "steadybit"),
 		kfake.NumBrokers(3),
 	)
@@ -190,6 +192,8 @@ func TestNewHTTPCheckActionPeriodically_All_Failure(t *testing.T) {
 	}
 	defer c.Close()
 
+	seeds := c.ListenAddrs()
+	config.Config.SeedBrokers = strings.Join(seeds, ",")
 	//prepare the action
 	action := produceMessageActionPeriodically{}
 	state := action.NewEmptyState()

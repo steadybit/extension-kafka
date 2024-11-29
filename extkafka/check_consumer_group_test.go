@@ -9,11 +9,13 @@ import (
 	"fmt"
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
+	"github.com/steadybit/extension-kafka/config"
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/twmb/franz-go/pkg/kfake"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"strings"
 	"testing"
 	"time"
 )
@@ -121,7 +123,6 @@ func TestCheckConsumerGroup_Prepare(t *testing.T) {
 
 func TestCheckConsumerGroup_Status(t *testing.T) {
 	c, err := kfake.NewCluster(
-		kfake.Ports(9092, 9093, 9094),
 		kfake.SeedTopics(-1, "steadybit"),
 		kfake.NumBrokers(3),
 	)
@@ -130,7 +131,8 @@ func TestCheckConsumerGroup_Status(t *testing.T) {
 	}
 	defer c.Close()
 
-	seeds := []string{"localhost:9092"}
+	seeds := c.ListenAddrs()
+	config.Config.SeedBrokers = strings.Join(seeds, ",")
 	// One client can both produce and consume!
 	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
 	cl, err := kgo.NewClient(
