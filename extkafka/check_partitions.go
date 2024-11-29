@@ -13,6 +13,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
+	"github.com/steadybit/extension-kafka/config"
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
@@ -35,6 +36,7 @@ type PartitionsCheckState struct {
 	ExpectedChanges         []string
 	StateCheckMode          string
 	StateCheckSuccess       bool
+	BrokerHosts             []string
 }
 
 const (
@@ -189,6 +191,7 @@ func (m *PartitionsCheckAction) Prepare(_ context.Context, state *PartitionsChec
 	state.PreviousReplicas = make(map[int32][]int32)
 	state.PreviousOfflineReplicas = make(map[int32][]int32)
 	state.PreviousLeader = make(map[int32]int32)
+	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
@@ -204,7 +207,7 @@ func (m *PartitionsCheckAction) Status(ctx context.Context, state *PartitionsChe
 func TopicCheckStatus(ctx context.Context, state *PartitionsCheckState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
-	client, err := createNewAdminClient()
+	client, err := createNewAdminClient(state.BrokerHosts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

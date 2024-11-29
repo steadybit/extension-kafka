@@ -14,24 +14,18 @@ import (
 
 type AlterNumberNetworkThreadsAttack struct{}
 
-type AlterNumberNetworkThreadsState struct {
-	BrokerConfigValue        string
-	BrokerID                 int32
-	InitialBrokerConfigValue string
-}
-
 const (
 	NumberNetworkThreads = "num.network.threads"
 )
 
-var _ action_kit_sdk.Action[AlterNumberNetworkThreadsState] = (*AlterNumberNetworkThreadsAttack)(nil)
+var _ action_kit_sdk.Action[AlterState] = (*AlterNumberNetworkThreadsAttack)(nil)
 
-func NewAlterNumberNetworkThreadsAttack() action_kit_sdk.Action[AlterNumberNetworkThreadsState] {
+func NewAlterNumberNetworkThreadsAttack() action_kit_sdk.Action[AlterState] {
 	return &AlterNumberNetworkThreadsAttack{}
 }
 
-func (k *AlterNumberNetworkThreadsAttack) NewEmptyState() AlterNumberNetworkThreadsState {
-	return AlterNumberNetworkThreadsState{}
+func (k *AlterNumberNetworkThreadsAttack) NewEmptyState() AlterState {
+	return AlterState{}
 }
 
 func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescription {
@@ -69,21 +63,21 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 	}
 }
 
-func (k *AlterNumberNetworkThreadsAttack) Prepare(_ context.Context, state *AlterNumberNetworkThreadsState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (k *AlterNumberNetworkThreadsAttack) Prepare(_ context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
 	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["network_threads"])
 
 	return nil, nil
 }
 
-func (k *AlterNumberNetworkThreadsAttack) Start(ctx context.Context, state *AlterNumberNetworkThreadsState) (*action_kit_api.StartResult, error) {
+func (k *AlterNumberNetworkThreadsAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
 	var err error
-	state.InitialBrokerConfigValue, err = saveConfig(ctx, NumberNetworkThreads, state.BrokerID)
+	state.InitialBrokerConfigValue, err = saveConfig(ctx, state.BrokerHosts, NumberNetworkThreads, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}
 
-	err = alterConfig(ctx, NumberNetworkThreads, state.BrokerConfigValue, state.BrokerID)
+	err = alterConfig(ctx, state.BrokerHosts, NumberNetworkThreads, state.BrokerConfigValue, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +91,8 @@ func (k *AlterNumberNetworkThreadsAttack) Start(ctx context.Context, state *Alte
 
 }
 
-func (k *AlterNumberNetworkThreadsAttack) Stop(ctx context.Context, state *AlterNumberNetworkThreadsState) (*action_kit_api.StopResult, error) {
-	err := alterConfig(ctx, NumberNetworkThreads, state.InitialBrokerConfigValue, state.BrokerID)
+func (k *AlterNumberNetworkThreadsAttack) Stop(ctx context.Context, state *AlterState) (*action_kit_api.StopResult, error) {
+	err := alterConfig(ctx, state.BrokerHosts, NumberNetworkThreads, state.InitialBrokerConfigValue, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}

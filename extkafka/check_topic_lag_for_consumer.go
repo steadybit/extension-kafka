@@ -13,11 +13,13 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
+	"github.com/steadybit/extension-kafka/config"
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -30,6 +32,7 @@ type ConsumerGroupLagCheckState struct {
 	AcceptableLag     int64
 	StateCheckSuccess bool
 	StateCheckFailed  bool
+	BrokerHosts       []string
 }
 
 // Make sure action implements all required interfaces
@@ -162,6 +165,7 @@ func (m *ConsumerGroupLagCheckAction) Prepare(_ context.Context, state *Consumer
 
 	state.ConsumerGroupName = request.Target.Attributes["kafka.consumer-group.name"][0]
 	state.End = end
+	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
@@ -177,7 +181,7 @@ func (m *ConsumerGroupLagCheckAction) Status(ctx context.Context, state *Consume
 func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagCheckState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
-	client, err := createNewAdminClient()
+	client, err := createNewAdminClient(state.BrokerHosts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

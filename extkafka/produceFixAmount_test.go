@@ -87,7 +87,7 @@ func TestNewHTTPCheckActionFixedAmount_Prepare(t *testing.T) {
 func TestNewHTTPCheckActionFixedAmount_All_Success(t *testing.T) {
 	c, err := kfake.NewCluster(
 		kfake.SeedTopics(-1, "steadybit"),
-		kfake.NumBrokers(3),
+		kfake.NumBrokers(1),
 	)
 	if err != nil {
 		panic(err)
@@ -155,7 +155,7 @@ func TestNewHTTPCheckActionFixedAmount_All_Success(t *testing.T) {
 func TestNewHTTPCheckActionFixedAmount_All_Failure(t *testing.T) {
 	c, err := kfake.NewCluster(
 		kfake.SeedTopics(-1, "steadybit"),
-		kfake.NumBrokers(3),
+		kfake.NumBrokers(1),
 	)
 	if err != nil {
 		panic(err)

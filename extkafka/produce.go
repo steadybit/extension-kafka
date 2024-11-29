@@ -10,8 +10,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
+	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kgo"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -48,6 +50,7 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	state.RecordKey = extutil.ToString(request.Config["recordKey"])
 	state.RecordValue = extutil.ToString(request.Config["recordValue"])
 	state.ExecutionID = request.ExecutionId
+	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	var err error
 	if _, ok := request.Config["recordHeaders"]; ok {
@@ -109,7 +112,7 @@ func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 }
 
 func requestProducerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
-	client, err := createNewClient()
+	client, err := createNewClient(state.BrokerHosts)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create client")
 	}

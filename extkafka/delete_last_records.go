@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
+	"github.com/steadybit/extension-kafka/config"
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
@@ -20,9 +21,10 @@ import (
 type DeleteRecordsAttack struct{}
 
 type DeleteRecordsState struct {
-	TopicName  string
-	Partitions []string
-	Offset     int64
+	TopicName   string
+	Partitions  []string
+	Offset      int64
+	BrokerHosts []string
 }
 
 var _ action_kit_sdk.Action[DeleteRecordsState] = (*DeleteRecordsAttack)(nil)
@@ -85,6 +87,7 @@ func (k *DeleteRecordsAttack) Prepare(_ context.Context, state *DeleteRecordsSta
 	state.TopicName = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
 	state.Partitions = extutil.ToStringArray(request.Config["partitions"])
 	state.Offset = extutil.ToInt64(request.Config["offset"])
+	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
@@ -92,7 +95,7 @@ func (k *DeleteRecordsAttack) Prepare(_ context.Context, state *DeleteRecordsSta
 func (k *DeleteRecordsAttack) Start(ctx context.Context, state *DeleteRecordsState) (*action_kit_api.StartResult, error) {
 	var errs []error
 
-	adminClient, err := createNewAdminClient()
+	adminClient, err := createNewAdminClient(state.BrokerHosts)
 	if err != nil {
 		return nil, err
 	}

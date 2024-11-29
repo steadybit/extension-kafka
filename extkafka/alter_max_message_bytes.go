@@ -8,30 +8,26 @@ import (
 	"fmt"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
+	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
+	"strings"
 )
 
 type AlterMessageMaxBytesAttack struct{}
-
-type AlterMessageMaxBytesState struct {
-	BrokerConfigValue        string
-	BrokerID                 int32
-	InitialBrokerConfigValue string
-}
 
 const (
 	MessageMaxBytes = "message.max.bytes"
 )
 
-var _ action_kit_sdk.Action[AlterMessageMaxBytesState] = (*AlterMessageMaxBytesAttack)(nil)
+var _ action_kit_sdk.Action[AlterState] = (*AlterMessageMaxBytesAttack)(nil)
 
-func NewAlterMaxMessageBytesAttack() action_kit_sdk.Action[AlterMessageMaxBytesState] {
+func NewAlterMaxMessageBytesAttack() action_kit_sdk.Action[AlterState] {
 	return &AlterMessageMaxBytesAttack{}
 }
 
-func (k *AlterMessageMaxBytesAttack) NewEmptyState() AlterMessageMaxBytesState {
-	return AlterMessageMaxBytesState{}
+func (k *AlterMessageMaxBytesAttack) NewEmptyState() AlterState {
+	return AlterState{}
 }
 
 func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription {
@@ -69,21 +65,22 @@ func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription
 	}
 }
 
-func (k *AlterMessageMaxBytesAttack) Prepare(_ context.Context, state *AlterMessageMaxBytesState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (k *AlterMessageMaxBytesAttack) Prepare(_ context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
 	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["max_bytes"])
+	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
 
-func (k *AlterMessageMaxBytesAttack) Start(ctx context.Context, state *AlterMessageMaxBytesState) (*action_kit_api.StartResult, error) {
+func (k *AlterMessageMaxBytesAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
 	var err error
-	state.InitialBrokerConfigValue, err = saveConfig(ctx, MessageMaxBytes, state.BrokerID)
+	state.InitialBrokerConfigValue, err = saveConfig(ctx, state.BrokerHosts, MessageMaxBytes, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}
 
-	err = alterConfig(ctx, MessageMaxBytes, state.BrokerConfigValue, state.BrokerID)
+	err = alterConfig(ctx, state.BrokerHosts, MessageMaxBytes, state.BrokerConfigValue, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}
@@ -97,8 +94,8 @@ func (k *AlterMessageMaxBytesAttack) Start(ctx context.Context, state *AlterMess
 
 }
 
-func (k *AlterMessageMaxBytesAttack) Stop(ctx context.Context, state *AlterMessageMaxBytesState) (*action_kit_api.StopResult, error) {
-	err := alterConfig(ctx, MessageMaxBytes, state.InitialBrokerConfigValue, state.BrokerID)
+func (k *AlterMessageMaxBytesAttack) Stop(ctx context.Context, state *AlterState) (*action_kit_api.StopResult, error) {
+	err := alterConfig(ctx, state.BrokerHosts, MessageMaxBytes, state.InitialBrokerConfigValue, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}

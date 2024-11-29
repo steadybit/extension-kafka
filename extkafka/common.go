@@ -14,7 +14,6 @@ import (
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -45,6 +44,14 @@ type KafkaBrokerAttackState struct {
 	ExecutionID              uuid.UUID
 	RecordHeaders            map[string]string
 	ConsumerGroup            string
+	BrokerHosts              []string
+}
+
+type AlterState struct {
+	BrokerConfigValue        string
+	BrokerID                 int32
+	InitialBrokerConfigValue string
+	BrokerHosts              []string
 }
 
 var (
@@ -111,9 +118,9 @@ var (
 	}
 )
 
-func createNewClient() (*kgo.Client, error) {
+func createNewClient(brokers []string) (*kgo.Client, error) {
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(strings.Split(config.Config.SeedBrokers, ",")...),
+		kgo.SeedBrokers(brokers...),
 		kgo.ClientID("steadybit"),
 	}
 
@@ -151,17 +158,17 @@ func createNewClient() (*kgo.Client, error) {
 	return client, nil
 }
 
-func createNewAdminClient() (*kadm.Client, error) {
-	client, err := createNewClient()
+func createNewAdminClient(brokers []string) (*kadm.Client, error) {
+	client, err := createNewClient(brokers)
 	if err != nil {
 		return nil, err
 	}
 	return kadm.NewClient(client), nil
 }
 
-func saveConfig(ctx context.Context, configName string, brokerID int32) (string, error) {
+func saveConfig(ctx context.Context, brokers []string, configName string, brokerID int32) (string, error) {
 	var initialValue string
-	adminClient, err := createNewAdminClient()
+	adminClient, err := createNewAdminClient(brokers)
 	if err != nil {
 		return "", err
 	}
@@ -192,8 +199,8 @@ func saveConfig(ctx context.Context, configName string, brokerID int32) (string,
 	return initialValue, nil
 }
 
-func alterConfig(ctx context.Context, configName string, configValue string, brokerID int32) error {
-	adminClient, err := createNewAdminClient()
+func alterConfig(ctx context.Context, brokers []string, configName string, configValue string, brokerID int32) error {
+	adminClient, err := createNewAdminClient(brokers)
 	if err != nil {
 		return err
 	}

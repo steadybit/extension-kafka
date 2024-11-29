@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
+	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
+	"strings"
 )
 
 type KafkaConsumerDenyAccessAttack struct{}
@@ -20,6 +22,7 @@ type KafkaDenyUserState struct {
 	ConsumerGroup string
 	Topic         string
 	User          string
+	BrokerHosts   []string
 }
 
 var _ action_kit_sdk.Action[KafkaDenyUserState] = (*KafkaConsumerDenyAccessAttack)(nil)
@@ -92,12 +95,13 @@ func (k *KafkaConsumerDenyAccessAttack) Prepare(_ context.Context, state *KafkaD
 	state.ConsumerGroup = request.Target.Attributes["kafka.consumer-group.name"][0]
 	state.Topic = extutil.ToString(request.Config["topic"])
 	state.User = extutil.ToString(request.Config["user"])
+	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
 
 func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaDenyUserState) (*action_kit_api.StartResult, error) {
-	client, err := createNewAdminClient()
+	client, err := createNewAdminClient(state.BrokerHosts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
@@ -135,7 +139,7 @@ func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaD
 }
 
 func (k *KafkaConsumerDenyAccessAttack) Stop(ctx context.Context, state *KafkaDenyUserState) (*action_kit_api.StopResult, error) {
-	client, err := createNewAdminClient()
+	client, err := createNewAdminClient(state.BrokerHosts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

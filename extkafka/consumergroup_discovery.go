@@ -14,6 +14,7 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
+	"strings"
 	"time"
 )
 
@@ -104,7 +105,7 @@ func (r *kafkaConsumerGroupDiscovery) DiscoverTargets(ctx context.Context) ([]di
 func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	result := make([]discovery_kit_api.Target, 0, 20)
 
-	client, err := createNewAdminClient()
+	client, err := createNewAdminClient(strings.Split(config.Config.SeedBrokers, ","))
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

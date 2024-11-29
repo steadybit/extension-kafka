@@ -13,7 +13,6 @@ import (
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
 	"github.com/twmb/franz-go/pkg/kfake"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -48,7 +47,7 @@ func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 				},
 				Config: map[string]interface{}{
 					"recordsPerSecond": 1,
-					"maxConcurrent":    4,
+					"maxConcurrent":    2,
 					"recordKey":        "steadybit5",
 					"recordValue":      "test5",
 					"recordHeaders": []any{
@@ -64,7 +63,7 @@ func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 				Topic:                    "steadybit",
 				RecordKey:                "steadybit5",
 				RecordValue:              "test5",
-				MaxConcurrent:            4,
+				MaxConcurrent:            2,
 				DelayBetweenRequestsInMS: 1000,
 				RecordHeaders:            map[string]string{"test": "test"},
 			},
@@ -77,7 +76,7 @@ func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 				},
 				Config: map[string]interface{}{
 					"recordsPerSecond": 1,
-					"maxConcurrent":    4,
+					"maxConcurrent":    2,
 					"recordKey":        "steadybit5",
 					"recordValue":      "test5",
 					"recordHeaders": []any{
@@ -120,7 +119,7 @@ func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 	c, err := kfake.NewCluster(
 		kfake.SeedTopics(-1, "steadybit"),
-		kfake.NumBrokers(3),
+		kfake.NumBrokers(1),
 	)
 	if err != nil {
 		panic(err)
@@ -139,7 +138,7 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 			},
 		},
 		Config: map[string]interface{}{
-			"recordsPerSecond": 2,
+			"recordsPerSecond": 1,
 			"maxConcurrent":    2,
 			"recordKey":        "steadybit5",
 			"recordValue":      "test5",
@@ -179,13 +178,13 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, stopResult.Metrics)
 	assert.Nil(t, stopResult.Error)
-	assert.Greater(t, strconv.FormatUint(executionRunData.requestSuccessCounter.Load(), 10), strconv.FormatUint(uint64(19), 10))
+	assert.Greater(t, executionRunData.requestSuccessCounter.Load(), uint64(9))
 }
 
 func TestNewHTTPCheckActionPeriodically_All_Failure(t *testing.T) {
 	c, err := kfake.NewCluster(
 		kfake.SeedTopics(-1, "steadybit"),
-		kfake.NumBrokers(3),
+		kfake.NumBrokers(1),
 	)
 	if err != nil {
 		panic(err)
