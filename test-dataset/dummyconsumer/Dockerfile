@@ -11,7 +11,7 @@ ARG USER_UID=10000
 
 RUN adduser -u $USER_UID -D $USERNAME
 
-USER $USERNAME
+USER $USER_UID
 
 WORKDIR /app
 COPY --from=builder /app/myapp /app/
