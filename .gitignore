@@ -1,6 +1,8 @@
 /extension
 /coverage.out
 /e2e/e2e-coverage-docker.out
+/gpg.key
+/dist
 /licenses
 /snyk.sarif
 .idea
