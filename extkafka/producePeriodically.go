@@ -45,7 +45,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			TargetType: kafkaTopicTargetId,
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
-					Label:       "by topic name",
+					Label:       "topic name",
 					Description: extutil.Ptr("Find topic by name"),
 					Query:       "kafka.topic.name=\"\"",
 				},

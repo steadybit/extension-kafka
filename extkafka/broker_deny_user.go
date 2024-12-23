@@ -46,7 +46,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 			TargetType: kafkaConsumerTargetId,
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
-					Label:       "default",
+					Label:       "consumer group name",
 					Description: extutil.Ptr("Find consumer group by name"),
 					Query:       "kafka.consumer-group.name=\"\"",
 				},

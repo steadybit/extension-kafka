@@ -72,7 +72,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 			QuantityRestriction: extutil.Ptr(action_kit_api.QuantityRestrictionAll),
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
-					Label:       "default",
+					Label:       "topic name",
 					Description: extutil.Ptr("Find topic group by name"),
 					Query:       "kafka.topic.name=\"\"",
 				},

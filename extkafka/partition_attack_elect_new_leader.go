@@ -43,7 +43,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 			TargetType: kafkaTopicTargetId,
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
-					Label:       "by topic  id",
+					Label:       "topic id",
 					Description: extutil.Ptr("Find topic by id"),
 					Query:       "kafka.topic.id=\"\"",
 				},

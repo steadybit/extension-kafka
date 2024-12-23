@@ -39,7 +39,7 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 			TargetType: kafkaBrokerTargetId,
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
-					Label:       "by broker node id",
+					Label:       "broker node id",
 					Description: extutil.Ptr("Find broker by node id"),
 					Query:       "kafka.broker.node-id=\"\"",
 				},

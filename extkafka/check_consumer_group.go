@@ -61,7 +61,7 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 			QuantityRestriction: extutil.Ptr(action_kit_api.All),
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
-					Label:       "default",
+					Label:       "consumer group name",
 					Description: extutil.Ptr("Find consumer group by name"),
 					Query:       "kafka.consumer-group.name=\"\"",
 				},
