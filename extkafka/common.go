@@ -2,6 +2,8 @@ package extkafka
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"github.com/google/uuid"
@@ -13,6 +15,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
+	"os"
 	"strconv"
 	"time"
 )
@@ -150,6 +153,15 @@ func createNewClient(brokers []string) (*kgo.Client, error) {
 		}
 	}
 
+	if config.Config.CaFile != "" && config.Config.CertKeyFile != "" && config.Config.CertChainFile != "" {
+		tlsConfig, err := newTLSConfig(config.Config.CertChainFile, config.Config.CertKeyFile, config.Config.CaFile)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
+	}
+
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
@@ -221,4 +233,26 @@ func alterConfig(ctx context.Context, brokers []string, configName string, confi
 		return errors.Join(errs...)
 	}
 	return nil
+}
+
+func newTLSConfig(clientCertFile, clientKeyFile, caCertFile string) (*tls.Config, error) {
+	tlsConfig := tls.Config{}
+
+	// Load client cert
+	cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
+	if err != nil {
+		return &tlsConfig, err
+	}
+	tlsConfig.Certificates = []tls.Certificate{cert}
+
+	// Load CA cert
+	caCert, err := os.ReadFile(caCertFile)
+	if err != nil {
+		return &tlsConfig, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+	tlsConfig.RootCAs = caCertPool
+
+	return &tlsConfig, err
 }

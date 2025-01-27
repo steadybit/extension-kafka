@@ -6,6 +6,8 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	_ "github.com/KimMachineGun/automemlimit" // By default, it sets `GOMEMLIMIT` to 90% of cgroup's memory limit.
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -182,6 +184,15 @@ func testBrokerConnection() {
 		}
 	}
 
+	if config.Config.CaFile != "" && config.Config.CertKeyFile != "" && config.Config.CertChainFile != "" {
+		tlsConfig, err := newTLSConfig(config.Config.CertChainFile, config.Config.CertKeyFile, config.Config.CaFile)
+		if err != nil {
+			log.Fatal().Err(err).Msgf("failed to create tls config: %s", err.Error())
+		}
+
+		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
+	}
+
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
 		log.Fatal().Err(err).Msgf("failed to initialize kafka client: %s", err.Error())
@@ -231,3 +242,25 @@ func testBrokerConnection() {
 //		return
 //	}
 //}
+
+func newTLSConfig(clientCertFile, clientKeyFile, caCertFile string) (*tls.Config, error) {
+	tlsConfig := tls.Config{}
+
+	// Load client cert
+	cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
+	if err != nil {
+		return &tlsConfig, err
+	}
+	tlsConfig.Certificates = []tls.Certificate{cert}
+
+	// Load CA cert
+	caCert, err := os.ReadFile(caCertFile)
+	if err != nil {
+		return &tlsConfig, err
+	}
+	caCertPool := x509.NewCertPool()
+	caCertPool.AppendCertsFromPEM(caCert)
+	tlsConfig.RootCAs = caCertPool
+
+	return &tlsConfig, err
+}

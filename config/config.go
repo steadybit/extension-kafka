@@ -20,7 +20,13 @@ type Specification struct {
 	// variable STEADYBIT_EXTENSION_SASL_USER="USER"
 	SaslUser string `json:"saslUser" required:"false" split_words:"true"`
 	// variable STEADYBIT_EXTENSION_SASL_PASSWORD="PASSWORD"
-	SaslPassword                              string   `json:"saslPassword" required:"false" split_words:"true"`
+	SaslPassword string `json:"saslPassword" required:"false" split_words:"true"`
+	// variable STEADYBIT_EXTENSION_CERT_CHAIN_FILE="/path/to/certfile"
+	CertChainFile string `json:"certChainFile" required:"false" split_words:"true"`
+	// variable STEADYBIT_EXTENSION_CERT_KEY_FILE="/path/to/keyfile"
+	CertKeyFile string `json:"certKeyFile" required:"false" split_words:"true"`
+	// variable STEADYBIT_EXTENSION_CA_FILE="/path/to/cafile"
+	CaFile                                    string   `json:"caFile" required:"false" split_words:"true"`
 	DiscoveryIntervalConsumerGroup            int      `json:"discoveryIntervalKafkaConsumerGroup" split_words:"true" required:"false" default:"30"`
 	DiscoveryIntervalKafkaBroker              int      `json:"discoveryIntervalKafkaBroker" split_words:"true" required:"false" default:"30"`
 	DiscoveryIntervalKafkaTopic               int      `json:"discoveryIntervalKafkaTopic" split_words:"true" required:"false" default:"30"`

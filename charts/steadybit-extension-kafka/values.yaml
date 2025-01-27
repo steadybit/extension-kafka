@@ -17,6 +17,9 @@ kafka:
     saslUser: ""
     saslPassword: ""
     existingSecret: null
+    certChainFile: ""
+    certKeyFile: ""
+    caFile: ""
 
 tls:
   server:
