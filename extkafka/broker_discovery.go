@@ -82,7 +82,15 @@ func (r *kafkaBrokerDiscovery) DescribeAttributes() []discovery_kit_api.Attribut
 				One:   "Kafka broker node id",
 				Other: "Kafka broker node ids",
 			},
-		}, {
+		},
+		{
+			Attribute: "kafka.broker.is-controller",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka broker controller",
+				Other: "Kafka broker controller",
+			},
+		},
+		{
 			Attribute: "kafka.broker.host",
 			Label: discovery_kit_api.PluralLabel{
 				One:   "Kafka broker host",
@@ -124,19 +132,27 @@ func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list brokers: %v", err)
 	}
+	metadata, err := client.BrokerMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get brokers metadata : %v", err)
+	}
 	for _, broker := range brokerDetails {
-		result = append(result, toBrokerTarget(broker))
+		result = append(result, toBrokerTarget(broker, metadata.Controller))
 	}
 
 	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesBrokers), nil
 }
 
-func toBrokerTarget(broker kadm.BrokerDetail) discovery_kit_api.Target {
+func toBrokerTarget(broker kadm.BrokerDetail, controller int32) discovery_kit_api.Target {
 	id := fmt.Sprintf("%v", broker.NodeID)
 	label := broker.Host
 
 	attributes := make(map[string][]string)
 	attributes["kafka.broker.node-id"] = []string{fmt.Sprintf("%v", broker.NodeID)}
+	attributes["kafka.broker.is-controller"] = []string{"false"}
+	if broker.NodeID == controller {
+		attributes["kafka.broker.is-controller"] = []string{"true"}
+	}
 	attributes["kafka.broker.host"] = []string{label}
 	attributes["kafka.broker.port"] = []string{fmt.Sprintf("%v", broker.Port)}
 	if broker.Rack != nil {
