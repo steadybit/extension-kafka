@@ -53,6 +53,7 @@ func (r *kafkaBrokerDiscovery) DescribeTarget() discovery_kit_api.TargetDescript
 			Columns: []discovery_kit_api.Column{
 				{Attribute: "steadybit.label"},
 				{Attribute: "kafka.broker.node-id"},
+				{Attribute: "kafka.broker.is-controller"},
 				{Attribute: "kafka.broker.host"},
 				{Attribute: "kafka.broker.port"},
 				{Attribute: "kafka.broker.rack"},
