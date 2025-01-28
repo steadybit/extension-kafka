@@ -27,19 +27,19 @@ import (
 type BrokersCheckAction struct{}
 
 type BrokersCheckState struct {
-	ClusterID         string
-	PreviousLeader    int32
-	BrokerNodes       []int32
-	End               time.Time
-	ExpectedChanges   []string
-	StateCheckMode    string
-	StateCheckSuccess bool
-	BrokerHosts       []string
+	PreviousController int32
+	BrokerNodes        []int32
+	End                time.Time
+	ExpectedChanges    []string
+	StateCheckMode     string
+	StateCheckSuccess  bool
+	BrokerHosts        []string
 }
 
 const (
 	BrokerControllerChanged = "kafka controller changed"
 	BrokerDowntime          = "kafka broker with downtime"
+	MetricID                = "Broker Activity"
 )
 
 // Make sure action implements all required interfaces
@@ -117,10 +117,10 @@ func (m *BrokersCheckAction) Describe() action_kit_api.ActionDescription {
 				Type:  action_kit_api.ComSteadybitWidgetStateOverTime,
 				Title: "Kafka Broker Changes",
 				Identity: action_kit_api.StateOverTimeWidgetIdentityConfig{
-					From: "kafka.cluster.id",
+					From: "metric.id",
 				},
 				Label: action_kit_api.StateOverTimeWidgetLabelConfig{
-					From: "kafka.cluster.id",
+					From: "metric.id",
 				},
 				State: action_kit_api.StateOverTimeWidgetStateConfig{
 					From: "state",
@@ -172,8 +172,7 @@ func (m *BrokersCheckAction) Prepare(ctx context.Context, state *BrokersCheckSta
 	state.End = end
 	state.ExpectedChanges = expectedState
 	state.StateCheckMode = stateCheckMode
-	state.ClusterID = metadata.Cluster
-	state.PreviousLeader = metadata.Controller
+	state.PreviousController = metadata.Controller
 	state.BrokerNodes = metadata.Brokers.NodeIDs()
 
 	return nil, nil
@@ -204,8 +203,8 @@ func BrokerCheckStatus(ctx context.Context, state *BrokersCheckState) (*action_k
 	// Check for changes
 	changes := make(map[string][]int32)
 
-	if metadata.Controller != state.PreviousLeader {
-		state.PreviousLeader = metadata.Controller
+	if metadata.Controller != state.PreviousController {
+		state.PreviousController = metadata.Controller
 		changes[BrokerControllerChanged] = []int32{metadata.Controller}
 	}
 
@@ -252,7 +251,7 @@ func BrokerCheckStatus(ctx context.Context, state *BrokersCheckState) (*action_k
 	}
 
 	metrics := []action_kit_api.Metric{
-		*toBrokerChangeMetric(state.ClusterID, state.ExpectedChanges, keys, changes, now),
+		*toBrokerChangeMetric(state.ExpectedChanges, keys, changes, now),
 	}
 
 	return &action_kit_api.StatusResult{
@@ -262,7 +261,7 @@ func BrokerCheckStatus(ctx context.Context, state *BrokersCheckState) (*action_k
 	}, nil
 }
 
-func toBrokerChangeMetric(clusterID string, expectedChanges []string, changesNames []string, changes map[string][]int32, now time.Time) *action_kit_api.Metric {
+func toBrokerChangeMetric(expectedChanges []string, changesNames []string, changes map[string][]int32, now time.Time) *action_kit_api.Metric {
 	var tooltip string
 	var state string
 
@@ -296,10 +295,10 @@ func toBrokerChangeMetric(clusterID string, expectedChanges []string, changesNam
 	return extutil.Ptr(action_kit_api.Metric{
 		Name: extutil.Ptr("kafka_consumer_group_state"),
 		Metric: map[string]string{
-			"kafka.cluster.id": clusterID,
-			"url":              "",
-			"state":            state,
-			"tooltip":          tooltip,
+			"metric.id": MetricID,
+			"url":       "",
+			"state":     state,
+			"tooltip":   tooltip,
 		},
 		Timestamp: now,
 		Value:     0,
