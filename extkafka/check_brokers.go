@@ -58,7 +58,7 @@ func (m *BrokersCheckAction) NewEmptyState() BrokersCheckState {
 
 func (m *BrokersCheckAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
-		Id:          fmt.Sprintf("%s.check-controller", kafkaBrokerTargetId),
+		Id:          fmt.Sprintf("%s.check", kafkaBrokerTargetId),
 		Label:       "Check Brokers",
 		Description: "Check activity of brokers.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
