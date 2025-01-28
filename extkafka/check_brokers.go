@@ -10,17 +10,17 @@ package extkafka
 import (
 	"context"
 	"fmt"
+	"github.com/steadybit/extension-kafka/config"
+	"strings"
 
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
-	"github.com/steadybit/extension-kafka/config"
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 
 	"slices"
 	"sort"
-	"strings"
 	"time"
 )
 
@@ -156,6 +156,8 @@ func (m *BrokersCheckAction) Prepare(ctx context.Context, state *BrokersCheckSta
 		stateCheckMode = fmt.Sprintf("%v", request.Config["changeCheckMode"])
 	}
 
+	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
+
 	client, err := createNewAdminClient(state.BrokerHosts)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
@@ -173,7 +175,6 @@ func (m *BrokersCheckAction) Prepare(ctx context.Context, state *BrokersCheckSta
 	state.ClusterID = metadata.Cluster
 	state.PreviousLeader = metadata.Controller
 	state.BrokerNodes = metadata.Brokers.NodeIDs()
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
