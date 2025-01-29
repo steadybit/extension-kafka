@@ -21,8 +21,9 @@ type kafkaBrokerDiscovery struct {
 }
 
 var (
-	_ discovery_kit_sdk.TargetDescriber    = (*kafkaBrokerDiscovery)(nil)
-	_ discovery_kit_sdk.AttributeDescriber = (*kafkaBrokerDiscovery)(nil)
+	_ discovery_kit_sdk.TargetDescriber          = (*kafkaBrokerDiscovery)(nil)
+	_ discovery_kit_sdk.AttributeDescriber       = (*kafkaBrokerDiscovery)(nil)
+	_ discovery_kit_sdk.EnrichmentRulesDescriber = (*kafkaBrokerDiscovery)(nil)
 )
 
 func NewKafkaBrokerDiscovery(ctx context.Context) discovery_kit_sdk.TargetDiscovery {
@@ -63,6 +64,43 @@ func (r *kafkaBrokerDiscovery) DescribeTarget() discovery_kit_api.TargetDescript
 					Attribute: "steadybit.label",
 					Direction: "ASC",
 				},
+			},
+		},
+	}
+}
+
+func (c *kafkaBrokerDiscovery) DescribeEnrichmentRules() []discovery_kit_api.TargetEnrichmentRule {
+	return []discovery_kit_api.TargetEnrichmentRule{
+		getBrokerToPodEnrichmentRule(),
+	}
+}
+
+func getBrokerToPodEnrichmentRule() discovery_kit_api.TargetEnrichmentRule {
+	return discovery_kit_api.TargetEnrichmentRule{
+		Id:      "com.steadybit.extension_kafka.kafka-broker-to-pod",
+		Version: extbuild.GetSemverVersionStringOrUnknown(),
+		Src: discovery_kit_api.SourceOrDestination{
+			Type: kafkaBrokerTargetId,
+			Selector: map[string]string{
+				"kafka.pod.name":      "${dest.k8s.pod.name}",
+				"kafka.pod.namespace": "${dest.k8s.namespace}",
+			},
+		},
+		Dest: discovery_kit_api.SourceOrDestination{
+			Type: "com.steadybit.extension_kubernetes.kubernetes-pod",
+			Selector: map[string]string{
+				"k8s.pod.name":  "${src.kafka.pod.name}",
+				"k8s.namespace": "${src.kafka.pod.namespace}",
+			},
+		},
+		Attributes: []discovery_kit_api.Attribute{
+			{
+				Matcher: discovery_kit_api.Equals,
+				Name:    "kafka.broker.node-id",
+			},
+			{
+				Matcher: discovery_kit_api.Equals,
+				Name:    "kafka.broker.is-controller",
 			},
 		},
 	}
@@ -112,6 +150,20 @@ func (r *kafkaBrokerDiscovery) DescribeAttributes() []discovery_kit_api.Attribut
 				Other: "Kafka broker racks",
 			},
 		},
+		{
+			Attribute: "kafka.pod.name",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka pod name",
+				Other: "Kafka pod names",
+			},
+		},
+		{
+			Attribute: "kafka.pod.namespace",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka pod namespace",
+				Other: "Kafka pod namespaces",
+			},
+		},
 	}
 }
 
@@ -159,6 +211,11 @@ func toBrokerTarget(broker kadm.BrokerDetail, controller int32) discovery_kit_ap
 	if broker.Rack != nil {
 		attributes["kafka.broker.rack"] = []string{*broker.Rack}
 	}
+	podName := strings.Split(broker.Host, ".")[0]
+	namespace := strings.Split(broker.Host, ".")[3]
+
+	attributes["kafka.pod.name"] = []string{podName}
+	attributes["kafka.pod.namespace"] = []string{namespace}
 
 	return discovery_kit_api.Target{
 		Id:         id,
