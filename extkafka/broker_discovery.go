@@ -69,7 +69,7 @@ func (r *kafkaBrokerDiscovery) DescribeTarget() discovery_kit_api.TargetDescript
 	}
 }
 
-func (c *kafkaBrokerDiscovery) DescribeEnrichmentRules() []discovery_kit_api.TargetEnrichmentRule {
+func (r *kafkaBrokerDiscovery) DescribeEnrichmentRules() []discovery_kit_api.TargetEnrichmentRule {
 	return []discovery_kit_api.TargetEnrichmentRule{
 		getBrokerToPodEnrichmentRule(),
 	}
