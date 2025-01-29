@@ -1,5 +1,5 @@
 /*
-* Copyright 2024 steadybit GmbH. All rights reserved.
+* Copyright 2025 steadybit GmbH. All rights reserved.
  */
 
 // SPDX-License-Identifier: MIT
@@ -24,9 +24,9 @@ import (
 	"time"
 )
 
-type BrokersCheckAction struct{}
+type CheckBrokersAction struct{}
 
-type BrokersCheckState struct {
+type CheckBrokersState struct {
 	PreviousController int32
 	BrokerNodes        []int32
 	End                time.Time
@@ -44,19 +44,19 @@ const (
 
 // Make sure action implements all required interfaces
 var (
-	_ action_kit_sdk.Action[BrokersCheckState]           = (*BrokersCheckAction)(nil)
-	_ action_kit_sdk.ActionWithStatus[BrokersCheckState] = (*BrokersCheckAction)(nil)
+	_ action_kit_sdk.Action[CheckBrokersState]           = (*CheckBrokersAction)(nil)
+	_ action_kit_sdk.ActionWithStatus[CheckBrokersState] = (*CheckBrokersAction)(nil)
 )
 
-func NewBrokersCheckAction() action_kit_sdk.Action[BrokersCheckState] {
-	return &BrokersCheckAction{}
+func NewBrokersCheckAction() action_kit_sdk.Action[CheckBrokersState] {
+	return &CheckBrokersAction{}
 }
 
-func (m *BrokersCheckAction) NewEmptyState() BrokersCheckState {
-	return BrokersCheckState{}
+func (m *CheckBrokersAction) NewEmptyState() CheckBrokersState {
+	return CheckBrokersState{}
 }
 
-func (m *BrokersCheckAction) Describe() action_kit_api.ActionDescription {
+func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check", kafkaBrokerTargetId),
 		Label:       "Check Brokers",
@@ -142,7 +142,7 @@ func (m *BrokersCheckAction) Describe() action_kit_api.ActionDescription {
 	}
 }
 
-func (m *BrokersCheckAction) Prepare(ctx context.Context, state *BrokersCheckState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (m *CheckBrokersAction) Prepare(ctx context.Context, state *CheckBrokersState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	duration := request.Config["duration"].(float64)
 	end := time.Now().Add(time.Millisecond * time.Duration(duration))
 
@@ -178,15 +178,15 @@ func (m *BrokersCheckAction) Prepare(ctx context.Context, state *BrokersCheckSta
 	return nil, nil
 }
 
-func (m *BrokersCheckAction) Start(_ context.Context, _ *BrokersCheckState) (*action_kit_api.StartResult, error) {
+func (m *CheckBrokersAction) Start(_ context.Context, _ *CheckBrokersState) (*action_kit_api.StartResult, error) {
 	return nil, nil
 }
 
-func (m *BrokersCheckAction) Status(ctx context.Context, state *BrokersCheckState) (*action_kit_api.StatusResult, error) {
+func (m *CheckBrokersAction) Status(ctx context.Context, state *CheckBrokersState) (*action_kit_api.StatusResult, error) {
 	return BrokerCheckStatus(ctx, state)
 }
 
-func BrokerCheckStatus(ctx context.Context, state *BrokersCheckState) (*action_kit_api.StatusResult, error) {
+func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
 	client, err := createNewAdminClient(state.BrokerHosts)
