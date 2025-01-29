@@ -212,7 +212,7 @@ func toBrokerTarget(broker kadm.BrokerDetail, controller int32) discovery_kit_ap
 		attributes["kafka.broker.rack"] = []string{*broker.Rack}
 	}
 	podName := strings.Split(broker.Host, ".")[0]
-	namespace := strings.Split(broker.Host, ".")[3]
+	namespace := strings.Split(broker.Host, ".")[2]
 
 	attributes["kafka.pod.name"] = []string{podName}
 	attributes["kafka.pod.namespace"] = []string{namespace}
