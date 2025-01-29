@@ -72,6 +72,7 @@ func (r *kafkaBrokerDiscovery) DescribeTarget() discovery_kit_api.TargetDescript
 func (r *kafkaBrokerDiscovery) DescribeEnrichmentRules() []discovery_kit_api.TargetEnrichmentRule {
 	return []discovery_kit_api.TargetEnrichmentRule{
 		getBrokerToPodEnrichmentRule(),
+		getBrokerToContainerEnrichmentRule(),
 	}
 }
 
@@ -88,6 +89,37 @@ func getBrokerToPodEnrichmentRule() discovery_kit_api.TargetEnrichmentRule {
 		},
 		Dest: discovery_kit_api.SourceOrDestination{
 			Type: "com.steadybit.extension_kubernetes.kubernetes-pod",
+			Selector: map[string]string{
+				"k8s.pod.name":  "${src.kafka.pod.name}",
+				"k8s.namespace": "${src.kafka.pod.namespace}",
+			},
+		},
+		Attributes: []discovery_kit_api.Attribute{
+			{
+				Matcher: discovery_kit_api.Equals,
+				Name:    "kafka.broker.node-id",
+			},
+			{
+				Matcher: discovery_kit_api.Equals,
+				Name:    "kafka.broker.is-controller",
+			},
+		},
+	}
+}
+
+func getBrokerToContainerEnrichmentRule() discovery_kit_api.TargetEnrichmentRule {
+	return discovery_kit_api.TargetEnrichmentRule{
+		Id:      "com.steadybit.extension_kafka.kafka-broker-to-container",
+		Version: extbuild.GetSemverVersionStringOrUnknown(),
+		Src: discovery_kit_api.SourceOrDestination{
+			Type: kafkaBrokerTargetId,
+			Selector: map[string]string{
+				"kafka.pod.name":      "${dest.k8s.pod.name}",
+				"kafka.pod.namespace": "${dest.k8s.namespace}",
+			},
+		},
+		Dest: discovery_kit_api.SourceOrDestination{
+			Type: "com.steadybit.extension_container.container",
 			Selector: map[string]string{
 				"k8s.pod.name":  "${src.kafka.pod.name}",
 				"k8s.namespace": "${src.kafka.pod.namespace}",
