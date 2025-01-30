@@ -32,7 +32,7 @@ type CheckBrokersState struct {
 	End                time.Time
 	ExpectedChanges    []string
 	StateCheckMode     string
-	StateCheckSuccess  bool
+	StateCheckFailure  bool
 	BrokerHosts        []string
 }
 
@@ -172,6 +172,7 @@ func (m *CheckBrokersAction) Prepare(ctx context.Context, state *CheckBrokersSta
 	state.End = end
 	state.ExpectedChanges = expectedState
 	state.StateCheckMode = stateCheckMode
+	state.StateCheckFailure = false
 	state.PreviousController = metadata.Controller
 	state.BrokerNodes = metadata.Brokers.NodeIDs()
 
@@ -228,22 +229,23 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 						Title: fmt.Sprintf("Brokers got an unexpected change '%s' whereas '%s' is expected. Change(s) : %v",
 							c,
 							state.ExpectedChanges,
-							changes[c]),
+							changes),
 						Status: extutil.Ptr(action_kit_api.Failed),
 					})
 				}
 			}
 		} else if state.StateCheckMode == stateCheckModeAtLeastOnce {
 			for _, c := range keys {
-				if slices.Contains(state.ExpectedChanges, c) {
-					state.StateCheckSuccess = true
+				if !slices.Contains(state.ExpectedChanges, c) {
+					state.StateCheckFailure = true
 				}
 			}
 
-			if completed && !state.StateCheckSuccess {
+			if completed && state.StateCheckFailure {
 				checkError = extutil.Ptr(action_kit_api.ActionKitError{
-					Title: fmt.Sprintf("Brokers didn't get the expected changes '%s' at least once.",
-						state.ExpectedChanges),
+					Title: fmt.Sprintf("Brokers didn't get the expected changes '%s' at least once or got an unexpected change. Change(s) : %v",
+						state.ExpectedChanges,
+						changes),
 					Status: extutil.Ptr(action_kit_api.Failed),
 				})
 			}

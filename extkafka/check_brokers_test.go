@@ -79,7 +79,7 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 			wantedState: &CheckBrokersState{
 				ExpectedChanges:   []string{"test"},
 				StateCheckMode:    "test",
-				StateCheckSuccess: true,
+				StateCheckFailure: false,
 			},
 		},
 	}
@@ -100,7 +100,7 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 				assert.NoError(t, err)
 				assert.Equal(t, "test", tt.wantedState.StateCheckMode)
 				assert.Equal(t, []string{"test"}, state.ExpectedChanges)
-				assert.Equal(t, false, state.StateCheckSuccess)
+				assert.Equal(t, false, state.StateCheckFailure)
 				assert.NotNil(t, state.End)
 			}
 		})
@@ -155,7 +155,7 @@ func TestCheckBrokers_Status(t *testing.T) {
 
 			wantedState: &CheckBrokersState{
 				StateCheckMode:    "atLeastOnce",
-				StateCheckSuccess: true,
+				StateCheckFailure: false,
 			},
 		},
 		{
@@ -177,7 +177,7 @@ func TestCheckBrokers_Status(t *testing.T) {
 			wantedState: &CheckBrokersState{
 				ExpectedChanges:   []string{"kafka broker with downtime"},
 				StateCheckMode:    "allTheTime",
-				StateCheckSuccess: false,
+				StateCheckFailure: false,
 				BrokerNodes:       []int32{1, 2, 3},
 			},
 		},

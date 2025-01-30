@@ -243,11 +243,13 @@ func toBrokerTarget(broker kadm.BrokerDetail, controller int32) discovery_kit_ap
 	if broker.Rack != nil {
 		attributes["kafka.broker.rack"] = []string{*broker.Rack}
 	}
-	podName := strings.Split(broker.Host, ".")[0]
-	namespace := strings.Split(broker.Host, ".")[2]
+	if len(strings.Split(broker.Host, ".")) == 4 && strings.HasSuffix(broker.Host, ".svc") {
+		podName := strings.Split(broker.Host, ".")[0]
+		namespace := strings.Split(broker.Host, ".")[2]
 
-	attributes["kafka.pod.name"] = []string{podName}
-	attributes["kafka.pod.namespace"] = []string{namespace}
+		attributes["kafka.pod.name"] = []string{podName}
+		attributes["kafka.pod.namespace"] = []string{namespace}
+	}
 
 	return discovery_kit_api.Target{
 		Id:         id,
