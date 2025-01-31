@@ -279,10 +279,10 @@ func toBrokerChangeMetric(expectedChanges []string, changesNames []string, chang
 		sort.Strings(expectedChanges)
 		sort.Strings(changesNames)
 
-		state = "success"
+		state = "warn"
 		for _, change := range changesNames {
-			if !slices.Contains(expectedChanges, change) {
-				state = "danger"
+			if slices.Contains(expectedChanges, change) {
+				state = "success"
 			}
 		}
 	} else {
