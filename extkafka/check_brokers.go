@@ -39,7 +39,6 @@ type CheckBrokersState struct {
 const (
 	BrokerControllerChanged = "kafka controller changed"
 	BrokerDowntime          = "kafka broker with downtime"
-	MetricID                = "Broker Activity"
 )
 
 // Make sure action implements all required interfaces
@@ -297,7 +296,7 @@ func toBrokerChangeMetric(expectedChanges []string, changesNames []string, chang
 	return extutil.Ptr(action_kit_api.Metric{
 		Name: extutil.Ptr("kafka_consumer_group_state"),
 		Metric: map[string]string{
-			"metric.id": MetricID,
+			"metric.id": fmt.Sprintf("Expected: " + strings.Join(expectedChanges, ",")),
 			"url":       "",
 			"state":     state,
 			"tooltip":   tooltip,
