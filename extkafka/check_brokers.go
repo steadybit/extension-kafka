@@ -225,10 +225,9 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 			for _, c := range keys {
 				if !slices.Contains(state.ExpectedChanges, c) {
 					checkError = extutil.Ptr(action_kit_api.ActionKitError{
-						Title: fmt.Sprintf("Brokers got an unexpected change '%s' whereas '%s' is expected. Change(s) : %v",
+						Title: fmt.Sprintf("Brokers got an unexpected change '%s' whereas '%s' is expected.",
 							c,
-							state.ExpectedChanges,
-							changes),
+							state.ExpectedChanges),
 						Status: extutil.Ptr(action_kit_api.Failed),
 					})
 				}
@@ -242,9 +241,8 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 
 			if completed && state.StateCheckFailure {
 				checkError = extutil.Ptr(action_kit_api.ActionKitError{
-					Title: fmt.Sprintf("Brokers didn't get the expected changes '%s' at least once or got an unexpected change. Change(s) : %v",
-						state.ExpectedChanges,
-						changes),
+					Title: fmt.Sprintf("Brokers didn't get the expected changes '%s' at least once or got an unexpected change.",
+						state.ExpectedChanges),
 					Status: extutil.Ptr(action_kit_api.Failed),
 				})
 			}
@@ -281,10 +279,9 @@ func toBrokerChangeMetric(expectedChanges []string, changesNames []string, chang
 		sort.Strings(expectedChanges)
 		sort.Strings(changesNames)
 
+		state = "success"
 		for _, change := range changesNames {
-			if slices.Contains(expectedChanges, change) {
-				state = "success"
-			} else {
+			if !slices.Contains(expectedChanges, change) {
 				state = "danger"
 			}
 		}
