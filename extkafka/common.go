@@ -153,8 +153,8 @@ func createNewClient(brokers []string) (*kgo.Client, error) {
 		}
 	}
 
-	if config.Config.CaFile != "" && config.Config.CertKeyFile != "" && config.Config.CertChainFile != "" {
-		tlsConfig, err := newTLSConfig(config.Config.CertChainFile, config.Config.CertKeyFile, config.Config.CaFile)
+	if config.Config.KafkaClusterCaFile != "" && config.Config.KafkaClusterCertKeyFile != "" && config.Config.KafkaClusterCertChainFile != "" {
+		tlsConfig, err := newTLSConfig(config.Config.KafkaClusterCertChainFile, config.Config.KafkaClusterCertKeyFile, config.Config.KafkaClusterCaFile)
 		if err != nil {
 			return nil, err
 		}

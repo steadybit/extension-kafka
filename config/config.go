@@ -13,20 +13,13 @@ import (
 // through environment variables. Learn more through the documentation of the envconfig package.
 // https://github.com/kelseyhightower/envconfig
 type Specification struct {
-	// variable STEADYBIT_EXTENSION_SEED_BROKERS="localhost:9092"
-	SeedBrokers string `json:"seedBrokers" required:"true" split_words:"true"`
-	// variable STEADYBIT_EXTENSION_SASL_MECHANISM="PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512."
-	SaslMechanism string `json:"saslMechanism" required:"false" split_words:"true"`
-	// variable STEADYBIT_EXTENSION_SASL_USER="USER"
-	SaslUser string `json:"saslUser" required:"false" split_words:"true"`
-	// variable STEADYBIT_EXTENSION_SASL_PASSWORD="PASSWORD"
-	SaslPassword string `json:"saslPassword" required:"false" split_words:"true"`
-	// variable STEADYBIT_EXTENSION_CERT_CHAIN_FILE="/path/to/certfile"
-	CertChainFile string `json:"certChainFile" required:"false" split_words:"true"`
-	// variable STEADYBIT_EXTENSION_CERT_KEY_FILE="/path/to/keyfile"
-	CertKeyFile string `json:"certKeyFile" required:"false" split_words:"true"`
-	// variable STEADYBIT_EXTENSION_CA_FILE="/path/to/cafile"
-	CaFile                                    string   `json:"caFile" required:"false" split_words:"true"`
+	SeedBrokers                               string   `json:"seedBrokers" required:"true" split_words:"true"`                // variable STEADYBIT_EXTENSION_SEED_BROKERS="localhost:9092"
+	SaslMechanism                             string   `json:"saslMechanism" required:"false" split_words:"true"`             // variable STEADYBIT_EXTENSION_SASL_MECHANISM="PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512."
+	SaslUser                                  string   `json:"saslUser" required:"false" split_words:"true"`                  // variable STEADYBIT_EXTENSION_SASL_USER="USER"
+	SaslPassword                              string   `json:"saslPassword" required:"false" split_words:"true"`              // variable STEADYBIT_EXTENSION_SASL_PASSWORD="PASSWORD"
+	KafkaClusterCertChainFile                 string   `json:"kafkaClusterCertChainFile" required:"false" split_words:"true"` // variable STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE="/path/to/certfile"
+	KafkaClusterCertKeyFile                   string   `json:"kafkaClusterCertKeyFile" required:"false" split_words:"true"`   // variable STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE="/path/to/keyfile"
+	KafkaClusterCaFile                        string   `json:"kafkaClusterCaFile" required:"false" split_words:"true"`        // variable STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE="/path/to/cafile"
 	DiscoveryIntervalConsumerGroup            int      `json:"discoveryIntervalKafkaConsumerGroup" split_words:"true" required:"false" default:"30"`
 	DiscoveryIntervalKafkaBroker              int      `json:"discoveryIntervalKafkaBroker" split_words:"true" required:"false" default:"30"`
 	DiscoveryIntervalKafkaTopic               int      `json:"discoveryIntervalKafkaTopic" split_words:"true" required:"false" default:"30"`

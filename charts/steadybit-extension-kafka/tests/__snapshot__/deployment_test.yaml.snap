@@ -36,11 +36,11 @@ manifest should match snapshot using podAnnotations and Labels:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -123,11 +123,11 @@ manifest should match snapshot with TLS:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -221,11 +221,11 @@ manifest should match snapshot with extra env vars:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -317,11 +317,11 @@ manifest should match snapshot with extra labels:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -404,11 +404,11 @@ manifest should match snapshot with mutual TLS:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -511,11 +511,11 @@ manifest should match snapshot with mutual TLS using containerPaths:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -604,11 +604,11 @@ manifest should match snapshot with podSecurityContext:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -692,11 +692,11 @@ manifest should match snapshot with priority class:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -780,11 +780,11 @@ manifest should match snapshot without TLS:
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_CHAIN_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CERT_KEY_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
                   value: null
-                - name: STEADYBIT_EXTENSION_CA_FILE
+                - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
                   value: null
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
