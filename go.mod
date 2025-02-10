@@ -10,7 +10,7 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/rs/zerolog v1.33.0
 	github.com/steadybit/action-kit/go/action_kit_api/v2 v2.9.7
-	github.com/steadybit/action-kit/go/action_kit_sdk v1.1.14
+	github.com/steadybit/action-kit/go/action_kit_sdk v1.1.15
 	github.com/steadybit/action-kit/go/action_kit_test v1.3.2
 	github.com/steadybit/advice-kit/go/advice_kit_api v1.1.0
 	github.com/steadybit/discovery-kit/go/discovery_kit_api v1.6.0
@@ -48,8 +48,8 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.11 // indirect
-	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
+	github.com/mailru/easyjson v0.9.0 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/moby/spdystream v0.5.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
@@ -58,8 +58,8 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/oapi-codegen/runtime v1.1.1 // indirect
-	github.com/oasdiff/yaml v0.0.0-20241210131133-6b86fb107d80 // indirect
-	github.com/oasdiff/yaml3 v0.0.0-20241210130736-a94c01f36349 // indirect
+	github.com/oasdiff/yaml v0.0.0-20241214135536-5f7845c759c8 // indirect
+	github.com/oasdiff/yaml3 v0.0.0-20241214160948-977117996672 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
