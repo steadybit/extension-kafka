@@ -30,7 +30,6 @@ import (
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 	_ "go.uber.org/automaxprocs" // Importing automaxprocs automatically adjusts GOMAXPROCS.
-	_ "net/http/pprof"           //allow pprof
 	"os"
 	"os/signal"
 	"strings"
