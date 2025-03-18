@@ -146,3 +146,10 @@ keytool -list -v -keystore kafka.truststore.jks -storepass <truststore-password>
 1.	The private key (client-key.pem) must be kept secure. Unauthorized access to this file can compromise the client.
 2.	Ensure the Kafka broker’s hostname or IP address matches the Subject Alternative Name (SAN) in the server’s certificate.
 3.	Always use strong passwords for your keystore, truststore, and PKCS12 files.
+
+## Version and Revision
+
+The version and revision of the extension:
+- are printed during the startup of the extension
+- are added as a Docker label to the image
+- are available via the `version.txt`/`revision.txt` files in the root of the image
