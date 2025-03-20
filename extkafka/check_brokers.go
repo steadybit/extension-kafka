@@ -293,7 +293,7 @@ func toBrokerChangeMetric(expectedChanges []string, changesNames []string, chang
 	return extutil.Ptr(action_kit_api.Metric{
 		Name: extutil.Ptr("kafka_consumer_group_state"),
 		Metric: map[string]string{
-			"metric.id": fmt.Sprintf("Expected: " + strings.Join(expectedChanges, ",")),
+			"metric.id": fmt.Sprintf("Expected: %s" + strings.Join(expectedChanges, ",")),
 			"url":       "",
 			"state":     state,
 			"tooltip":   tooltip,
