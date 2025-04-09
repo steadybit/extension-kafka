@@ -31,17 +31,35 @@ manifest should match snapshot using podAnnotations and Labels:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -118,17 +136,35 @@ manifest should match snapshot with TLS:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -216,17 +252,35 @@ manifest should match snapshot with extra env vars:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -312,17 +366,35 @@ manifest should match snapshot with extra labels:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -399,17 +471,35 @@ manifest should match snapshot with mutual TLS:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -506,17 +596,35 @@ manifest should match snapshot with mutual TLS using containerPaths:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -599,17 +707,35 @@ manifest should match snapshot with podSecurityContext:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -687,17 +813,35 @@ manifest should match snapshot with priority class:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -775,17 +919,35 @@ manifest should match snapshot without TLS:
                 - name: STEADYBIT_EXTENSION_SEED_BROKERS
                   value: null
                 - name: STEADYBIT_EXTENSION_SASL_USER
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslUser
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslPassword
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: saslMechanism
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certChainFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: certKeyFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-                  value: null
+                  valueFrom:
+                    secretKeyRef:
+                      key: caFile
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT

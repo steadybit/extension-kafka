@@ -70,17 +70,35 @@ spec:
             - name: STEADYBIT_EXTENSION_SEED_BROKERS
               value: {{ .Values.kafka.seedBrokers }}
             - name: STEADYBIT_EXTENSION_SASL_USER
-              value: {{ .Values.kafka.auth.saslUser }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kafka.auth.secret.name" . }}
+                  key: saslUser
             - name: STEADYBIT_EXTENSION_SASL_PASSWORD
-              value: {{ .Values.kafka.auth.saslPassword }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kafka.auth.secret.name" . }}
+                  key: saslPassword
             - name: STEADYBIT_EXTENSION_SASL_MECHANISM
-              value: {{ .Values.kafka.auth.saslMechanism }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kafka.auth.secret.name" . }}
+                  key: saslMechanism
             - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE
-              value: {{ .Values.kafka.auth.certChainFile }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kafka.auth.secret.name" . }}
+                  key: certChainFile
             - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE
-              value: {{ .Values.kafka.auth.certKeyFile }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kafka.auth.secret.name" . }}
+                  key: certKeyFile
             - name: STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE
-              value: {{ .Values.kafka.auth.CaFile }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "kafka.auth.secret.name" . }}
+                  key: caFile
             {{- include "extensionlib.deployment.env" (list .) | nindent 12 }}
             {{- with .Values.extraEnv }}
               {{- toYaml . | nindent 12 }}

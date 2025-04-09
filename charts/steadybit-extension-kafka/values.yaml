@@ -16,6 +16,7 @@ kafka:
     saslMechanism: ""
     saslUser: ""
     saslPassword: ""
+    # kafka.auth.existingSecret -- If defined, will skip secret creation and instead assume that the referenced secret contains all the necessary auth properties.
     existingSecret: null
     certChainFile: ""
     certKeyFile: ""
