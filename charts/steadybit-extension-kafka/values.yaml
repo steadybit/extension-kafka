@@ -21,6 +21,7 @@ kafka:
     certChainFile: ""
     certKeyFile: ""
     caFile: ""
+    useTLS: ""
 
 tls:
   server:

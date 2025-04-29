@@ -15,6 +15,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
+	"net"
 	"os"
 	"strconv"
 	"time"
@@ -160,6 +161,11 @@ func createNewClient(brokers []string) (*kgo.Client, error) {
 		}
 
 		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
+	}
+
+	if config.Config.UseTLS == "true" {
+		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
+		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
 	}
 
 	client, err := kgo.NewClient(opts...)

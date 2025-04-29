@@ -17,6 +17,7 @@ type Specification struct {
 	SaslMechanism                             string   `json:"saslMechanism" required:"false" split_words:"true"`
 	SaslUser                                  string   `json:"saslUser" required:"false" split_words:"true"`
 	SaslPassword                              string   `json:"saslPassword" required:"false" split_words:"true"`
+	UseTLS                                    string   `json:"useTLS" required:"false" split_words:"true"`
 	KafkaClusterCertChainFile                 string   `json:"kafkaClusterCertChainFile" required:"false" split_words:"true"`
 	KafkaClusterCertKeyFile                   string   `json:"kafkaClusterCertKeyFile" required:"false" split_words:"true"`
 	KafkaClusterCaFile                        string   `json:"kafkaClusterCaFile" required:"false" split_words:"true"`
