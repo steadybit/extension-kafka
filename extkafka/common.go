@@ -161,9 +161,7 @@ func createNewClient(brokers []string) (*kgo.Client, error) {
 		}
 
 		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
-	}
-
-	if config.Config.UseTLS == "true" {
+	} else if config.Config.KafkaConnectionUseTLS == "true" {
 		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
 		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
 	}
@@ -172,6 +170,7 @@ func createNewClient(brokers []string) (*kgo.Client, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
+	log.Debug().Msgf("Initiating client with: %v", opts)
 
 	return client, nil
 }

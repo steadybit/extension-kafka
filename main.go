@@ -193,9 +193,7 @@ func testBrokerConnection() {
 		}
 
 		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
-	}
-
-	if config.Config.UseTLS == "true" {
+	} else if config.Config.KafkaConnectionUseTLS == "true" {
 		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
 		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
 	}

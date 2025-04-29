@@ -99,7 +99,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "kafka.auth.secret.name" . }}
                   key: caFile
-            - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+            - name: STEADYBIT_EXTENSION_KAFKA_CONNECTION_USE_TLS
               valueFrom:
                 secretKeyRef:
                   name: {{ include "kafka.auth.secret.name" . }}
