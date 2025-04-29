@@ -30,10 +30,12 @@ import (
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 	_ "go.uber.org/automaxprocs" // Importing automaxprocs automatically adjusts GOMAXPROCS.
+	"net"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -191,6 +193,11 @@ func testBrokerConnection() {
 		}
 
 		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
+	}
+
+	if config.Config.UseTLS == "true" {
+		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
+		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
 	}
 
 	client, err := kgo.NewClient(opts...)
