@@ -60,6 +60,11 @@ manifest should match snapshot using podAnnotations and Labels:
                     secretKeyRef:
                       key: caFile
                       name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -164,6 +169,11 @@ manifest should match snapshot with TLS:
                   valueFrom:
                     secretKeyRef:
                       key: caFile
+                      name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
                       name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -281,6 +291,11 @@ manifest should match snapshot with extra env vars:
                     secretKeyRef:
                       key: caFile
                       name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -395,6 +410,11 @@ manifest should match snapshot with extra labels:
                     secretKeyRef:
                       key: caFile
                       name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -499,6 +519,11 @@ manifest should match snapshot with mutual TLS:
                   valueFrom:
                     secretKeyRef:
                       key: caFile
+                      name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
                       name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
@@ -625,6 +650,11 @@ manifest should match snapshot with mutual TLS using containerPaths:
                     secretKeyRef:
                       key: caFile
                       name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -736,6 +766,11 @@ manifest should match snapshot with podSecurityContext:
                     secretKeyRef:
                       key: caFile
                       name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -842,6 +877,11 @@ manifest should match snapshot with priority class:
                     secretKeyRef:
                       key: caFile
                       name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
+                      name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
                 - name: STEADYBIT_LOG_FORMAT
@@ -947,6 +987,11 @@ manifest should match snapshot without TLS:
                   valueFrom:
                     secretKeyRef:
                       key: caFile
+                      name: steadybit-extension-kakfa
+                - name: STEADYBIT_EXTENSION_KAFKA_USE_TLS
+                  valueFrom:
+                    secretKeyRef:
+                      key: useTLS
                       name: steadybit-extension-kakfa
                 - name: STEADYBIT_LOG_LEVEL
                   value: INFO
