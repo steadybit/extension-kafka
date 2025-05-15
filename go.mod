@@ -33,7 +33,7 @@ require (
 	github.com/elastic/go-windows v1.0.2 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
-	github.com/getkin/kin-openapi v0.129.0 // indirect
+	github.com/getkin/kin-openapi v0.131.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
@@ -58,8 +58,8 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f // indirect
 	github.com/oapi-codegen/runtime v1.1.1 // indirect
-	github.com/oasdiff/yaml v0.0.0-20241214135536-5f7845c759c8 // indirect
-	github.com/oasdiff/yaml3 v0.0.0-20241214160948-977117996672 // indirect
+	github.com/oasdiff/yaml v0.0.0-20250309154309-f31be36b4037 // indirect
+	github.com/oasdiff/yaml3 v0.0.0-20250309153720-d2182401db90 // indirect
 	github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.22 // indirect
