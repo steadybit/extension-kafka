@@ -89,6 +89,8 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 				Description:  extutil.Ptr("The number of records per second. Should be between 1 and 10."),
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: extutil.Ptr("1"),
+				MinValue:     extutil.Ptr(1),
+				MaxValue:     extutil.Ptr(10),
 				Required:     extutil.Ptr(true),
 			},
 			duration,

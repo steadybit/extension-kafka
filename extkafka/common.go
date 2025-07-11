@@ -117,6 +117,8 @@ var (
 		Description:  extutil.Ptr("Maximum count on parallel producing requests. (min 1, max 10)"),
 		Type:         action_kit_api.ActionParameterTypeInteger,
 		DefaultValue: extutil.Ptr("5"),
+		MinValue:     extutil.Ptr(1),
+		MaxValue:     extutil.Ptr(10),
 		Required:     extutil.Ptr(true),
 		Advanced:     extutil.Ptr(true),
 	}
