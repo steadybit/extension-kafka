@@ -57,7 +57,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 				Label:        "Connection creation rate",
 				Description:  extutil.Ptr("Limit the connection creation rate to simulate slow acceptance of new connections."),
 				Name:         "connection_rate",
-				Type:         action_kit_api.Integer,
+				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: extutil.Ptr("10"),
 				Required:     extutil.Ptr(true),
 			},

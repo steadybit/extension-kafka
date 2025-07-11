@@ -84,14 +84,14 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			{
 				Name:  "-",
 				Label: "-",
-				Type:  action_kit_api.Separator,
+				Type:  action_kit_api.ActionParameterTypeSeparator,
 				Order: extutil.Ptr(5),
 			},
 			{
 				Name:         "numberOfRecords",
 				Label:        "Number of Records.",
 				Description:  extutil.Ptr("Fixed number of Records, distributed to given duration"),
-				Type:         action_kit_api.Integer,
+				Type:         action_kit_api.ActionParameterTypeInteger,
 				Required:     extutil.Ptr(true),
 				DefaultValue: extutil.Ptr("1"),
 			},
@@ -99,7 +99,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			{
 				Name:  "-",
 				Label: "-",
-				Type:  action_kit_api.Separator,
+				Type:  action_kit_api.ActionParameterTypeSeparator,
 				Order: extutil.Ptr(9),
 			},
 			successRate,

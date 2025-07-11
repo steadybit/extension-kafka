@@ -58,7 +58,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 				Name:        "partitions",
 				Label:       "Partition to elect a new leader (preferred replica)",
 				Description: extutil.Ptr("The partition to elect a new leader"),
-				Type:        action_kit_api.String,
+				Type:        action_kit_api.ActionParameterTypeString,
 				Required:    extutil.Ptr(true),
 				Options: extutil.Ptr([]action_kit_api.ParameterOption{
 					action_kit_api.ParameterOptionsFromTargetAttribute{

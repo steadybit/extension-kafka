@@ -57,7 +57,7 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 				Label:        "Number of IO Threads",
 				Description:  extutil.Ptr("Reduce the number of I/O threads to limit the broker’s capacity to perform disk operations, potentially causing increased latency or request timeouts."),
 				Name:         "io_threads",
-				Type:         action_kit_api.Integer,
+				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: extutil.Ptr("4"),
 				Required:     extutil.Ptr(true),
 			},

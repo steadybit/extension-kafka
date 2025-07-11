@@ -61,7 +61,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 				Label:        "Duration",
 				Description:  extutil.Ptr("The duration of the action. The broker configuration will be reverted at the end of the action."),
 				Name:         "duration",
-				Type:         action_kit_api.Duration,
+				Type:         action_kit_api.ActionParameterTypeDuration,
 				DefaultValue: extutil.Ptr("180s"),
 				Required:     extutil.Ptr(true),
 			},
@@ -69,14 +69,14 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 				Label:       "User",
 				Description: extutil.Ptr("The user affected by the ACL."),
 				Name:        "user",
-				Type:        action_kit_api.String,
+				Type:        action_kit_api.ActionParameterTypeString,
 				Required:    extutil.Ptr(true),
 			},
 			{
 				Label:       "Topic to deny access",
 				Name:        "topic",
 				Description: extutil.Ptr("One topic to deny access to"),
-				Type:        action_kit_api.String,
+				Type:        action_kit_api.ActionParameterTypeString,
 				Required:    extutil.Ptr(true),
 				Options: extutil.Ptr([]action_kit_api.ParameterOption{
 					action_kit_api.ParameterOptionsFromTargetAttribute{

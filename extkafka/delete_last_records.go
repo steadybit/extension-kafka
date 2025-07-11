@@ -63,7 +63,7 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 				Name:        "partitions",
 				Label:       "Partition to issue delete records requests",
 				Description: extutil.Ptr("One or more partitions to delete the records"),
-				Type:        action_kit_api.StringArray,
+				Type:        action_kit_api.ActionParameterTypeStringArray,
 				Required:    extutil.Ptr(true),
 				Options: extutil.Ptr([]action_kit_api.ParameterOption{
 					action_kit_api.ParameterOptionsFromTargetAttribute{
@@ -75,7 +75,7 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 				Label:        "X from newest Offset",
 				Description:  extutil.Ptr("To move the offset in the past, 0 means to the last known offset (skipping every records from where the consumer was)."),
 				Name:         "offset",
-				Type:         action_kit_api.Integer,
+				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: extutil.Ptr("0"),
 				Required:     extutil.Ptr(true),
 			},

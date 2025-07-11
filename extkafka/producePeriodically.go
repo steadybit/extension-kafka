@@ -80,14 +80,14 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			{
 				Name:  "-",
 				Label: "-",
-				Type:  action_kit_api.Separator,
+				Type:  action_kit_api.ActionParameterTypeSeparator,
 				Order: extutil.Ptr(5),
 			},
 			{
 				Name:         "recordsPerSecond",
 				Label:        "Records per second",
 				Description:  extutil.Ptr("The number of records per second. Should be between 1 and 10."),
-				Type:         action_kit_api.Integer,
+				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: extutil.Ptr("1"),
 				Required:     extutil.Ptr(true),
 			},
@@ -95,7 +95,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 			{
 				Name:  "-",
 				Label: "-",
-				Type:  action_kit_api.Separator,
+				Type:  action_kit_api.ActionParameterTypeSeparator,
 				Order: extutil.Ptr(9),
 			},
 			successRate,

@@ -57,7 +57,7 @@ func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription
 				Label:        "Max bytes per message",
 				Description:  extutil.Ptr("Set a very low max bytes per message to simulate message size rejections."),
 				Name:         "max_bytes",
-				Type:         action_kit_api.Integer,
+				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: extutil.Ptr("100"),
 				Required:     extutil.Ptr(true),
 			},

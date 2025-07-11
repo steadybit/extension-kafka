@@ -63,33 +63,33 @@ var (
 		Name:        "topic",
 		Label:       "Topic",
 		Description: extutil.Ptr("The Topic to send records to"),
-		Type:        action_kit_api.String,
+		Type:        action_kit_api.ActionParameterTypeString,
 		Required:    extutil.Ptr(true),
 	}
 	recordKey = action_kit_api.ActionParameter{
 		Name:        "recordKey",
 		Label:       "Record key",
 		Description: extutil.Ptr("The Record Key. If none is set, the partition will be choose with round-robin algorithm."),
-		Type:        action_kit_api.String,
+		Type:        action_kit_api.ActionParameterTypeString,
 	}
 	recordValue = action_kit_api.ActionParameter{
 		Name:        "recordValue",
 		Label:       "Record value",
 		Description: extutil.Ptr("The Record Value."),
-		Type:        action_kit_api.String,
+		Type:        action_kit_api.ActionParameterTypeString,
 		Required:    extutil.Ptr(true),
 	}
 	recordHeaders = action_kit_api.ActionParameter{
 		Name:        "recordHeaders",
 		Label:       "Record Headers",
 		Description: extutil.Ptr("The Record Headers."),
-		Type:        action_kit_api.KeyValue,
+		Type:        action_kit_api.ActionParameterTypeKeyValue,
 	}
 	durationAlter = action_kit_api.ActionParameter{
 		Label:        "Duration",
 		Description:  extutil.Ptr("The duration of the action. The broker configuration will be reverted at the end of the action."),
 		Name:         "duration",
-		Type:         action_kit_api.Duration,
+		Type:         action_kit_api.ActionParameterTypeDuration,
 		DefaultValue: extutil.Ptr("60s"),
 		Required:     extutil.Ptr(true),
 	}
@@ -97,7 +97,7 @@ var (
 		Name:         "duration",
 		Label:        "Duration",
 		Description:  extutil.Ptr("In which timeframe should the specified records be produced?"),
-		Type:         action_kit_api.Duration,
+		Type:         action_kit_api.ActionParameterTypeDuration,
 		DefaultValue: extutil.Ptr("10s"),
 		Required:     extutil.Ptr(true),
 	}
@@ -105,7 +105,7 @@ var (
 		Name:         "successRate",
 		Label:        "Required Success Rate",
 		Description:  extutil.Ptr("How many percent of the records must be at least successful (in terms of the following response verifications) to continue the experiment execution? The result will be evaluated and the end of the given duration."),
-		Type:         action_kit_api.Percentage,
+		Type:         action_kit_api.ActionParameterTypePercentage,
 		DefaultValue: extutil.Ptr("100"),
 		Required:     extutil.Ptr(true),
 		MinValue:     extutil.Ptr(0),
@@ -115,7 +115,7 @@ var (
 		Name:         "maxConcurrent",
 		Label:        "Max concurrent requests",
 		Description:  extutil.Ptr("Maximum count on parallel producing requests. (min 1, max 10)"),
-		Type:         action_kit_api.Integer,
+		Type:         action_kit_api.ActionParameterTypeInteger,
 		DefaultValue: extutil.Ptr("5"),
 		Required:     extutil.Ptr(true),
 		Advanced:     extutil.Ptr(true),

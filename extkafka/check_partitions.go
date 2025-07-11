@@ -87,7 +87,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 				Name:         "duration",
 				Label:        "Duration",
 				Description:  extutil.Ptr(""),
-				Type:         action_kit_api.Duration,
+				Type:         action_kit_api.ActionParameterTypeDuration,
 				DefaultValue: extutil.Ptr("30s"),
 				Required:     extutil.Ptr(true),
 			},
@@ -95,7 +95,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 				Name:        "expectedChanges",
 				Label:       "Expected Changes",
 				Description: extutil.Ptr(""),
-				Type:        action_kit_api.StringArray,
+				Type:        action_kit_api.ActionParameterTypeStringArray,
 				Options: extutil.Ptr([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{
 						Label: "New Leader Elected",
@@ -120,7 +120,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 				Name:         "changeCheckMode",
 				Label:        "Change Check Mode",
 				Description:  extutil.Ptr("How do we check the change of the topic?"),
-				Type:         action_kit_api.String,
+				Type:         action_kit_api.ActionParameterTypeString,
 				DefaultValue: extutil.Ptr(stateCheckModeAllTheTime),
 				Options: extutil.Ptr([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{

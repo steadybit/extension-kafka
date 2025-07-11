@@ -57,7 +57,7 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 				Label:        "Number of Network Threads",
 				Description:  extutil.Ptr("Reduce the num.network.threads to limit the broker’s ability to process network requests."),
 				Name:         "network_threads",
-				Type:         action_kit_api.Integer,
+				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: extutil.Ptr("4"),
 				Required:     extutil.Ptr(true),
 			},
