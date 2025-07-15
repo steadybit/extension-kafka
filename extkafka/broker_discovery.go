@@ -13,6 +13,7 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -229,7 +230,7 @@ func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 }
 
 func toBrokerTarget(broker kadm.BrokerDetail, controller int32) discovery_kit_api.Target {
-	id := fmt.Sprintf("%v", broker.NodeID)
+	id := broker.Host + "-" + strconv.Itoa(int(broker.Port))
 	label := broker.Host
 
 	attributes := make(map[string][]string)
