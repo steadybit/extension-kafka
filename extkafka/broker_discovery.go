@@ -54,11 +54,11 @@ func (r *kafkaBrokerDiscovery) DescribeTarget() discovery_kit_api.TargetDescript
 		Table: discovery_kit_api.Table{
 			Columns: []discovery_kit_api.Column{
 				{Attribute: "steadybit.label"},
+				{Attribute: "kafka.broker.cluster-name"},
 				{Attribute: "kafka.broker.node-id"},
 				{Attribute: "kafka.broker.is-controller"},
 				{Attribute: "kafka.broker.host"},
 				{Attribute: "kafka.broker.port"},
-				{Attribute: "kafka.broker.rack"},
 			},
 			OrderBy: []discovery_kit_api.OrderBy{
 				{
@@ -223,17 +223,18 @@ func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 		return nil, fmt.Errorf("failed to get brokers metadata : %v", err)
 	}
 	for _, broker := range brokerDetails {
-		result = append(result, toBrokerTarget(broker, metadata.Controller))
+		result = append(result, toBrokerTarget(broker, metadata.Controller, metadata.Cluster))
 	}
 
 	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesBrokers), nil
 }
 
-func toBrokerTarget(broker kadm.BrokerDetail, controller int32) discovery_kit_api.Target {
+func toBrokerTarget(broker kadm.BrokerDetail, controller int32, clusterName string) discovery_kit_api.Target {
 	id := broker.Host + "-" + strconv.Itoa(int(broker.Port))
 	label := broker.Host
 
 	attributes := make(map[string][]string)
+	attributes["kafka.cluster.name"] = []string{clusterName}
 	attributes["kafka.broker.node-id"] = []string{fmt.Sprintf("%v", broker.NodeID)}
 	attributes["kafka.broker.is-controller"] = []string{"false"}
 	if broker.NodeID == controller {
