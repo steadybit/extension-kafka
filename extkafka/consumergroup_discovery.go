@@ -95,6 +95,13 @@ func (r *kafkaConsumerGroupDiscovery) DescribeAttributes() []discovery_kit_api.A
 				Other: "Kafka consumer group topics",
 			},
 		},
+		{
+			Attribute: "kafka.cluster.name",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka cluster name",
+				Other: "Kafka cluster names",
+			},
+		},
 	}
 }
 
@@ -119,17 +126,23 @@ func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, erro
 	default:
 		return nil, fmt.Errorf("failed to describe consumer groups: %v", err)
 	}
+	metadata, err := client.BrokerMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get brokers metadata : %v", err)
+	}
 	for _, group := range describedGroups.Sorted() {
-		result = append(result, toConsumerGroupTarget(group))
+		result = append(result, toConsumerGroupTarget(group, metadata.Cluster))
 	}
 
 	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesConsumerGroups), nil
 }
 
-func toConsumerGroupTarget(group kadm.DescribedGroup) discovery_kit_api.Target {
-	id := fmt.Sprintf("%v", group.Group)
+func toConsumerGroupTarget(group kadm.DescribedGroup, clusterName string) discovery_kit_api.Target {
+	id := fmt.Sprintf("%v", group.Group) + "-" + clusterName
+	label := fmt.Sprintf("%v", group.Group)
 
 	attributes := make(map[string][]string)
+	attributes["kafka.cluster.name"] = []string{clusterName}
 	attributes["kafka.consumer-group.name"] = []string{fmt.Sprintf("%v", group.Group)}
 	attributes["kafka.consumer-group.coordinator"] = []string{fmt.Sprintf("%v", group.Coordinator.Host)}
 	attributes["kafka.consumer-group.protocol-type"] = []string{group.ProtocolType}
@@ -137,7 +150,7 @@ func toConsumerGroupTarget(group kadm.DescribedGroup) discovery_kit_api.Target {
 
 	return discovery_kit_api.Target{
 		Id:         id,
-		Label:      id,
+		Label:      label,
 		TargetType: kafkaConsumerTargetId,
 		Attributes: attributes,
 	}

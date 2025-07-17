@@ -113,6 +113,13 @@ func (r *kafkaTopicDiscovery) DescribeAttributes() []discovery_kit_api.Attribute
 				Other: "Kafka topic replication factors",
 			},
 		},
+		{
+			Attribute: "kafka.cluster.name",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka cluster name",
+				Other: "Kafka cluster names",
+			},
+		},
 	}
 }
 
@@ -134,17 +141,21 @@ func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to list topics: %v", err)
 	}
+	metadata, err := client.BrokerMetadata(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get brokers metadata : %v", err)
+	}
 
 	for _, t := range topicDetails {
 		if !t.IsInternal {
-			result = append(result, toTopicTarget(t))
+			result = append(result, toTopicTarget(t, metadata.Cluster))
 		}
 	}
 
 	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesTopics), nil
 }
 
-func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
+func toTopicTarget(topic kadm.TopicDetail, clusterName string) discovery_kit_api.Target {
 	label := topic.Topic
 
 	partitions := make([]string, len(topic.Partitions))
@@ -169,6 +180,7 @@ func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 	}
 
 	attributes := make(map[string][]string)
+	attributes["kafka.cluster.name"] = []string{clusterName}
 	attributes["kafka.topic.name"] = []string{topic.Topic}
 	attributes["kafka.topic.partitions"] = partitions
 	attributes["kafka.topic.partitions-leaders"] = partitionsLeaders
@@ -177,7 +189,7 @@ func toTopicTarget(topic kadm.TopicDetail) discovery_kit_api.Target {
 	attributes["kafka.topic.replication-factor"] = []string{fmt.Sprintf("%v", topic.Partitions.NumReplicas())}
 
 	return discovery_kit_api.Target{
-		Id:         label,
+		Id:         label + "-" + clusterName,
 		Label:      label,
 		TargetType: kafkaTopicTargetId,
 		Attributes: attributes,
