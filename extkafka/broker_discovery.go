@@ -6,6 +6,7 @@ package extkafka
 import (
 	"context"
 	"fmt"
+	"github.com/rs/zerolog/log"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_commons"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
@@ -222,6 +223,8 @@ func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get brokers metadata : %v", err)
 	}
+	log.Debug().Msgf("Number of brokers discovered: %d", len(brokerDetails))
+	log.Debug().Msgf("Node IDs discovered: %v", brokerDetails.NodeIDs())
 	for _, broker := range brokerDetails {
 		result = append(result, toBrokerTarget(broker, metadata.Controller, metadata.Cluster))
 	}
