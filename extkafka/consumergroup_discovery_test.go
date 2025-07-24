@@ -66,7 +66,6 @@ func TestDescribeAttributes(t *testing.T) {
 		"kafka.topic.partitions-replicas",
 		"kafka.topic.partitions-isr",
 		"kafka.topic.replication-factor",
-		"kafka.cluster.name",
 	}
 
 	if len(attrs) != len(expected) {

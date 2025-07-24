@@ -95,13 +95,6 @@ func (r *kafkaConsumerGroupDiscovery) DescribeAttributes() []discovery_kit_api.A
 				Other: "Kafka consumer group topics",
 			},
 		},
-		{
-			Attribute: "kafka.cluster.name",
-			Label: discovery_kit_api.PluralLabel{
-				One:   "Kafka cluster name",
-				Other: "Kafka cluster names",
-			},
-		},
 	}
 }
 
@@ -138,7 +131,7 @@ func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, erro
 }
 
 func toConsumerGroupTarget(group kadm.DescribedGroup, clusterName string) discovery_kit_api.Target {
-	id := fmt.Sprintf("%v", group.Group) + "-" + clusterName
+	id := fmt.Sprintf("%v-%s", group.Group, clusterName)
 	label := fmt.Sprintf("%v", group.Group)
 
 	attributes := make(map[string][]string)

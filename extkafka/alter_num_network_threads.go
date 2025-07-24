@@ -11,6 +11,7 @@ import (
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
+	"strconv"
 	"strings"
 )
 
@@ -75,30 +76,41 @@ func (k *AlterNumberNetworkThreadsAttack) Prepare(_ context.Context, state *Alte
 
 func (k *AlterNumberNetworkThreadsAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
 	var err error
-	state.InitialBrokerConfigValue, err = saveConfig(ctx, state.BrokerHosts, NumberNetworkThreads, state.BrokerID)
+	if state.InitialBrokerConfigValue, err = describeConfig(ctx, state.BrokerHosts, NumberNetworkThreads, state.BrokerID); err != nil {
+		return nil, err
+	}
+
+	targetValue, err := strconv.Atoi(state.BrokerConfigValue)
 	if err != nil {
 		return nil, err
 	}
 
-	err = alterConfig(ctx, state.BrokerHosts, NumberNetworkThreads, state.BrokerConfigValue, state.BrokerID)
-	if err != nil {
+	if err := adjustThreads(ctx, state.BrokerHosts, NumberNetworkThreads, targetValue, state.BrokerID); err != nil {
 		return nil, err
 	}
 
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
-			Message: fmt.Sprintf("Alter config "+NumberNetworkThreads+" with value %s (initial value was: %s) for broker node-id: %v", state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
+			Message: fmt.Sprintf("Alter config %s with value %s (initial value was: %s) for broker node-id: %v", NumberNetworkThreads, state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
 		}},
 	}, nil
-
 }
 
 func (k *AlterNumberNetworkThreadsAttack) Stop(ctx context.Context, state *AlterState) (*action_kit_api.StopResult, error) {
-	err := alterConfig(ctx, state.BrokerHosts, NumberNetworkThreads, state.InitialBrokerConfigValue, state.BrokerID)
+	targetValue, err := strconv.Atoi(state.InitialBrokerConfigValue)
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, nil
+	if err := adjustThreads(ctx, state.BrokerHosts, NumberNetworkThreads, targetValue, state.BrokerID); err != nil {
+		return nil, err
+	}
+
+	return &action_kit_api.StopResult{
+		Messages: &[]action_kit_api.Message{{
+			Level:   extutil.Ptr(action_kit_api.Info),
+			Message: fmt.Sprintf("Alter config %s with value %s for broker node-id: %v", NumberNetworkThreads, state.BrokerConfigValue, state.BrokerID),
+		}},
+	}, nil
 }

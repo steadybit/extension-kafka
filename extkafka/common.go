@@ -185,7 +185,7 @@ func createNewAdminClient(brokers []string) (*kadm.Client, error) {
 	return kadm.NewClient(client), nil
 }
 
-func saveConfig(ctx context.Context, brokers []string, configName string, brokerID int32) (string, error) {
+func describeConfig(ctx context.Context, brokers []string, configName string, brokerID int32) (string, error) {
 	var initialValue string
 	adminClient, err := createNewAdminClient(brokers)
 	if err != nil {
@@ -212,7 +212,7 @@ func saveConfig(ctx context.Context, brokers []string, configName string, broker
 		return "", err
 	}
 	if initialValue == "" {
-		log.Warn().Msgf("No initial value found for configuration key: "+configName+", for broker node-id: %d", brokerID)
+		log.Warn().Msgf("No value found for configuration key: %s, for broker node-id: %d", configName, brokerID)
 	}
 
 	return initialValue, nil
@@ -232,12 +232,36 @@ func alterConfig(ctx context.Context, brokers []string, configName string, confi
 	var errs []error
 	for _, response := range responses {
 		if response.Err != nil {
-			detailedError := errors.New(response.Err.Error() + " Response from Broker: " + response.ErrMessage)
+			detailedError := fmt.Errorf("%w Response from Broker: %s", response.Err, response.ErrMessage)
 			errs = append(errs, detailedError)
 		}
 	}
 	if len(errs) > 0 {
 		return errors.Join(errs...)
+	}
+	return nil
+}
+
+func adjustThreads(ctx context.Context, hosts []string, configName string, targetValue int, brokerId int32) error {
+	currentConfig, err := describeConfig(ctx, hosts, configName, brokerId)
+	if err != nil {
+		return err
+	}
+
+	currentValue, err := strconv.Atoi(currentConfig)
+	if err != nil {
+		return err
+	}
+
+	//as kafka does not allow to more than double or halve the number of threads, we use an iterative approach to get to that value
+	for currentValue != targetValue {
+		nextValue := max(min(targetValue, currentValue*2), currentValue/2)
+
+		if err := alterConfig(ctx, hosts, configName, strconv.Itoa(nextValue), brokerId); err != nil {
+			return err
+		} else {
+			currentValue = nextValue
+		}
 	}
 	return nil
 }

@@ -75,7 +75,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Prepare(_ context.Context, state 
 
 func (k *AlterLimitConnectionCreateRateAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
 	var err error
-	state.InitialBrokerConfigValue, err = saveConfig(ctx, state.BrokerHosts, LimitConnectionRate, state.BrokerID)
+	state.InitialBrokerConfigValue, err = describeConfig(ctx, state.BrokerHosts, LimitConnectionRate, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Start(ctx context.Context, state 
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
-			Message: fmt.Sprintf("Alter config "+LimitConnectionRate+" with value %s (initial value was: %s) for broker node-id: %v", state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
+			Message: fmt.Sprintf("Alter config %s with value %s (initial value was: %s) for broker node-id: %v", LimitConnectionRate, state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
 		}},
 	}, nil
 
