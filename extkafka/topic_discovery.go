@@ -113,13 +113,6 @@ func (r *kafkaTopicDiscovery) DescribeAttributes() []discovery_kit_api.Attribute
 				Other: "Kafka topic replication factors",
 			},
 		},
-		{
-			Attribute: "kafka.cluster.name",
-			Label: discovery_kit_api.PluralLabel{
-				One:   "Kafka cluster name",
-				Other: "Kafka cluster names",
-			},
-		},
 	}
 }
 
@@ -168,15 +161,15 @@ func toTopicTarget(topic kadm.TopicDetail, clusterName string) discovery_kit_api
 	}
 
 	for i, partDetail := range topic.Partitions.Sorted() {
-		partitionsLeaders[i] = strconv.FormatInt(int64(partDetail.Partition), 10) + "->leader=" + strconv.FormatInt(int64(partDetail.Leader), 10)
+		partitionsLeaders[i] = fmt.Sprintf("%d->leader=%d", partDetail.Partition, partDetail.Leader)
 	}
 
 	for i, partDetail := range topic.Partitions.Sorted() {
-		partitionsReplicas[i] = strconv.FormatInt(int64(partDetail.Partition), 10) + "->replicas=" + fmt.Sprintf("%v", partDetail.Replicas)
+		partitionsReplicas[i] = fmt.Sprintf("%d->replicas=%v", partDetail.Partition, partDetail.Replicas)
 	}
 
 	for i, partDetail := range topic.Partitions.Sorted() {
-		partitionsInSyncReplicas[i] = strconv.FormatInt(int64(partDetail.Partition), 10) + "->in-sync-replicas=" + fmt.Sprintf("%v", partDetail.ISR)
+		partitionsInSyncReplicas[i] = fmt.Sprintf("%d->in-sync-replicas=%v", partDetail.Partition, partDetail.ISR)
 	}
 
 	attributes := make(map[string][]string)
@@ -189,7 +182,7 @@ func toTopicTarget(topic kadm.TopicDetail, clusterName string) discovery_kit_api
 	attributes["kafka.topic.replication-factor"] = []string{fmt.Sprintf("%v", topic.Partitions.NumReplicas())}
 
 	return discovery_kit_api.Target{
-		Id:         label + "-" + clusterName,
+		Id:         fmt.Sprintf("%s-%s", label, clusterName),
 		Label:      label,
 		TargetType: kafkaTopicTargetId,
 		Attributes: attributes,

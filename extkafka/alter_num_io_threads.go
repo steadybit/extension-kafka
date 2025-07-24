@@ -11,6 +11,7 @@ import (
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
+	"strconv"
 	"strings"
 )
 
@@ -75,28 +76,33 @@ func (k *AlterNumberIOThreadsAttack) Prepare(_ context.Context, state *AlterStat
 
 func (k *AlterNumberIOThreadsAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
 	var err error
-	state.InitialBrokerConfigValue, err = saveConfig(ctx, state.BrokerHosts, NumberIOThreads, state.BrokerID)
+	if state.InitialBrokerConfigValue, err = describeConfig(ctx, state.BrokerHosts, NumberIOThreads, state.BrokerID); err != nil {
+		return nil, err
+	}
+
+	targetValue, err := strconv.Atoi(state.BrokerConfigValue)
 	if err != nil {
 		return nil, err
 	}
 
-	err = alterConfig(ctx, state.BrokerHosts, NumberIOThreads, state.BrokerConfigValue, state.BrokerID)
-	if err != nil {
+	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, targetValue, state.BrokerID); err != nil {
 		return nil, err
 	}
-
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
-			Message: fmt.Sprintf("Alter config "+NumberIOThreads+" with value %s (initial value was: %s) for broker node-id: %v", state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
+			Message: fmt.Sprintf("Alter config %s with value %s (initial value was: %s) for broker node-id: %v", NumberIOThreads, state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
 		}},
 	}, nil
-
 }
 
 func (k *AlterNumberIOThreadsAttack) Stop(ctx context.Context, state *AlterState) (*action_kit_api.StopResult, error) {
-	err := alterConfig(ctx, state.BrokerHosts, NumberIOThreads, state.InitialBrokerConfigValue, state.BrokerID)
+	targetValue, err := strconv.Atoi(state.InitialBrokerConfigValue)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, targetValue, state.BrokerID); err != nil {
 		return nil, err
 	}
 

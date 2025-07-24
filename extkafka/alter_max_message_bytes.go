@@ -75,7 +75,7 @@ func (k *AlterMessageMaxBytesAttack) Prepare(_ context.Context, state *AlterStat
 
 func (k *AlterMessageMaxBytesAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
 	var err error
-	state.InitialBrokerConfigValue, err = saveConfig(ctx, state.BrokerHosts, MessageMaxBytes, state.BrokerID)
+	state.InitialBrokerConfigValue, err = describeConfig(ctx, state.BrokerHosts, MessageMaxBytes, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func (k *AlterMessageMaxBytesAttack) Start(ctx context.Context, state *AlterStat
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
-			Message: fmt.Sprintf("Alter config "+MessageMaxBytes+" with value %s (initial value was: %s) for broker node-id: %v", state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
+			Message: fmt.Sprintf("Alter config %s with value %s (initial value was: %s) for broker node-id: %v", MessageMaxBytes, state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
 		}},
 	}, nil
 
