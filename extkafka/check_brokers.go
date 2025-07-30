@@ -1,7 +1,3 @@
-/*
-* Copyright 2025 steadybit GmbH. All rights reserved.
- */
-
 // SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: 2022 Steadybit GmbH
 

@@ -1,9 +1,5 @@
-/*
-* Copyright 2024 steadybit GmbH. All rights reserved.
- */
-
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2022 Steadybit GmbH
+// SPDX-FileCopyrightText: 2025 Steadybit GmbH
 
 package extkafka
 
