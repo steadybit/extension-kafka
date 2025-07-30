@@ -1,15 +1,12 @@
-/*
- * Copyright 2024 steadybit GmbH. All rights reserved.
- */
-
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2024 Steadybit GmbH
+// SPDX-FileCopyrightText: 2025 Steadybit GmbH
 
 package e2e
 
 import (
 	"context"
 	"fmt"
+	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_test/e2e"
 	actValidate "github.com/steadybit/action-kit/go/action_kit_test/validate"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
@@ -51,6 +48,14 @@ func TestWithMinikube(t *testing.T) {
 			Name: "validate Actions",
 			Test: validateActions,
 		},
+		{
+			Name: "alter num io threads",
+			Test: testAlterNumIoThreads,
+		},
+		{
+			Name: "alter num network threads",
+			Test: testAlterNumNetworkThreads,
+		},
 	})
 }
 
@@ -59,7 +64,7 @@ func validateDiscovery(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 }
 
 func testDiscovery(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
-	ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+	ctx, cancel := context.WithTimeout(t.Context(), 120*time.Second)
 	defer cancel()
 
 	target, err := e2e.PollForTarget(ctx, e, "com.steadybit.extension_kafka.broker", func(target discovery_kit_api.Target) bool {
@@ -74,6 +79,78 @@ func testDiscovery(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 
 func validateActions(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 	assert.NoError(t, actValidate.ValidateEndpointReferences("/", e.Client))
+}
+
+func testAlterNumIoThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
+	target := &action_kit_api.Target{
+		Name: "test_broker",
+		Attributes: map[string][]string{
+			"kafka.broker.node-id": {"0"},
+		},
+	}
+
+	config := struct {
+		Duration  int     `json:"duration"`
+		IoThreads float32 `json:"io_threads"`
+	}{
+		Duration:  5000,
+		IoThreads: 1.0,
+	}
+
+	// Reduce
+	increaseThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-io-threads", target, config, &action_kit_api.ExecutionContext{})
+	require.NoError(t, err)
+	defer func() { _ = increaseThreadsAction.Cancel() }()
+
+	require.NoError(t, increaseThreadsAction.Wait())
+	require.NotEmpty(t, t, increaseThreadsAction.Messages())
+	require.NotEmpty(t, t, increaseThreadsAction.Metrics())
+
+	// Increase
+	config.IoThreads = 100.0
+	decreaseThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-io-threads", target, config, &action_kit_api.ExecutionContext{})
+	require.NoError(t, err)
+	defer func() { _ = decreaseThreadsAction.Cancel() }()
+
+	require.NoError(t, increaseThreadsAction.Wait())
+	require.NotEmpty(t, t, decreaseThreadsAction.Messages())
+	require.NotEmpty(t, t, decreaseThreadsAction.Metrics())
+}
+
+func testAlterNumNetworkThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
+	target := &action_kit_api.Target{
+		Name: "test_broker",
+		Attributes: map[string][]string{
+			"kafka.broker.node-id": {"0"},
+		},
+	}
+
+	config := struct {
+		Duration       int     `json:"duration"`
+		NetworkThreads float32 `json:"network_threads"`
+	}{
+		Duration:       5000,
+		NetworkThreads: 1.0,
+	}
+
+	// Reduce
+	increaseThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-network-threads", target, config, &action_kit_api.ExecutionContext{})
+	require.NoError(t, err)
+	defer func() { _ = increaseThreadsAction.Cancel() }()
+
+	require.NoError(t, increaseThreadsAction.Wait())
+	require.NotEmpty(t, t, increaseThreadsAction.Messages())
+	require.NotEmpty(t, t, increaseThreadsAction.Metrics())
+
+	// Increase
+	config.NetworkThreads = 100.0
+	decreaseThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-network-threads", target, config, &action_kit_api.ExecutionContext{})
+	require.NoError(t, err)
+	defer func() { _ = decreaseThreadsAction.Cancel() }()
+
+	require.NoError(t, increaseThreadsAction.Wait())
+	require.NotEmpty(t, t, decreaseThreadsAction.Messages())
+	require.NotEmpty(t, t, decreaseThreadsAction.Metrics())
 }
 
 func helmInstallLocalStack(minikube *e2e.Minikube) error {

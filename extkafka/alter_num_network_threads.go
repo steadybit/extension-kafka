@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2023 Steadybit GmbH
+// SPDX-FileCopyrightText: 2025 Steadybit GmbH
 
 package extkafka
 
@@ -66,11 +66,10 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 	}
 }
 
-func (k *AlterNumberNetworkThreadsAttack) Prepare(_ context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (k *AlterNumberNetworkThreadsAttack) Prepare(ctx context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
 	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["network_threads"])
 	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
-
 	return nil, nil
 }
 
