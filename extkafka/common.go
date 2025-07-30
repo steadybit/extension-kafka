@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2025 Steadybit GmbH
+
 package extkafka
 
 import (
@@ -186,31 +189,32 @@ func createNewAdminClient(brokers []string) (*kadm.Client, error) {
 }
 
 func describeConfig(ctx context.Context, brokers []string, configName string, brokerID int32) (string, error) {
-	var initialValue string
 	adminClient, err := createNewAdminClient(brokers)
 	if err != nil {
 		return "", err
 	}
-	// Get the initial value
+	return describeConfigOf(ctx, adminClient, configName, brokerID)
+}
+
+func describeConfigOf(ctx context.Context, adminClient *kadm.Client, configName string, brokerID int32) (initialValue string, err error) {
 	configs, err := adminClient.DescribeBrokerConfigs(ctx, brokerID)
 	if err != nil {
 		return "", err
 	}
-	_, err = configs.On(strconv.FormatInt(int64(brokerID), 10), func(resourceConfig *kadm.ResourceConfig) error {
 
+	_, err = configs.On(strconv.FormatInt(int64(brokerID), 10), func(resourceConfig *kadm.ResourceConfig) error {
 		for i := range resourceConfig.Configs {
 			if resourceConfig.Configs[i].Key == configName {
 				initialValue = resourceConfig.Configs[i].MaybeValue()
-				// Found!
 				break
 			}
 		}
-
-		return err
+		return nil
 	})
 	if err != nil {
 		return "", err
 	}
+
 	if initialValue == "" {
 		log.Warn().Msgf("No value found for configuration key: %s, for broker node-id: %d", configName, brokerID)
 	}
@@ -239,7 +243,22 @@ func alterConfig(ctx context.Context, brokers []string, configName string, confi
 	if len(errs) > 0 {
 		return errors.Join(errs...)
 	}
-	return nil
+
+	// Changes may take time to be applied, wait accordingly
+	now := time.Now()
+	for {
+		if time.Since(now).Seconds() > 5 {
+			return fmt.Errorf("configuration change of %s to %s was not applied in time", configName, configValue)
+		}
+		value, err := describeConfigOf(ctx, adminClient, configName, brokerID)
+		if err != nil {
+			return err
+		}
+		if value == configValue {
+			return nil
+		}
+		log.Debug().Msgf("Configuration change of %s to %s was not applied yet, waiting", configName, configValue)
+	}
 }
 
 func adjustThreads(ctx context.Context, hosts []string, configName string, targetValue int, brokerId int32) error {

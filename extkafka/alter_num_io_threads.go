@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2024 Steadybit GmbH
+// SPDX-FileCopyrightText: 2025 Steadybit GmbH
 
 package extkafka
 
@@ -66,11 +66,10 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 	}
 }
 
-func (k *AlterNumberIOThreadsAttack) Prepare(_ context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (k *AlterNumberIOThreadsAttack) Prepare(ctx context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
 	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["io_threads"])
 	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
-
 	return nil, nil
 }
 
@@ -88,6 +87,7 @@ func (k *AlterNumberIOThreadsAttack) Start(ctx context.Context, state *AlterStat
 	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, targetValue, state.BrokerID); err != nil {
 		return nil, err
 	}
+
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
