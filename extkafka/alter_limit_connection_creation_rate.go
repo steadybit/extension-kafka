@@ -75,7 +75,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Prepare(ctx context.Context, stat
 }
 
 func (k *AlterLimitConnectionCreateRateAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
-	if err := alterConfigInt(ctx, state.BrokerHosts, LimitConnectionRate, &state.TargetBrokerConfigValue, state.BrokerID); err != nil {
+	if err := alterConfigInt(ctx, state.BrokerHosts, LimitConnectionRate, state.TargetBrokerConfigValue, state.BrokerID); err != nil {
 		return nil, err
 	}
 	return &action_kit_api.StartResult{

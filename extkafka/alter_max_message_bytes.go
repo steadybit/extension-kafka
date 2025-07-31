@@ -75,7 +75,7 @@ func (k *AlterMessageMaxBytesAttack) Prepare(ctx context.Context, state *AlterSt
 }
 
 func (k *AlterMessageMaxBytesAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
-	if err := alterConfigInt(ctx, state.BrokerHosts, MessageMaxBytes, &state.TargetBrokerConfigValue, state.BrokerID); err != nil {
+	if err := alterConfigInt(ctx, state.BrokerHosts, MessageMaxBytes, state.TargetBrokerConfigValue, state.BrokerID); err != nil {
 		return nil, err
 	}
 	return &action_kit_api.StartResult{
