@@ -87,16 +87,9 @@ func (k *AlterNumberIOThreadsAttack) Start(ctx context.Context, state *AlterStat
 }
 
 func (k *AlterNumberIOThreadsAttack) Stop(ctx context.Context, state *AlterState) (*action_kit_api.StopResult, error) {
-	var err error
-	if state.InitialBrokerConfigValue == nil {
-		err = alterConfigInt(ctx, state.BrokerHosts, NumberIOThreads, nil, state.BrokerID)
-	} else {
-		err = adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, *state.InitialBrokerConfigValue, state.BrokerID)
-	}
-	if err != nil {
+	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, state.InitialBrokerConfigValue, state.BrokerID); err != nil {
 		return nil, err
 	}
-
 	return &action_kit_api.StopResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
