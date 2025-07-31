@@ -11,7 +11,6 @@ import (
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
-	"strconv"
 	"strings"
 )
 
@@ -67,44 +66,41 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 }
 
 func (k *AlterNumberIOThreadsAttack) Prepare(ctx context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+	var err error
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
-	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["io_threads"])
 	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
-	return nil, nil
+	state.TargetBrokerConfigValue = extutil.ToInt(request.Config["io_threads"])
+	state.InitialBrokerConfigValue, err = describeConfigInt(ctx, state.BrokerHosts, NumberIOThreads, state.BrokerID)
+	return nil, err
 }
 
 func (k *AlterNumberIOThreadsAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
-	var err error
-	if state.InitialBrokerConfigValue, err = describeConfig(ctx, state.BrokerHosts, NumberIOThreads, state.BrokerID); err != nil {
+	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, state.TargetBrokerConfigValue, state.BrokerID); err != nil {
 		return nil, err
 	}
-
-	targetValue, err := strconv.Atoi(state.BrokerConfigValue)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, targetValue, state.BrokerID); err != nil {
-		return nil, err
-	}
-
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
-			Message: fmt.Sprintf("Alter config %s with value %s (initial value was: %s) for broker node-id: %v", NumberIOThreads, state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
+			Message: fmt.Sprintf("Alter config %s with value %d (initial value was: %d) for broker node-id: %v", NumberIOThreads, state.TargetBrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
 		}},
 	}, nil
 }
 
 func (k *AlterNumberIOThreadsAttack) Stop(ctx context.Context, state *AlterState) (*action_kit_api.StopResult, error) {
-	targetValue, err := strconv.Atoi(state.InitialBrokerConfigValue)
+	var err error
+	if state.InitialBrokerConfigValue == nil {
+		err = alterConfigInt(ctx, state.BrokerHosts, NumberIOThreads, nil, state.BrokerID)
+	} else {
+		err = adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, *state.InitialBrokerConfigValue, state.BrokerID)
+	}
 	if err != nil {
 		return nil, err
 	}
 
-	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, targetValue, state.BrokerID); err != nil {
-		return nil, err
-	}
-
-	return nil, nil
+	return &action_kit_api.StopResult{
+		Messages: &[]action_kit_api.Message{{
+			Level:   extutil.Ptr(action_kit_api.Info),
+			Message: fmt.Sprintf("Alter config %s back to initial value %d for broker node-id: %v", NumberIOThreads, state.InitialBrokerConfigValue, state.BrokerID),
+		}},
+	}, nil
 }

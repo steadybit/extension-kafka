@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2024 Steadybit GmbH
+// SPDX-FileCopyrightText: 2025 Steadybit GmbH
 
 package extkafka
 
@@ -65,40 +65,36 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 	}
 }
 
-func (k *AlterLimitConnectionCreateRateAttack) Prepare(_ context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+func (k *AlterLimitConnectionCreateRateAttack) Prepare(ctx context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
+	var err error
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
-	state.BrokerConfigValue = fmt.Sprintf("%.0f", request.Config["connection_rate"])
 	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
-
-	return nil, nil
+	state.TargetBrokerConfigValue = extutil.ToInt(request.Config["connection_rate"])
+	state.InitialBrokerConfigValue, err = describeConfigInt(ctx, state.BrokerHosts, LimitConnectionRate, state.BrokerID)
+	return nil, err
 }
 
 func (k *AlterLimitConnectionCreateRateAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
-	var err error
-	state.InitialBrokerConfigValue, err = describeConfig(ctx, state.BrokerHosts, LimitConnectionRate, state.BrokerID)
-	if err != nil {
+	if err := alterConfigInt(ctx, state.BrokerHosts, LimitConnectionRate, &state.TargetBrokerConfigValue, state.BrokerID); err != nil {
 		return nil, err
 	}
-
-	err = alterConfig(ctx, state.BrokerHosts, LimitConnectionRate, state.BrokerConfigValue, state.BrokerID)
-	if err != nil {
-		return nil, err
-	}
-
 	return &action_kit_api.StartResult{
 		Messages: &[]action_kit_api.Message{{
 			Level:   extutil.Ptr(action_kit_api.Info),
-			Message: fmt.Sprintf("Alter config %s with value %s (initial value was: %s) for broker node-id: %v", LimitConnectionRate, state.BrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
+			Message: fmt.Sprintf("Alter config %s with value %d (initial value was: %d) for broker node-id: %v", LimitConnectionRate, state.TargetBrokerConfigValue, state.InitialBrokerConfigValue, state.BrokerID),
 		}},
 	}, nil
-
 }
 
 func (k *AlterLimitConnectionCreateRateAttack) Stop(ctx context.Context, state *AlterState) (*action_kit_api.StopResult, error) {
-	err := alterConfig(ctx, state.BrokerHosts, LimitConnectionRate, state.InitialBrokerConfigValue, state.BrokerID)
+	err := alterConfigInt(ctx, state.BrokerHosts, LimitConnectionRate, state.InitialBrokerConfigValue, state.BrokerID)
 	if err != nil {
 		return nil, err
 	}
-
-	return nil, nil
+	return &action_kit_api.StopResult{
+		Messages: &[]action_kit_api.Message{{
+			Level:   extutil.Ptr(action_kit_api.Info),
+			Message: fmt.Sprintf("Alter config %s back to initial value %d for broker node-id: %v", LimitConnectionRate, state.InitialBrokerConfigValue, state.BrokerID),
+		}},
+	}, nil
 }

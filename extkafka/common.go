@@ -55,10 +55,10 @@ type KafkaBrokerAttackState struct {
 }
 
 type AlterState struct {
-	BrokerConfigValue        string
-	BrokerID                 int32
-	InitialBrokerConfigValue string
 	BrokerHosts              []string
+	BrokerID                 int32
+	InitialBrokerConfigValue *int
+	TargetBrokerConfigValue  int
 }
 
 var (
@@ -188,7 +188,22 @@ func createNewAdminClient(brokers []string) (*kadm.Client, error) {
 	return kadm.NewClient(client), nil
 }
 
-func describeConfig(ctx context.Context, brokers []string, configName string, brokerID int32) (string, error) {
+func describeConfigInt(ctx context.Context, brokers []string, configName string, brokerID int32) (*int, error) {
+	value, err := describeConfigStr(ctx, brokers, configName, brokerID)
+	if err != nil {
+		return nil, err
+	}
+	if value == "" {
+		return nil, nil
+	}
+	i, err := strconv.Atoi(value)
+	if err != nil {
+		return nil, err
+	}
+	return extutil.Ptr(i), nil
+}
+
+func describeConfigStr(ctx context.Context, brokers []string, configName string, brokerID int32) (string, error) {
 	adminClient, err := createNewAdminClient(brokers)
 	if err != nil {
 		return "", err
@@ -206,9 +221,16 @@ func describeConfigOf(ctx context.Context, adminClient *kadm.Client, configName 
 		for i := range resourceConfig.Configs {
 			if resourceConfig.Configs[i].Key == configName {
 				initialValue = resourceConfig.Configs[i].MaybeValue()
-				break
+				return nil
 			}
 		}
+
+		var values []string
+		for _, c := range resourceConfig.Configs {
+			values = append(values, fmt.Sprintf("%s: %s", c.Key, *c.Value))
+		}
+		log.Debug().Strs("configs", values).Msgf("Configuration property %s could not be found", configName)
+
 		return nil
 	})
 	if err != nil {
@@ -222,14 +244,26 @@ func describeConfigOf(ctx context.Context, adminClient *kadm.Client, configName 
 	return initialValue, nil
 }
 
-func alterConfig(ctx context.Context, brokers []string, configName string, configValue string, brokerID int32) error {
+func alterConfigInt(ctx context.Context, brokers []string, configName string, configValue *int, brokerID int32) error {
+	var value = ""
+	if configValue != nil {
+		value = strconv.Itoa(*configValue)
+	}
+	return alterConfigStr(ctx, brokers, configName, value, brokerID)
+}
+
+func alterConfigStr(ctx context.Context, brokers []string, configName string, configValue string, brokerID int32) error {
 	adminClient, err := createNewAdminClient(brokers)
 	if err != nil {
 		return err
 	}
 	defer adminClient.Close()
 
-	responses, err := adminClient.AlterBrokerConfigs(ctx, []kadm.AlterConfig{{Name: configName, Value: extutil.Ptr(configValue)}}, brokerID)
+	var value *string
+	if configValue != "" {
+		value = extutil.Ptr(configValue)
+	}
+	responses, err := adminClient.AlterBrokerConfigs(ctx, []kadm.AlterConfig{{Name: configName, Value: value}}, brokerID)
 	if err != nil {
 		return err
 	}
@@ -262,21 +296,21 @@ func alterConfig(ctx context.Context, brokers []string, configName string, confi
 }
 
 func adjustThreads(ctx context.Context, hosts []string, configName string, targetValue int, brokerId int32) error {
-	currentConfig, err := describeConfig(ctx, hosts, configName, brokerId)
+	initialValue, err := describeConfigInt(ctx, hosts, configName, brokerId)
 	if err != nil {
 		return err
 	}
 
-	currentValue, err := strconv.Atoi(currentConfig)
-	if err != nil {
-		return err
+	currentValue := targetValue
+	if initialValue != nil {
+		currentValue = *initialValue
 	}
 
-	//as kafka does not allow to more than double or halve the number of threads, we use an iterative approach to get to that value
+	// As kafka does not allow to more than double or halve the number of threads, we use an iterative approach to get to that value
 	for currentValue != targetValue {
 		nextValue := max(min(targetValue, currentValue*2), currentValue/2)
 
-		if err := alterConfig(ctx, hosts, configName, strconv.Itoa(nextValue), brokerId); err != nil {
+		if err := alterConfigInt(ctx, hosts, configName, &nextValue, brokerId); err != nil {
 			return err
 		} else {
 			currentValue = nextValue
