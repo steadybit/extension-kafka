@@ -12,6 +12,7 @@ import (
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/twmb/franz-go/pkg/kfake"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"strings"
@@ -20,31 +21,18 @@ import (
 )
 
 func TestCheckTopicLag_Describe(t *testing.T) {
-	tests := []struct {
-		name        string
-		requestBody action_kit_api.PrepareActionRequestBody
-		wantedError error
-		wantedState *ConsumerGroupLagCheckState
-	}{
-		{
-			name: "Should return description",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			//Given
-			action := ConsumerGroupLagCheckAction{}
-			//When
-			response := action.Describe()
+	//Given
+	action := ConsumerGroupLagCheckAction{}
 
-			//Then
-			assert.Equal(t, "Check the consumer lag for a given topic (lag is calculated by the difference between topic offset and consumer offset)", response.Description)
-			assert.Equal(t, "Check Topic Lag", response.Label)
-			assert.Equal(t, kafkaConsumerTargetId, response.TargetSelection.TargetType)
-			assert.Equal(t, fmt.Sprintf("%s.check-lag", kafkaConsumerTargetId), response.Id)
-			assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
-		})
-	}
+	//When
+	response := action.Describe()
+
+	//Then
+	assert.Equal(t, "Check the consumer lag for a given topic (lag is calculated by the difference between topic offset and consumer offset)", response.Description)
+	assert.Equal(t, "Check Topic Lag", response.Label)
+	assert.Equal(t, kafkaConsumerTargetId, response.TargetSelection.TargetType)
+	assert.Equal(t, fmt.Sprintf("%s.check-lag", kafkaConsumerTargetId), response.Id)
+	assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
 }
 
 func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
@@ -69,7 +57,6 @@ func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
 				},
 				ExecutionId: uuid.New(),
 			}),
-
 			wantedState: &ConsumerGroupLagCheckState{
 				ConsumerGroupName: "steadybit",
 				StateCheckSuccess: true,
@@ -90,7 +77,6 @@ func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
 				},
 				ExecutionId: uuid.New(),
 			}),
-
 			wantedError: extension_kit.ToError("the target is missing the kafka.consumer-group.name attribute", nil),
 		},
 	}
@@ -100,8 +86,9 @@ func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
 			action := ConsumerGroupLagCheckAction{}
 			state := ConsumerGroupLagCheckState{}
 			request := tt.requestBody
+
 			//When
-			_, err := action.Prepare(context.TODO(), &state, request)
+			_, err := action.Prepare(t.Context(), &state, request)
 
 			//Then
 			if tt.wantedError != nil {
@@ -109,10 +96,10 @@ func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
 			}
 			if tt.wantedState != nil {
 				assert.NoError(t, err)
-				assert.Equal(t, int64(1), tt.wantedState.AcceptableLag)
-				assert.Equal(t, "steadybit", state.ConsumerGroupName)
-				assert.Equal(t, "steadybit", state.Topic)
-				assert.Equal(t, false, state.StateCheckSuccess)
+				assert.Equal(t, tt.wantedState.AcceptableLag, state.AcceptableLag)
+				assert.Equal(t, state.ConsumerGroupName, state.ConsumerGroupName)
+				assert.Equal(t, state.Topic, state.Topic)
+				assert.False(t, state.StateCheckSuccess)
 				assert.NotNil(t, state.End)
 			}
 		})
@@ -124,9 +111,7 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 		kfake.SeedTopics(-1, "steadybit"),
 		kfake.NumBrokers(3),
 	)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
@@ -139,9 +124,7 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 		kgo.DefaultProduceTopic("steadybit"),
 		kgo.ConsumeTopics("steadybit"),
 	)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	defer cl.Close()
 
 	// produce messages for lags
@@ -170,7 +153,6 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 				},
 				ExecutionId: uuid.New(),
 			}),
-
 			wantedState: &ConsumerGroupLagCheckState{
 				ConsumerGroupName: "steadybit",
 				AcceptableLag:     int64(15),
@@ -193,7 +175,6 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 				},
 				ExecutionId: uuid.New(),
 			}),
-
 			wantedState: &ConsumerGroupLagCheckState{
 				ConsumerGroupName: "steadybit",
 				AcceptableLag:     int64(1),
@@ -208,10 +189,10 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 			action := ConsumerGroupLagCheckAction{}
 			state := ConsumerGroupLagCheckState{}
 			request := tt.requestBody
+
 			//When
-			_, errPrepare := action.Prepare(context.TODO(), &state, request)
-			statusResult, errStatus := action.Status(context.TODO(), &state)
-			time.Sleep(6 * time.Second)
+			_, errPrepare := action.Prepare(t.Context(), &state, request)
+			statusResult, errStatus := action.Status(t.Context(), &state)
 
 			//Then
 			if tt.wantedState != nil {
@@ -220,12 +201,15 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 				assert.Equal(t, tt.wantedState.AcceptableLag, state.AcceptableLag)
 				assert.Equal(t, tt.wantedState.Topic, state.Topic)
 				assert.Equal(t, tt.wantedState.ConsumerGroupName, state.ConsumerGroupName)
-				assert.Equal(t, false, statusResult.Completed)
+				assert.False(t, statusResult.Completed)
 				assert.NotNil(t, state.End)
 			}
 
+			time.Sleep(6 * time.Second)
+
 			// Completed
-			_, errStatus = action.Status(context.TODO(), &state)
+			_, errStatus = action.Status(t.Context(), &state)
+
 			//Then
 			if tt.wantedState != nil {
 				assert.NoError(t, errPrepare)
@@ -238,64 +222,3 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 		})
 	}
 }
-
-//func TestAction_Stop(t *testing.T) {
-//
-//	tests := []struct {
-//		name             string
-//		requestBody      action_kit_api.StopActionRequestBody
-//		state            *KafkaBrokerAttackState
-//		executionRunData *ExecutionRunData
-//		wantedError      error
-//	}{
-//		{
-//			name:        "Should successfully stop the action",
-//			requestBody: extutil.JsonMangle(action_kit_api.StopActionRequestBody{}),
-//			state: &KafkaBrokerAttackState{
-//				ExecutionID: uuid.New(),
-//				SuccessRate: 40,
-//			},
-//			executionRunData: getExecutionRunData(5, 10),
-//			wantedError:      nil,
-//		}, {
-//			name:        "Should fail because of low success rate",
-//			requestBody: extutil.JsonMangle(action_kit_api.StopActionRequestBody{}),
-//			state: &KafkaBrokerAttackState{
-//				ExecutionID: uuid.New(),
-//				SuccessRate: 100,
-//			},
-//			executionRunData: getExecutionRunData(4, 11),
-//			wantedError:      extension_kit.ToError("Success Rate (36.36%) was below 100%", nil),
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			//Given
-//			saveExecutionRunData(tt.state.ExecutionID, tt.executionRunData)
-//			//When
-//			result, err := stop(tt.state)
-//
-//			//Then
-//			if tt.wantedError != nil && result.Error == nil {
-//				assert.EqualError(t, err, tt.wantedError.Error())
-//			} else if tt.wantedError != nil && result.Error != nil {
-//				assert.Equal(t, tt.wantedError.Error(), result.Error.Title)
-//			} else if tt.wantedError == nil && result.Error != nil {
-//				assert.Fail(t, "Should not have error", result.Error.Title)
-//			} else {
-//				assert.NoError(t, err)
-//			}
-//		})
-//	}
-//}
-//
-//func getExecutionRunData(successCounter uint64, counter uint64) *ExecutionRunData {
-//	data := &ExecutionRunData{
-//		requestSuccessCounter: atomic.Uint64{},
-//		requestCounter:        atomic.Uint64{},
-//	}
-//	data.requestCounter.Store(counter)
-//	data.requestSuccessCounter.Store(successCounter)
-//	return data
-//
-//}

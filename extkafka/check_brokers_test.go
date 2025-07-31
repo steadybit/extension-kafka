@@ -11,6 +11,7 @@ import (
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/twmb/franz-go/pkg/kfake"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"strings"
@@ -19,30 +20,17 @@ import (
 )
 
 func TestCheckBrokers_Describe(t *testing.T) {
-	tests := []struct {
-		name        string
-		requestBody action_kit_api.PrepareActionRequestBody
-		wantedError error
-		wantedState *CheckBrokersState
-	}{
-		{
-			name: "Should return description",
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			//Given
-			action := CheckBrokersAction{}
-			//When
-			response := action.Describe()
+	//Given
+	action := CheckBrokersAction{}
 
-			//Then
-			assert.Equal(t, "Check activity of brokers.", response.Description)
-			assert.Equal(t, "Check Brokers", response.Label)
-			assert.Equal(t, fmt.Sprintf("%s.check", kafkaBrokerTargetId), response.Id)
-			assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
-		})
-	}
+	//When
+	response := action.Describe()
+
+	//Then
+	assert.Equal(t, "Check activity of brokers.", response.Description)
+	assert.Equal(t, "Check Brokers", response.Label)
+	assert.Equal(t, fmt.Sprintf("%s.check", kafkaBrokerTargetId), response.Id)
+	assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
 }
 
 func TestCheckBrokers_Prepare(t *testing.T) {
@@ -50,9 +38,7 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 		kfake.SeedTopics(-1, "steadybit"),
 		kfake.NumBrokers(3),
 	)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
@@ -69,7 +55,7 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Config: map[string]interface{}{
 					"expectedChanges": []string{"test"},
-					"stateCheckMode":  "test",
+					"changeCheckMode": "allTheTime",
 					"duration":        10000,
 				},
 				ExecutionId: uuid.New(),
@@ -77,7 +63,7 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 
 			wantedState: &CheckBrokersState{
 				ExpectedChanges:   []string{"test"},
-				StateCheckMode:    "test",
+				StateCheckMode:    "allTheTime",
 				StateCheckSuccess: false,
 			},
 		},
@@ -97,8 +83,8 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 			}
 			if tt.wantedState != nil {
 				assert.NoError(t, err)
-				assert.Equal(t, "test", tt.wantedState.StateCheckMode)
-				assert.Equal(t, []string{"test"}, state.ExpectedChanges)
+				assert.Equal(t, tt.wantedState.ExpectedChanges, state.ExpectedChanges)
+				assert.Equal(t, tt.wantedState.StateCheckMode, state.StateCheckMode)
 				assert.Equal(t, tt.wantedState.StateCheckSuccess, state.StateCheckSuccess)
 				assert.NotNil(t, state.End)
 			}
@@ -111,9 +97,7 @@ func TestCheckBrokers_Status(t *testing.T) {
 		kfake.SeedTopics(-1, "steadybit"),
 		kfake.NumBrokers(3),
 	)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
@@ -125,19 +109,19 @@ func TestCheckBrokers_Status(t *testing.T) {
 		kgo.ConsumerGroup("steadybit"),
 		kgo.ConsumeTopics("steadybit"),
 	)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	defer cl.Close()
 
 	tests := []struct {
 		name        string
+		killNode    *int
 		requestBody action_kit_api.PrepareActionRequestBody
 		wantedError error
 		wantedState *CheckBrokersState
 	}{
 		{
-			name: "Should return status ok",
+			name:     "Should return status ok",
+			killNode: extutil.Ptr(1),
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
@@ -158,7 +142,8 @@ func TestCheckBrokers_Status(t *testing.T) {
 			},
 		},
 		{
-			name: "Should return status ok with all the time check mode",
+			name:     "Should return status ok with all the time check mode",
+			killNode: extutil.Ptr(2),
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
@@ -188,31 +173,32 @@ func TestCheckBrokers_Status(t *testing.T) {
 			state := CheckBrokersState{}
 			request := tt.requestBody
 			//When
-			_, errPrepare := action.Prepare(context.TODO(), &state, request)
-			statusResult, errStatus := action.Status(context.TODO(), &state)
-			time.Sleep(6 * time.Second)
-			err := c.RemoveNode(1)
-			if err != nil {
-				return
-			}
+			_, errPrepare := action.Prepare(t.Context(), &state, request)
+			statusResult, errStatus := action.Status(t.Context(), &state)
 
 			//Then
 			if tt.wantedState != nil {
 				assert.NoError(t, errPrepare)
 				assert.NoError(t, errStatus)
 				assert.Equal(t, tt.wantedState.StateCheckMode, state.StateCheckMode)
-				assert.Equal(t, false, statusResult.Completed)
+				assert.False(t, statusResult.Completed)
 				assert.NotNil(t, state.End)
 			}
 
+			if tt.wantedError != nil {
+				err := c.RemoveNode(int32(*tt.killNode))
+				require.NoError(t, err)
+			}
+			time.Sleep(6 * time.Second)
+
 			// Completed
-			statusResult, errStatus = action.Status(context.TODO(), &state)
+			statusResult, errStatus = action.Status(t.Context(), &state)
 			//Then
 			if tt.wantedState != nil {
 				assert.NoError(t, errPrepare)
 				assert.NoError(t, errStatus)
 				assert.Equal(t, tt.wantedState.StateCheckMode, state.StateCheckMode)
-				assert.Equal(t, true, statusResult.Completed)
+				assert.True(t, statusResult.Completed)
 				assert.NotNil(t, state.End)
 			}
 		})

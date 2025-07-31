@@ -4,12 +4,12 @@
 package extkafka
 
 import (
-	"context"
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/twmb/franz-go/pkg/kfake"
 	"strings"
 	"testing"
@@ -18,7 +18,6 @@ import (
 
 func TestNewHTTPCheckActionFixedAmount_Prepare(t *testing.T) {
 	action := produceMessageActionFixedAmount{}
-
 	tests := []struct {
 		name        string
 		requestBody action_kit_api.PrepareActionRequestBody
@@ -45,7 +44,6 @@ func TestNewHTTPCheckActionFixedAmount_Prepare(t *testing.T) {
 				},
 				ExecutionId: uuid.New(),
 			}),
-
 			wantedState: &KafkaBrokerAttackState{
 				ConsumerGroup:   "",
 				Topic:           "steadybit",
@@ -62,8 +60,9 @@ func TestNewHTTPCheckActionFixedAmount_Prepare(t *testing.T) {
 			//Given
 			state := action.NewEmptyState()
 			request := tt.requestBody
+
 			//When
-			_, err := action.Prepare(context.Background(), &state, request)
+			_, err := action.Prepare(t.Context(), &state, request)
 
 			//Then
 			if tt.wantedError != nil {
@@ -88,14 +87,12 @@ func TestNewHTTPCheckActionFixedAmount_All_Success(t *testing.T) {
 		kfake.SeedTopics(-1, "steadybit"),
 		kfake.NumBrokers(1),
 	)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
 	config.Config.SeedBrokers = strings.Join(seeds, ",")
-	//prepare the action
+
 	action := produceMessageActionFixedAmount{}
 	state := action.NewEmptyState()
 	prepareActionRequestBody := extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
@@ -119,7 +116,7 @@ func TestNewHTTPCheckActionFixedAmount_All_Success(t *testing.T) {
 	})
 
 	// Prepare
-	prepareResult, err := action.Prepare(context.Background(), &state, prepareActionRequestBody)
+	prepareResult, err := action.Prepare(t.Context(), &state, prepareActionRequestBody)
 	assert.NoError(t, err)
 	assert.Nil(t, prepareResult)
 	assert.Greater(t, state.DelayBetweenRequestsInMS, extutil.ToInt64(0))
@@ -127,24 +124,28 @@ func TestNewHTTPCheckActionFixedAmount_All_Success(t *testing.T) {
 	executionRunData, err := action.getExecutionRunData(state.ExecutionID)
 	assert.NoError(t, err)
 	assert.NotNil(t, executionRunData)
+
 	// Start
-	startResult, err := action.Start(context.Background(), &state)
+	startResult, err := action.Start(t.Context(), &state)
 	assert.NoError(t, err)
 	assert.Nil(t, startResult)
 
 	// Status
-	statusResult, err := action.Status(context.Background(), &state)
+	statusResult, err := action.Status(t.Context(), &state)
 	assert.NoError(t, err)
 	assert.NotNil(t, statusResult.Metrics)
+
 	time.Sleep(10 * time.Second)
+
 	// Status completed
-	statusResult, err = action.Status(context.Background(), &state)
+	statusResult, err = action.Status(t.Context(), &state)
 	assert.NoError(t, err)
 	assert.Equal(t, true, statusResult.Completed)
 
 	assert.Equal(t, uint64(10), executionRunData.requestCounter.Load())
+
 	// Stop
-	stopResult, err := action.Stop(context.Background(), &state)
+	stopResult, err := action.Stop(t.Context(), &state)
 	assert.NoError(t, err)
 	assert.NotNil(t, stopResult.Metrics)
 	assert.Nil(t, stopResult.Error)
@@ -156,14 +157,12 @@ func TestNewHTTPCheckActionFixedAmount_All_Failure(t *testing.T) {
 		kfake.SeedTopics(-1, "steadybit"),
 		kfake.NumBrokers(1),
 	)
-	if err != nil {
-		panic(err)
-	}
+	require.NoError(t, err)
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
 	config.Config.SeedBrokers = strings.Join(seeds, ",")
-	//prepare the action
+
 	action := produceMessageActionFixedAmount{}
 	state := action.NewEmptyState()
 	prepareActionRequestBody := extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
@@ -187,23 +186,25 @@ func TestNewHTTPCheckActionFixedAmount_All_Failure(t *testing.T) {
 	})
 
 	// Prepare
-	prepareResult, err := action.Prepare(context.Background(), &state, prepareActionRequestBody)
+	prepareResult, err := action.Prepare(t.Context(), &state, prepareActionRequestBody)
 	assert.NoError(t, err)
 	assert.Nil(t, prepareResult)
 	assert.Greater(t, state.DelayBetweenRequestsInMS, extutil.ToInt64(0))
 
 	// Start
-	startResult, err := action.Start(context.Background(), &state)
+	startResult, err := action.Start(t.Context(), &state)
 	assert.NoError(t, err)
 	assert.Nil(t, startResult)
 
 	// Status
-	statusResult, err := action.Status(context.Background(), &state)
+	statusResult, err := action.Status(t.Context(), &state)
 	assert.NoError(t, err)
 	assert.NotNil(t, statusResult.Metrics)
+
 	time.Sleep(5 * time.Second)
+
 	// Status completed
-	statusResult, err = action.Status(context.Background(), &state)
+	statusResult, err = action.Status(t.Context(), &state)
 	assert.NoError(t, err)
 	assert.Equal(t, true, statusResult.Completed)
 
@@ -211,7 +212,7 @@ func TestNewHTTPCheckActionFixedAmount_All_Failure(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Greater(t, executionRunData.requestCounter.Load(), uint64(0))
 	// Stop
-	stopResult, err := action.Stop(context.Background(), &state)
+	stopResult, err := action.Stop(t.Context(), &state)
 	assert.NoError(t, err)
 	assert.NotNil(t, stopResult.Metrics)
 	assert.NotNil(t, stopResult.Error)

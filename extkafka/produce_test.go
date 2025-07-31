@@ -14,7 +14,6 @@ import (
 )
 
 func TestAction_Prepare(t *testing.T) {
-
 	tests := []struct {
 		name        string
 		requestBody action_kit_api.PrepareActionRequestBody
@@ -42,7 +41,6 @@ func TestAction_Prepare(t *testing.T) {
 				},
 				ExecutionId: uuid.New(),
 			}),
-
 			wantedState: &KafkaBrokerAttackState{
 				ConsumerGroup:   "",
 				Topic:           "steadybit",
@@ -68,7 +66,6 @@ func TestAction_Prepare(t *testing.T) {
 				},
 				ExecutionId: uuid.New(),
 			}),
-
 			wantedError: extension_kit.ToError("failed to interpret config value for recordHeaders as a key/value array", nil),
 		},
 		{
@@ -85,7 +82,6 @@ func TestAction_Prepare(t *testing.T) {
 				},
 				ExecutionId: uuid.New(),
 			}),
-
 			wantedError: extension_kit.ToError("max concurrent can't be zero", nil),
 		},
 	}
@@ -94,6 +90,7 @@ func TestAction_Prepare(t *testing.T) {
 			//Given
 			state := KafkaBrokerAttackState{}
 			request := tt.requestBody
+
 			//When
 			_, err := prepare(request, &state, func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool { return false })
 
@@ -115,7 +112,6 @@ func TestAction_Prepare(t *testing.T) {
 }
 
 func TestAction_Stop(t *testing.T) {
-
 	tests := []struct {
 		name             string
 		requestBody      action_kit_api.StopActionRequestBody
@@ -147,6 +143,7 @@ func TestAction_Stop(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			//Given
 			saveExecutionRunData(tt.state.ExecutionID, tt.executionRunData)
+
 			//When
 			result, err := stop(tt.state)
 
