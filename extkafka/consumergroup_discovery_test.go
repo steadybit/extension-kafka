@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2024 Steadybit GmbH
+// SPDX-FileCopyrightText: 2025 Steadybit GmbH
 
 package extkafka
 
 import (
 	"fmt"
-	"reflect"
+	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 
 	"github.com/twmb/franz-go/pkg/kadm"
@@ -16,46 +18,25 @@ import (
 	"strings"
 )
 
-// Test Describe()
 func TestDescribe(t *testing.T) {
-	d := &kafkaTopicDiscovery{}
-	desc := d.Describe()
-	if desc.Id != kafkaTopicTargetId {
-		t.Errorf("Describe().Id = %q; want %q", desc.Id, kafkaTopicTargetId)
-	}
-	if desc.Discover.CallInterval == nil {
-		t.Error("Describe().Discover.CallInterval = nil; want non-nil")
-	}
+	desc := (&kafkaTopicDiscovery{}).Describe()
+	assert.Equal(t, kafkaTopicTargetId, desc.Id)
+	assert.NotNil(t, desc.Discover.CallInterval)
 }
 
-// Test DescribeTarget()
 func TestDescribeTarget(t *testing.T) {
 	d := &kafkaTopicDiscovery{}
 	td := d.DescribeTarget()
-
-	if td.Id != kafkaTopicTargetId {
-		t.Errorf("DescribeTarget().Id = %q; want %q", td.Id, kafkaTopicTargetId)
-	}
-	if td.Label.One != "Kafka topic" || td.Label.Other != "Kafka topics" {
-		t.Errorf("DescribeTarget().Label = %+v; want One=\"Kafka topic\", Other=\"Kafka topics\"", td.Label)
-	}
-	if td.Category == nil || *td.Category != "kafka" {
-		t.Errorf("DescribeTarget().Category = %v; want pointer to \"kafka\"", td.Category)
-	}
-	if len(td.Table.Columns) != 6 {
-		t.Errorf("DescribeTarget().Table.Columns length = %d; want 6", len(td.Table.Columns))
-	}
-	if len(td.Table.OrderBy) != 1 {
-		t.Errorf("DescribeTarget().Table.OrderBy length = %d; want 1", len(td.Table.OrderBy))
-	} else {
-		ob := td.Table.OrderBy[0]
-		if ob.Attribute != "steadybit.label" || ob.Direction != "ASC" {
-			t.Errorf("DescribeTarget().OrderBy[0] = %+v; want Attribute=\"steadybit.label\", Direction=\"ASC\"", ob)
-		}
-	}
+	assert.Equal(t, kafkaTopicTargetId, td.Id)
+	assert.Equal(t, "Kafka topic", td.Label.One)
+	assert.Equal(t, "Kafka topics", td.Label.Other)
+	assert.Equal(t, "kafka", *td.Category)
+	assert.Len(t, td.Table.Columns, 6)
+	require.Len(t, td.Table.OrderBy, 1)
+	assert.Equal(t, "steadybit.label", td.Table.OrderBy[0].Attribute)
+	assert.Equal(t, discovery_kit_api.OrderByDirection("ASC"), td.Table.OrderBy[0].Direction)
 }
 
-// Test DescribeAttributes()
 func TestDescribeAttributes(t *testing.T) {
 	d := &kafkaTopicDiscovery{}
 	attrs := d.DescribeAttributes()
@@ -67,11 +48,7 @@ func TestDescribeAttributes(t *testing.T) {
 		"kafka.topic.partitions-isr",
 		"kafka.topic.replication-factor",
 	}
-
-	if len(attrs) != len(expected) {
-		t.Fatalf("DescribeAttributes() len = %d; want %d", len(attrs), len(expected))
-	}
-
+	require.Len(t, attrs, len(expected))
 	for _, want := range expected {
 		found := false
 		for _, a := range attrs {
@@ -80,13 +57,10 @@ func TestDescribeAttributes(t *testing.T) {
 				break
 			}
 		}
-		if !found {
-			t.Errorf("DescribeAttributes() missing %q", want)
-		}
+		assert.Truef(t, found, "DescribeAttributes() missing %q", want)
 	}
 }
 
-// Test toTopicTarget()
 func TestToTopicTarget(t *testing.T) {
 	td := kadm.TopicDetail{
 		Topic: "my-topic",
@@ -96,32 +70,19 @@ func TestToTopicTarget(t *testing.T) {
 		},
 	}
 	cluster := "cluster-42"
-
 	tgt := toTopicTarget(td, cluster)
 
 	// Basic fields
-	if want := "my-topic-cluster-42"; tgt.Id != want {
-		t.Errorf("Id = %q; want %q", tgt.Id, want)
-	}
-	if tgt.Label != "my-topic" {
-		t.Errorf("Label = %q; want %q", tgt.Label, "my-topic")
-	}
-	if tgt.TargetType != kafkaTopicTargetId {
-		t.Errorf("TargetType = %q; want %q", tgt.TargetType, kafkaTopicTargetId)
-	}
+	assert.Equal(t, "my-topic-cluster-42", tgt.Id)
+	assert.Equal(t, "my-topic", tgt.Label)
+	assert.Equal(t, kafkaTopicTargetId, tgt.TargetType)
 
 	// Attributes
 	attr := tgt.Attributes
-
 	check := func(key string, want []string) {
 		v, ok := attr[key]
-		if !ok {
-			t.Errorf("missing attribute %q", key)
-			return
-		}
-		if !reflect.DeepEqual(v, want) {
-			t.Errorf("%s = %v; want %v", key, v, want)
-		}
+		assert.True(t, ok, "missing attribute %q", key)
+		assert.Equal(t, want, v)
 	}
 
 	check("kafka.cluster.name", []string{cluster})
@@ -154,9 +115,7 @@ func TestDiscoverTargetsClusterName(t *testing.T) {
 		kfake.NumBrokers(1),
 		kfake.ClusterID("test"),
 	)
-	if err != nil {
-		t.Fatalf("failed to create fake cluster: %v", err)
-	}
+	require.NoError(t, err)
 	defer c.Close()
 
 	// Configure seed brokers for discovery
@@ -169,34 +128,21 @@ func TestDiscoverTargetsClusterName(t *testing.T) {
 	// Discover targets
 	ctx := context.Background()
 	targets, err := getAllTopics(ctx)
-	if err != nil {
-		t.Fatalf("getAllTopics error: %v", err)
-	}
-	if len(targets) == 0 {
-		t.Fatal("expected at least one discovered topic")
-	}
+	require.NoError(t, err)
+	require.NotEmpty(t, targets)
 
 	// Retrieve expected cluster name from metadata
 	client, err := createNewAdminClient(strings.Split(config.Config.SeedBrokers, ","))
-	if err != nil {
-		t.Fatalf("createNewAdminClient error: %v", err)
-	}
+	require.NoError(t, err)
 	defer client.Close()
 	meta, err := client.BrokerMetadata(ctx)
-	if err != nil {
-		t.Fatalf("BrokerMetadata error: %v", err)
-	}
+	require.NoError(t, err)
 	expected := meta.Cluster
 
 	// Assert each discovered target has the correct cluster name attribute
 	for _, tgt := range targets {
 		values, ok := tgt.Attributes["kafka.cluster.name"]
-		if !ok {
-			t.Errorf("missing kafka.cluster.name for target %s", tgt.Id)
-			continue
-		}
-		if len(values) != 1 || values[0] != expected {
-			t.Errorf("kafka.cluster.name = %v; want [%s]", values, expected)
-		}
+		require.True(t, ok, "missing kafka.cluster.name for target %s", tgt.Id)
+		require.Equal(t, []string{expected}, values)
 	}
 }
