@@ -32,6 +32,12 @@ tidy:
 	go fmt ./...
 	go mod tidy -v
 
+## prepare_audit: install required kafkactl command for e2e tests, only intended for the CI runner
+.PHONY: prepare_audit
+prepare_audit:
+	wget https://github.com/deviceinsight/kafkactl/releases/download/v5.11.1/kafkactl_5.11.1_linux_amd64.deb
+	sudo dpkg -i kafkactl_5.11.1_linux_amd64.deb
+
 ## audit: run quality control checks
 .PHONY: audit
 audit:

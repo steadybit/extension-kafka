@@ -21,6 +21,7 @@ jobs:
       go_version: '1.24'
       runs_on: steadybit_runner_ubuntu_latest_4cores_16GB
       build_linux_packages: true
+      run_make_prepare_audit: true
       VERSION_BUMPER_APPID: ${{ vars.GH_APP_STEADYBIT_APP_ID }}
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
