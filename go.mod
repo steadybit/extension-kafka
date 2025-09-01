@@ -19,7 +19,7 @@ require (
 	github.com/steadybit/discovery-kit/go/discovery_kit_test v1.2.0
 	github.com/steadybit/event-kit/go/event_kit_api v1.6.0
 	github.com/steadybit/extension-kit v1.10.0
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	github.com/twmb/franz-go v1.19.5
 	github.com/twmb/franz-go/pkg/kadm v1.16.1
 	github.com/twmb/franz-go/pkg/kfake v0.0.0-20250711145744-a849b8be17b7
