@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/rs/zerolog/log"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"github.com/twmb/franz-go/pkg/sasl/plain"
+	"github.com/twmb/franz-go/pkg/sasl/scram"
 	"os"
 	"strings"
 )
@@ -43,10 +43,10 @@ func main() {
 		kgo.SeedBrokers(strings.Split(seeds, ",")...),
 		kgo.ConsumerGroup(consumer),
 		kgo.ConsumeTopics(topic),
-		kgo.SASL(plain.Auth{
+		kgo.SASL(scram.Auth{
 			User: saslUser,
 			Pass: saslPassword,
-		}.AsMechanism()),
+		}.AsSha512Mechanism()),
 	)
 	log.Info().Msgf("Initiating consumer with kafka config: brokers %s, consumer name %s on topic %s with user %s", seeds, consumer, topic, saslUser)
 	if err != nil {
