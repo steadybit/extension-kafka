@@ -3,15 +3,16 @@ module github.com/steadybit/extension-kafka/dummyconsummer
 go 1.24
 
 require (
-	github.com/rs/zerolog v1.33.0
-	github.com/twmb/franz-go v1.18.0
+	github.com/rs/zerolog v1.34.0
+	github.com/twmb/franz-go v1.19.5
 )
 
 require (
-	github.com/klauspost/compress v1.17.8 // indirect
-	github.com/mattn/go-colorable v0.1.13 // indirect
-	github.com/mattn/go-isatty v0.0.19 // indirect
-	github.com/pierrec/lz4/v4 v4.1.21 // indirect
-	github.com/twmb/franz-go/pkg/kmsg v1.9.0 // indirect
-	golang.org/x/sys v0.12.0 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/mattn/go-colorable v0.1.14 // indirect
+	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/pierrec/lz4/v4 v4.1.22 // indirect
+	github.com/twmb/franz-go/pkg/kmsg v1.11.2 // indirect
+	golang.org/x/crypto v0.41.0 // indirect
+	golang.org/x/sys v0.35.0 // indirect
 )
