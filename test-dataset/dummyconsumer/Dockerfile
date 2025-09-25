@@ -2,7 +2,7 @@ FROM golang:1.24 AS builder
 
 WORKDIR /app
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o myapp
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o myapp
 
 FROM alpine:3.14
 
