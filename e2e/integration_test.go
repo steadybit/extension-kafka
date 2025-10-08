@@ -286,6 +286,9 @@ func helmInstallLocalStack(minikube *e2e.Minikube) error {
 		"--set", "sasl.client.passwords=steadybit",
 		"--set", "provisioning.enabled=true",
 		"--set", "provisioning.topics[0].name=foo",
+		"--set", "image.repository=bitnamilegacy/kafka",
+		"--set", "image.tag=4.0.0-debian-12-r10",
+		"--set", "global.security.allowInsecureImages=true",
 		"--namespace=default",
 		"--timeout=15m0s",
 		"my-kafka", "bitnami/kafka ", "--wait").CombinedOutput()
