@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.5
+
+- Update dependencies
+
 ## v1.2.4
 
 - Support changing IO and network thread count values with huge increments or decrements

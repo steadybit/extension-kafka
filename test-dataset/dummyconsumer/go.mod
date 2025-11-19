@@ -1,6 +1,6 @@
 module github.com/steadybit/extension-kafka/dummyconsummer
 
-go 1.24
+go 1.25.3
 
 require (
 	github.com/rs/zerolog v1.34.0
