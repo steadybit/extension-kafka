@@ -80,3 +80,34 @@ tests:
       priorityClassName: my-priority-class
     asserts:
       - matchSnapshot: {}
+
+  - it: manifest should match snapshot with multi-cluster configuration
+    set:
+      kafka:
+        clusters:
+          - name: production
+            seedBrokers: "prod-broker1:9092,prod-broker2:9092"
+            auth:
+              saslMechanism: "SCRAM-SHA-256"
+              saslUser: "prod-user"
+              saslPassword: "prod-pass"
+              useTLS: "true"
+          - name: staging
+            seedBrokers: "staging-broker:9092"
+            auth:
+              saslMechanism: "PLAIN"
+              saslUser: "staging-user"
+              saslPassword: "staging-pass"
+    asserts:
+      - matchSnapshot: {}
+
+  - it: manifest should match snapshot with multi-cluster using existing secret
+    set:
+      kafka:
+        clusters:
+          - name: production
+            seedBrokers: "prod-broker:9092"
+            auth:
+              existingSecret: "my-existing-kafka-secret"
+    asserts:
+      - matchSnapshot: {}

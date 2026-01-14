@@ -5,6 +5,10 @@ package extkafka
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kafka/config"
@@ -14,9 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/twmb/franz-go/pkg/kfake"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestCheckConsumerGroup_Describe(t *testing.T) {
@@ -35,6 +36,13 @@ func TestCheckConsumerGroup_Describe(t *testing.T) {
 }
 
 func TestCheckConsumerGroup_Prepare(t *testing.T) {
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: "localhost:9092",
+		},
+	})
+
 	tests := []struct {
 		name        string
 		requestBody action_kit_api.PrepareActionRequestBody
@@ -47,6 +55,7 @@ func TestCheckConsumerGroup_Prepare(t *testing.T) {
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
 						"kafka.consumer-group.name": {"steadybit"},
+						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{
@@ -117,7 +126,14 @@ func TestCheckConsumerGroup_Status(t *testing.T) {
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
-	config.Config.SeedBrokers = strings.Join(seeds, ",")
+	seedBrokers := strings.Join(seeds, ",")
+
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: seedBrokers,
+		},
+	})
 	// One client can both produce and consume!
 	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
 	cl, err := kgo.NewClient(
@@ -140,6 +156,7 @@ func TestCheckConsumerGroup_Status(t *testing.T) {
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
 						"kafka.consumer-group.name": {"steadybit"},
+						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{
@@ -163,6 +180,7 @@ func TestCheckConsumerGroup_Status(t *testing.T) {
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
 						"kafka.consumer-group.name": {"steadybit"},
+						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{

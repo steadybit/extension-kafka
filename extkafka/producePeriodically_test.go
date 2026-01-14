@@ -4,6 +4,10 @@
 package extkafka
 
 import (
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kafka/config"
@@ -12,9 +16,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/twmb/franz-go/pkg/kfake"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestNewProduceMessageActionPeriodically_Describe(t *testing.T) {
@@ -28,6 +29,13 @@ func TestNewProduceMessageActionPeriodically_Describe(t *testing.T) {
 }
 
 func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: "localhost:9092",
+		},
+	})
+
 	action := produceMessageActionPeriodically{}
 
 	tests := []struct {
@@ -41,7 +49,8 @@ func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
-						"kafka.topic.name": {"steadybit"},
+						"kafka.topic.name":   {"steadybit"},
+						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{
@@ -123,14 +132,22 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
-	config.Config.SeedBrokers = strings.Join(seeds, ",")
+	seedBrokers := strings.Join(seeds, ",")
+
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: seedBrokers,
+		},
+	})
 
 	action := produceMessageActionPeriodically{}
 	state := action.NewEmptyState()
 	prepareActionRequestBody := extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 		Target: &action_kit_api.Target{
 			Attributes: map[string][]string{
-				"kafka.topic.name": {"steadybit"},
+				"kafka.topic.name":   {"steadybit"},
+				"kafka.cluster.name": {"test-cluster"},
 			},
 		},
 		Config: map[string]interface{}{
@@ -190,14 +207,22 @@ func TestNewHTTPCheckActionPeriodically_All_Failure(t *testing.T) {
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
-	config.Config.SeedBrokers = strings.Join(seeds, ",")
+	seedBrokers := strings.Join(seeds, ",")
+
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: seedBrokers,
+		},
+	})
 
 	action := produceMessageActionPeriodically{}
 	state := action.NewEmptyState()
 	prepareActionRequestBody := extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 		Target: &action_kit_api.Target{
 			Attributes: map[string][]string{
-				"kafka.topic.name": {"invalid"},
+				"kafka.topic.name":   {"invalid"},
+				"kafka.cluster.name": {"test-cluster"},
 			},
 		},
 		Config: map[string]interface{}{

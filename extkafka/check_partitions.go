@@ -33,6 +33,7 @@ type PartitionsCheckState struct {
 	StateCheckMode          string
 	StateCheckSuccess       bool
 	BrokerHosts             []string
+	ClusterName             string // Cluster name for multi-cluster support
 }
 
 const (
@@ -180,6 +181,15 @@ func (m *PartitionsCheckAction) Prepare(_ context.Context, state *PartitionsChec
 		stateCheckMode = fmt.Sprintf("%v", request.Config["changeCheckMode"])
 	}
 
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	state.ClusterName = clusterName
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
 	state.End = end
 	state.ExpectedChanges = expectedState
 	state.StateCheckMode = stateCheckMode
@@ -187,7 +197,6 @@ func (m *PartitionsCheckAction) Prepare(_ context.Context, state *PartitionsChec
 	state.PreviousReplicas = make(map[int32][]int32)
 	state.PreviousOfflineReplicas = make(map[int32][]int32)
 	state.PreviousLeader = make(map[int32]int32)
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
@@ -203,7 +212,12 @@ func (m *PartitionsCheckAction) Status(ctx context.Context, state *PartitionsChe
 func TopicCheckStatus(ctx context.Context, state *PartitionsCheckState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
-	client, err := createNewAdminClient(state.BrokerHosts)
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	client, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

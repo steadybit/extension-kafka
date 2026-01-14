@@ -30,6 +30,7 @@ type CheckBrokersState struct {
 	StateCheckMode     string
 	StateCheckSuccess  bool
 	BrokerHosts        []string
+	ClusterName        string // Cluster name for multi-cluster support
 }
 
 const (
@@ -151,9 +152,25 @@ func (m *CheckBrokersAction) Prepare(ctx context.Context, state *CheckBrokersSta
 		stateCheckMode = fmt.Sprintf("%v", request.Config["changeCheckMode"])
 	}
 
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
+	// Get cluster configuration - for check actions, use first cluster if only one exists
+	clusters := config.GetAllClusterConfigs()
+	if len(clusters) == 0 {
+		return nil, fmt.Errorf("no cluster configuration found")
+	}
 
-	client, err := createNewAdminClient(state.BrokerHosts)
+	// Use first (and typically only) cluster for backward compatibility
+	var clusterName string
+	var clusterConfig *config.ClusterConfig
+	for name, cfg := range clusters {
+		clusterName = name
+		clusterConfig = cfg
+		break
+	}
+
+	state.ClusterName = clusterName
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
+
+	client, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
@@ -185,7 +202,12 @@ func (m *CheckBrokersAction) Status(ctx context.Context, state *CheckBrokersStat
 func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
-	client, err := createNewAdminClient(state.BrokerHosts)
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	client, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

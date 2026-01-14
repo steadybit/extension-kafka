@@ -7,6 +7,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_commons"
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
@@ -14,8 +17,6 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"strings"
-	"time"
 )
 
 type kafkaConsumerGroupDiscovery struct {
@@ -99,15 +100,54 @@ func (r *kafkaConsumerGroupDiscovery) DescribeAttributes() []discovery_kit_api.A
 }
 
 func (r *kafkaConsumerGroupDiscovery) DiscoverTargets(ctx context.Context) ([]discovery_kit_api.Target, error) {
-	return getAllConsumerGroups(ctx)
+	return getAllConsumerGroupsMultiCluster(ctx)
 }
 
-func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, error) {
+func getAllConsumerGroupsMultiCluster(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	clusters := config.GetAllClusterConfigs()
+
+	type clusterResult struct {
+		targets []discovery_kit_api.Target
+		err     error
+	}
+
+	resultChan := make(chan clusterResult, len(clusters))
+
+	// Discover from all clusters in parallel
+	for clusterName, clusterConfig := range clusters {
+		go func(name string, cfg *config.ClusterConfig) {
+			targets, err := discoverConsumerGroupsForCluster(ctx, name, cfg)
+			resultChan <- clusterResult{targets: targets, err: err}
+		}(clusterName, clusterConfig)
+	}
+
+	// Collect results
+	allTargets := make([]discovery_kit_api.Target, 0, 20*len(clusters))
+	var errorList []error
+
+	for i := 0; i < len(clusters); i++ {
+		result := <-resultChan
+		if result.err != nil {
+			errorList = append(errorList, result.err)
+		} else {
+			allTargets = append(allTargets, result.targets...)
+		}
+	}
+
+	// Fail only if all clusters failed
+	if len(errorList) == len(clusters) && len(clusters) > 0 {
+		return nil, fmt.Errorf("failed to discover from all clusters: %v", errorList)
+	}
+
+	return discovery_kit_commons.ApplyAttributeExcludes(allTargets, config.Config.DiscoveryAttributesExcludesConsumerGroups), nil
+}
+
+func discoverConsumerGroupsForCluster(ctx context.Context, clusterName string, clusterConfig *config.ClusterConfig) ([]discovery_kit_api.Target, error) {
 	result := make([]discovery_kit_api.Target, 0, 20)
 
-	client, err := createNewAdminClient(strings.Split(config.Config.SeedBrokers, ","))
+	client, err := createNewAdminClientWithConfig(strings.Split(clusterConfig.SeedBrokers, ","), clusterConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
+		return nil, fmt.Errorf("failed to initialize kafka client for cluster %s: %s", clusterName, err.Error())
 	}
 	defer client.Close()
 
@@ -117,17 +157,19 @@ func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, erro
 	case err == nil:
 	case errors.As(err, &seList):
 	default:
-		return nil, fmt.Errorf("failed to describe consumer groups: %v", err)
-	}
-	metadata, err := client.BrokerMetadata(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get brokers metadata : %v", err)
-	}
-	for _, group := range describedGroups.Sorted() {
-		result = append(result, toConsumerGroupTarget(group, metadata.Cluster))
+		return nil, fmt.Errorf("failed to describe consumer groups for cluster %s: %v", clusterName, err)
 	}
 
-	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesConsumerGroups), nil
+	for _, group := range describedGroups.Sorted() {
+		result = append(result, toConsumerGroupTarget(group, clusterName))
+	}
+
+	return result, nil
+}
+
+// Keep for backward compatibility
+func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	return getAllConsumerGroupsMultiCluster(ctx)
 }
 
 func toConsumerGroupTarget(group kadm.DescribedGroup, clusterName string) discovery_kit_api.Target {

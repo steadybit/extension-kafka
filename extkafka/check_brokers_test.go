@@ -6,6 +6,10 @@ package extkafka
 import (
 	"context"
 	"fmt"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kafka/config"
@@ -14,9 +18,6 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/twmb/franz-go/pkg/kfake"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"strings"
-	"testing"
-	"time"
 )
 
 func TestCheckBrokers_Describe(t *testing.T) {
@@ -42,7 +43,14 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
-	config.Config.SeedBrokers = strings.Join(seeds, ",")
+	seedBrokers := strings.Join(seeds, ",")
+
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: seedBrokers,
+		},
+	})
 
 	tests := []struct {
 		name        string
@@ -101,7 +109,14 @@ func TestCheckBrokers_Status(t *testing.T) {
 	defer c.Close()
 
 	seeds := c.ListenAddrs()
-	config.Config.SeedBrokers = strings.Join(seeds, ",")
+	seedBrokers := strings.Join(seeds, ",")
+
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: seedBrokers,
+		},
+	})
 	// One client can both produce and consume!
 	// Consuming can either be direct (no consumer group), or through a group. Below, we use a group.
 	cl, err := kgo.NewClient(

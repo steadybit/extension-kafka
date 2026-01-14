@@ -73,14 +73,29 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 func (f kafkaBrokerElectNewLeaderAttack) Prepare(_ context.Context, state *KafkaBrokerAttackState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	state.Topic = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
 	state.Partition = extutil.ToInt32(request.Config["partitions"])
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
+
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	state.ClusterName = clusterName
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
 
 	return nil, nil
 }
 
 func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *KafkaBrokerAttackState) (*action_kit_api.StartResult, error) {
 	messages := make([]action_kit_api.Message, 0)
-	client, err := createNewAdminClient(state.BrokerHosts)
+
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	client, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

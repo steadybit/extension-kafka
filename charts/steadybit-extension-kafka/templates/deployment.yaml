@@ -67,6 +67,54 @@ spec:
             - name: STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_CONSUMER_GROUPS
               value: {{ join "," .Values.discovery.attributes.excludes.consumer | quote }}
             {{- end }}
+            {{- $isMultiCluster := include "kafka.isMultiCluster" . -}}
+            {{- if eq $isMultiCluster "true" }}
+            {{/* Multi-cluster mode: generate CLUSTER_X_* env vars */}}
+            {{- range $index, $cluster := .Values.kafka.clusters }}
+            {{- $secretName := include "kafka.cluster.secret.name" (dict "cluster" $cluster "index" $index) }}
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_SEED_BROKERS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: seedBrokers
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_SASL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: saslUser
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_SASL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: saslPassword
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_SASL_MECHANISM
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: saslMechanism
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_KAFKA_CLUSTER_CERT_CHAIN_FILE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: certChainFile
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_KAFKA_CLUSTER_CERT_KEY_FILE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: certKeyFile
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_KAFKA_CLUSTER_CA_FILE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: caFile
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_KAFKA_CONNECTION_USE_TLS
+              valueFrom:
+                secretKeyRef:
+                  name: {{ $secretName }}
+                  key: useTLS
+            {{- end }}
+            {{- else }}
+            {{/* Legacy single-cluster mode */}}
             - name: STEADYBIT_EXTENSION_SEED_BROKERS
               value: {{ .Values.kafka.seedBrokers }}
             - name: STEADYBIT_EXTENSION_SASL_USER
@@ -104,6 +152,7 @@ spec:
                 secretKeyRef:
                   name: {{ include "kafka.auth.secret.name" . }}
                   key: useTLS
+            {{- end }}
             {{- include "extensionlib.deployment.env" (list .) | nindent 12 }}
             {{- with .Values.extraEnv }}
               {{- toYaml . | nindent 12 }}

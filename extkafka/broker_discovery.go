@@ -202,34 +202,81 @@ func (r *kafkaBrokerDiscovery) DescribeAttributes() []discovery_kit_api.Attribut
 }
 
 func (r *kafkaBrokerDiscovery) DiscoverTargets(ctx context.Context) ([]discovery_kit_api.Target, error) {
-	return getAllBrokers(ctx)
+	return getAllBrokersMultiCluster(ctx)
 }
 
-func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
+func getAllBrokersMultiCluster(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	clusters := config.GetAllClusterConfigs()
+
+	type clusterResult struct {
+		targets []discovery_kit_api.Target
+		err     error
+	}
+
+	resultChan := make(chan clusterResult, len(clusters))
+
+	// Discover from all clusters in parallel
+	for clusterName, clusterConfig := range clusters {
+		go func(name string, cfg *config.ClusterConfig) {
+			targets, err := discoverBrokersForCluster(ctx, name, cfg)
+			resultChan <- clusterResult{targets: targets, err: err}
+		}(clusterName, clusterConfig)
+	}
+
+	// Collect results
+	allTargets := make([]discovery_kit_api.Target, 0, 20*len(clusters))
+	var errors []error
+
+	for i := 0; i < len(clusters); i++ {
+		result := <-resultChan
+		if result.err != nil {
+			log.Warn().Err(result.err).Msg("Failed to discover brokers from cluster")
+			errors = append(errors, result.err)
+		} else {
+			allTargets = append(allTargets, result.targets...)
+		}
+	}
+
+	// Fail only if all clusters failed
+	if len(errors) == len(clusters) && len(clusters) > 0 {
+		return nil, fmt.Errorf("failed to discover from all clusters: %v", errors)
+	}
+
+	return discovery_kit_commons.ApplyAttributeExcludes(allTargets, config.Config.DiscoveryAttributesExcludesBrokers), nil
+}
+
+func discoverBrokersForCluster(ctx context.Context, clusterName string, clusterConfig *config.ClusterConfig) ([]discovery_kit_api.Target, error) {
 	result := make([]discovery_kit_api.Target, 0, 20)
 
-	client, err := createNewAdminClient(strings.Split(config.Config.SeedBrokers, ","))
+	client, err := createNewAdminClientWithConfig(strings.Split(clusterConfig.SeedBrokers, ","), clusterConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
+		return nil, fmt.Errorf("failed to initialize kafka client for cluster %s: %s", clusterName, err.Error())
 	}
 	defer client.Close()
 
-	// Create topic "franz-go" if it doesn't exist already
 	brokerDetails, err := client.ListBrokers(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list brokers: %v", err)
+		return nil, fmt.Errorf("failed to list brokers for cluster %s: %v", clusterName, err)
 	}
+
 	metadata, err := client.BrokerMetadata(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get brokers metadata : %v", err)
+		return nil, fmt.Errorf("failed to get brokers metadata for cluster %s: %v", clusterName, err)
 	}
-	log.Debug().Msgf("Number of brokers discovered: %d", len(brokerDetails))
-	log.Debug().Msgf("Node IDs discovered: %v", brokerDetails.NodeIDs())
+
+	log.Debug().Msgf("Cluster %s: Number of brokers discovered: %d", clusterName, len(brokerDetails))
+	log.Debug().Msgf("Cluster %s: Node IDs discovered: %v", clusterName, brokerDetails.NodeIDs())
+
 	for _, broker := range brokerDetails {
 		result = append(result, toBrokerTarget(broker, metadata.Controller, metadata.Cluster))
 	}
 
-	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesBrokers), nil
+	return result, nil
+}
+
+// Keep for backward compatibility (used in tests or other places)
+func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	return getAllBrokersMultiCluster(ctx)
 }
 
 func toBrokerTarget(broker kadm.BrokerDetail, controller int32, clusterName string) discovery_kit_api.Target {

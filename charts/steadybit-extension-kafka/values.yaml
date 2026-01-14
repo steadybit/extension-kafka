@@ -11,6 +11,8 @@ image:
   pullPolicy: IfNotPresent
 
 kafka:
+  # -- Legacy single-cluster configuration (for backward compatibility)
+  # If kafka.clusters is defined, this section is ignored in favor of multi-cluster configuration.
   seedBrokers: ""
   auth:
     saslMechanism: ""
@@ -22,6 +24,23 @@ kafka:
     certKeyFile: ""
     caFile: ""
     useTLS: ""
+
+  # -- Multi-cluster configuration. When defined, the legacy single-cluster config above is ignored.
+  # Each cluster is configured with an index (0, 1, 2, ...) which maps to STEADYBIT_EXTENSION_CLUSTER_X_* env vars.
+  # Example:
+  # clusters:
+  #   - name: production
+  #     seedBrokers: "broker1:9092,broker2:9092"
+  #     auth:
+  #       saslMechanism: "SCRAM-SHA-256"
+  #       saslUser: "prod-user"
+  #       saslPassword: "prod-pass"
+  #       useTLS: "true"
+  #   - name: staging
+  #     seedBrokers: "staging-broker:9092"
+  #     auth:
+  #       existingSecret: "staging-kafka-secret"
+  clusters: []
 
 tls:
   server:

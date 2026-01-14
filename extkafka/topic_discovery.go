@@ -117,26 +117,65 @@ func (r *kafkaTopicDiscovery) DescribeAttributes() []discovery_kit_api.Attribute
 }
 
 func (r *kafkaTopicDiscovery) DiscoverTargets(ctx context.Context) ([]discovery_kit_api.Target, error) {
-	return getAllTopics(ctx)
+	return getAllTopicsMultiCluster(ctx)
 }
 
-func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
+func getAllTopicsMultiCluster(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	clusters := config.GetAllClusterConfigs()
+
+	type clusterResult struct {
+		targets []discovery_kit_api.Target
+		err     error
+	}
+
+	resultChan := make(chan clusterResult, len(clusters))
+
+	// Discover from all clusters in parallel
+	for clusterName, clusterConfig := range clusters {
+		go func(name string, cfg *config.ClusterConfig) {
+			targets, err := discoverTopicsForCluster(ctx, name, cfg)
+			resultChan <- clusterResult{targets: targets, err: err}
+		}(clusterName, clusterConfig)
+	}
+
+	// Collect results
+	allTargets := make([]discovery_kit_api.Target, 0, 20*len(clusters))
+	var errors []error
+
+	for i := 0; i < len(clusters); i++ {
+		result := <-resultChan
+		if result.err != nil {
+			errors = append(errors, result.err)
+		} else {
+			allTargets = append(allTargets, result.targets...)
+		}
+	}
+
+	// Fail only if all clusters failed
+	if len(errors) == len(clusters) && len(clusters) > 0 {
+		return nil, fmt.Errorf("failed to discover from all clusters: %v", errors)
+	}
+
+	return discovery_kit_commons.ApplyAttributeExcludes(allTargets, config.Config.DiscoveryAttributesExcludesTopics), nil
+}
+
+func discoverTopicsForCluster(ctx context.Context, clusterName string, clusterConfig *config.ClusterConfig) ([]discovery_kit_api.Target, error) {
 	result := make([]discovery_kit_api.Target, 0, 20)
 
-	client, err := createNewAdminClient(strings.Split(config.Config.SeedBrokers, ","))
+	client, err := createNewAdminClientWithConfig(strings.Split(clusterConfig.SeedBrokers, ","), clusterConfig)
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
+		return nil, fmt.Errorf("failed to initialize kafka client for cluster %s: %s", clusterName, err.Error())
 	}
 	defer client.Close()
 
-	// Create topic "franz-go" if it doesn't exist already
 	topicDetails, err := client.ListTopics(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to list topics: %v", err)
+		return nil, fmt.Errorf("failed to list topics for cluster %s: %v", clusterName, err)
 	}
+
 	metadata, err := client.BrokerMetadata(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get brokers metadata : %v", err)
+		return nil, fmt.Errorf("failed to get brokers metadata for cluster %s: %v", clusterName, err)
 	}
 
 	for _, t := range topicDetails {
@@ -145,7 +184,12 @@ func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
 		}
 	}
 
-	return discovery_kit_commons.ApplyAttributeExcludes(result, config.Config.DiscoveryAttributesExcludesTopics), nil
+	return result, nil
+}
+
+// Keep for backward compatibility
+func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	return getAllTopicsMultiCluster(ctx)
 }
 
 func toTopicTarget(topic kadm.TopicDetail, clusterName string) discovery_kit_api.Target {

@@ -37,6 +37,16 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	}
 	state.Topic = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
 
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	state.ClusterName = clusterName
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
+
 	duration := extutil.ToInt64(request.Config["duration"])
 	state.Timeout = time.Now().Add(time.Millisecond * time.Duration(duration))
 	state.SuccessRate = extutil.ToInt(request.Config["successRate"])
@@ -49,9 +59,7 @@ func prepare(request action_kit_api.PrepareActionRequestBody, state *KafkaBroker
 	state.RecordKey = extutil.ToString(request.Config["recordKey"])
 	state.RecordValue = extutil.ToString(request.Config["recordValue"])
 	state.ExecutionID = request.ExecutionId
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
-	var err error
 	if _, ok := request.Config["recordHeaders"]; ok {
 		state.RecordHeaders, err = extutil.ToKeyValue(request.Config, "recordHeaders")
 		if err != nil {
@@ -111,9 +119,16 @@ func createRecord(state *KafkaBrokerAttackState) *kgo.Record {
 }
 
 func requestProducerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
-	client, err := createNewClient(state.BrokerHosts)
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to get cluster config")
+		return
+	}
+
+	client, err := createNewClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to create client")
+		return
 	}
 	for range executionRunData.jobs {
 		if !checkEnded(executionRunData, state) {

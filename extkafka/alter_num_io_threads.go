@@ -68,14 +68,28 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 func (k *AlterNumberIOThreadsAttack) Prepare(ctx context.Context, state *AlterState, request action_kit_api.PrepareActionRequestBody) (*action_kit_api.PrepareResult, error) {
 	var err error
 	state.BrokerID = extutil.ToInt32(request.Target.Attributes["kafka.broker.node-id"][0])
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
+
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	state.ClusterName = clusterName
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
 	state.TargetBrokerConfigValue = extutil.ToInt(request.Config["io_threads"])
-	state.InitialBrokerConfigValue, err = describeConfigInt(ctx, state.BrokerHosts, NumberIOThreads, state.BrokerID)
+	state.InitialBrokerConfigValue, err = describeConfigIntWithConfig(ctx, state.BrokerHosts, NumberIOThreads, state.BrokerID, clusterConfig)
 	return nil, err
 }
 
 func (k *AlterNumberIOThreadsAttack) Start(ctx context.Context, state *AlterState) (*action_kit_api.StartResult, error) {
-	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, state.TargetBrokerConfigValue, state.BrokerID); err != nil {
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	if err := adjustThreadsWithConfig(ctx, state.BrokerHosts, NumberIOThreads, state.TargetBrokerConfigValue, state.BrokerID, clusterConfig); err != nil {
 		return nil, err
 	}
 	return &action_kit_api.StartResult{
@@ -87,7 +101,12 @@ func (k *AlterNumberIOThreadsAttack) Start(ctx context.Context, state *AlterStat
 }
 
 func (k *AlterNumberIOThreadsAttack) Stop(ctx context.Context, state *AlterState) (*action_kit_api.StopResult, error) {
-	if err := adjustThreads(ctx, state.BrokerHosts, NumberIOThreads, state.InitialBrokerConfigValue, state.BrokerID); err != nil {
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	if err := adjustThreadsWithConfig(ctx, state.BrokerHosts, NumberIOThreads, state.InitialBrokerConfigValue, state.BrokerID, clusterConfig); err != nil {
 		return nil, err
 	}
 	return &action_kit_api.StopResult{

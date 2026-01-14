@@ -6,6 +6,7 @@ package extkafka
 import (
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
+	"github.com/steadybit/extension-kafka/config"
 	extension_kit "github.com/steadybit/extension-kit"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
@@ -14,6 +15,13 @@ import (
 )
 
 func TestAction_Prepare(t *testing.T) {
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: "localhost:9092",
+		},
+	})
+
 	tests := []struct {
 		name        string
 		requestBody action_kit_api.PrepareActionRequestBody
@@ -25,7 +33,8 @@ func TestAction_Prepare(t *testing.T) {
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
-						"kafka.topic.name": {"steadybit"},
+						"kafka.topic.name":   {"steadybit"},
+						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{
@@ -56,7 +65,8 @@ func TestAction_Prepare(t *testing.T) {
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
-						"kafka.topic.name": {"steadybit"},
+						"kafka.topic.name":   {"steadybit"},
+						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{
@@ -73,7 +83,8 @@ func TestAction_Prepare(t *testing.T) {
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
-						"kafka.topic.name": {"steadybit"},
+						"kafka.topic.name":   {"steadybit"},
+						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{

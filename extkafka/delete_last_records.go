@@ -25,6 +25,7 @@ type DeleteRecordsState struct {
 	Partitions  []string
 	Offset      int64
 	BrokerHosts []string
+	ClusterName string // Cluster name for multi-cluster support
 }
 
 var _ action_kit_sdk.Action[DeleteRecordsState] = (*DeleteRecordsAttack)(nil)
@@ -87,7 +88,16 @@ func (k *DeleteRecordsAttack) Prepare(_ context.Context, state *DeleteRecordsSta
 	state.TopicName = extutil.MustHaveValue(request.Target.Attributes, "kafka.topic.name")[0]
 	state.Partitions = extutil.ToStringArray(request.Config["partitions"])
 	state.Offset = extutil.ToInt64(request.Config["offset"])
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
+
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	state.ClusterName = clusterName
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
 
 	return nil, nil
 }
@@ -95,7 +105,12 @@ func (k *DeleteRecordsAttack) Prepare(_ context.Context, state *DeleteRecordsSta
 func (k *DeleteRecordsAttack) Start(ctx context.Context, state *DeleteRecordsState) (*action_kit_api.StartResult, error) {
 	var errs []error
 
-	adminClient, err := createNewAdminClient(state.BrokerHosts)
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	adminClient, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, err
 	}

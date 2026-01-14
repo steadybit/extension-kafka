@@ -154,62 +154,103 @@ func getExtensionList() ExtensionListResponse {
 }
 
 func testBrokerConnection() {
+	clusters := config.GetAllClusterConfigs()
+
+	type clusterTestResult struct {
+		clusterName string
+		err         error
+	}
+
+	resultChan := make(chan clusterTestResult, len(clusters))
+
+	// Test all clusters in parallel
+	for clusterName, clusterConfig := range clusters {
+		go func(name string, cfg *config.ClusterConfig) {
+			err := testSingleClusterConnection(name, cfg)
+			resultChan <- clusterTestResult{clusterName: name, err: err}
+		}(clusterName, clusterConfig)
+	}
+
+	// Collect results
+	var failedClusters []string
+	successCount := 0
+
+	for i := 0; i < len(clusters); i++ {
+		result := <-resultChan
+		if result.err != nil {
+			log.Error().Err(result.err).Msgf("Failed to connect to cluster '%s'", result.clusterName)
+			failedClusters = append(failedClusters, result.clusterName)
+		} else {
+			log.Info().Msgf("Successfully connected to cluster '%s'", result.clusterName)
+			successCount++
+		}
+	}
+
+	// Fail only if all clusters failed
+	if len(failedClusters) == len(clusters) {
+		log.Fatal().Msg("Failed to connect to all configured Kafka clusters")
+	}
+
+	log.Info().Msgf("Successfully connected to %d/%d clusters", successCount, len(clusters))
+}
+
+func testSingleClusterConnection(clusterName string, clusterConfig *config.ClusterConfig) error {
 	opts := []kgo.Opt{
-		kgo.SeedBrokers(strings.Split(config.Config.SeedBrokers, ",")...),
+		kgo.SeedBrokers(strings.Split(clusterConfig.SeedBrokers, ",")...),
 		kgo.DefaultProduceTopic("steadybit"),
 		kgo.ClientID("steadybit"),
 	}
 
-	if config.Config.SaslMechanism != "" {
-		switch saslMechanism := config.Config.SaslMechanism; saslMechanism {
+	if clusterConfig.SaslMechanism != "" {
+		switch saslMechanism := clusterConfig.SaslMechanism; saslMechanism {
 		case kadm.ScramSha256.String():
 			opts = append(opts, []kgo.Opt{
 				kgo.SASL(scram.Auth{
-					User: config.Config.SaslUser,
-					Pass: config.Config.SaslPassword,
+					User: clusterConfig.SaslUser,
+					Pass: clusterConfig.SaslPassword,
 				}.AsSha256Mechanism()),
 			}...)
 		case kadm.ScramSha512.String():
 			opts = append(opts, []kgo.Opt{
 				kgo.SASL(scram.Auth{
-					User: config.Config.SaslUser,
-					Pass: config.Config.SaslPassword,
+					User: clusterConfig.SaslUser,
+					Pass: clusterConfig.SaslPassword,
 				}.AsSha512Mechanism()),
 			}...)
 		default:
 			opts = append(opts, []kgo.Opt{
 				kgo.SASL(plain.Auth{
-					User: config.Config.SaslUser,
-					Pass: config.Config.SaslPassword,
+					User: clusterConfig.SaslUser,
+					Pass: clusterConfig.SaslPassword,
 				}.AsMechanism()),
 			}...)
 		}
 	}
 
-	if config.Config.KafkaClusterCaFile != "" && config.Config.KafkaClusterCertKeyFile != "" && config.Config.KafkaClusterCertChainFile != "" {
-		tlsConfig, err := newTLSConfig(config.Config.KafkaClusterCertChainFile, config.Config.KafkaClusterCertKeyFile, config.Config.KafkaClusterCaFile)
+	if clusterConfig.KafkaClusterCaFile != "" && clusterConfig.KafkaClusterCertKeyFile != "" && clusterConfig.KafkaClusterCertChainFile != "" {
+		tlsConfig, err := newTLSConfig(clusterConfig.KafkaClusterCertChainFile, clusterConfig.KafkaClusterCertKeyFile, clusterConfig.KafkaClusterCaFile)
 		if err != nil {
-			log.Fatal().Err(err).Msgf("failed to create tls config: %s", err.Error())
+			return err
 		}
 
 		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
-	} else if config.Config.KafkaConnectionUseTLS == "true" {
+	} else if clusterConfig.KafkaConnectionUseTLS == "true" {
 		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
 		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
 	}
 
 	client, err := kgo.NewClient(opts...)
 	if err != nil {
-		log.Fatal().Err(err).Msgf("failed to initialize kafka client: %s", err.Error())
+		return err
 	}
 	defer client.Close()
 
 	err = client.Ping(context.Background())
 	if err != nil {
-		log.Fatal().Err(err).Msgf("Failed to reach brokers: %s", err.Error())
+		return err
 	}
-	log.Info().Msg("Successfully reached the brokers.")
-	//initTestData(client)
+
+	return nil
 }
 
 //func initTestData(client *kgo.Client) {

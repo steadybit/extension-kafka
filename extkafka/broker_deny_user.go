@@ -23,6 +23,7 @@ type KafkaDenyUserState struct {
 	Topic         string
 	User          string
 	BrokerHosts   []string
+	ClusterName   string // Cluster name for multi-cluster support
 }
 
 var _ action_kit_sdk.Action[KafkaDenyUserState] = (*KafkaConsumerDenyAccessAttack)(nil)
@@ -92,16 +93,30 @@ func (k *KafkaConsumerDenyAccessAttack) Prepare(_ context.Context, state *KafkaD
 	if len(request.Target.Attributes["kafka.consumer-group.name"]) == 0 {
 		return nil, fmt.Errorf("the target is missing the kafka.consumer-group.name attribute")
 	}
+
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	state.ClusterName = clusterName
 	state.ConsumerGroup = request.Target.Attributes["kafka.consumer-group.name"][0]
 	state.Topic = extutil.ToString(request.Config["topic"])
 	state.User = extutil.ToString(request.Config["user"])
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
 
 	return nil, nil
 }
 
 func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaDenyUserState) (*action_kit_api.StartResult, error) {
-	client, err := createNewAdminClient(state.BrokerHosts)
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	client, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
@@ -139,7 +154,12 @@ func (k *KafkaConsumerDenyAccessAttack) Start(ctx context.Context, state *KafkaD
 }
 
 func (k *KafkaConsumerDenyAccessAttack) Stop(ctx context.Context, state *KafkaDenyUserState) (*action_kit_api.StopResult, error) {
-	client, err := createNewAdminClient(state.BrokerHosts)
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	client, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

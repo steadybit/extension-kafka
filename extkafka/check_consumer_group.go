@@ -29,6 +29,7 @@ type ConsumerGroupCheckState struct {
 	StateCheckMode    string
 	StateCheckSuccess bool
 	BrokerHosts       []string
+	ClusterName       string // Cluster name for multi-cluster support
 }
 
 // Make sure action implements all required interfaces
@@ -176,11 +177,19 @@ func (m *ConsumerGroupCheckAction) Prepare(_ context.Context, state *ConsumerGro
 		stateCheckMode = fmt.Sprintf("%v", request.Config["stateCheckMode"])
 	}
 
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
 	state.ConsumerGroupName = request.Target.Attributes["kafka.consumer-group.name"][0]
+	state.ClusterName = clusterName
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
 	state.End = end
 	state.ExpectedState = expectedState
 	state.StateCheckMode = stateCheckMode
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
@@ -196,7 +205,12 @@ func (m *ConsumerGroupCheckAction) Status(ctx context.Context, state *ConsumerGr
 func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
-	client, err := createNewAdminClient(state.BrokerHosts)
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	client, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}

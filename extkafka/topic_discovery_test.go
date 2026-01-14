@@ -5,18 +5,20 @@ package extkafka
 
 import (
 	"fmt"
-	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
-	"github.com/stretchr/testify/assert"
 	"reflect"
 	"testing"
+
+	"github.com/steadybit/discovery-kit/go/discovery_kit_api"
+	"github.com/stretchr/testify/assert"
 
 	"github.com/stretchr/testify/require"
 	"github.com/twmb/franz-go/pkg/kadm"
 
 	"context"
+	"strings"
+
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/twmb/franz-go/pkg/kfake"
-	"strings"
 )
 
 func TestDescribeTopic(t *testing.T) {
@@ -99,15 +101,13 @@ func TestToTopicTargetTopic(t *testing.T) {
 		[]string{
 			fmt.Sprintf("0->replicas=%v", []int{100, 102}),
 			fmt.Sprintf("1->replicas=%v", []int{101, 102}),
-		},
-	)
+		})
 	check(
 		"kafka.topic.partitions-isr",
 		[]string{
 			fmt.Sprintf("0->in-sync-replicas=%v", []int{100, 102}),
 			fmt.Sprintf("1->in-sync-replicas=%v", []int{101}),
-		},
-	)
+		})
 	check("kafka.topic.replication-factor", []string{"2"})
 }
 
@@ -124,19 +124,28 @@ func TestDiscoverTopicTargetsClusterName(t *testing.T) {
 
 	// Configure seed brokers for discovery
 	seeds := c.ListenAddrs()
-	config.Config.SeedBrokers = strings.Join(seeds, ",")
+	seedBrokers := strings.Join(seeds, ",")
+
+	// Initialize cluster configuration for test
+	config.SetClustersForTest(map[string]*config.ClusterConfig{
+		"test-cluster": {
+			SeedBrokers: seedBrokers,
+		},
+	})
 
 	// Ensure no excluded attributes
 	config.Config.DiscoveryAttributesExcludesTopics = nil
 
-	// Discover targets
+	// Discover targets using multi-cluster discovery
 	ctx := context.Background()
-	targets, err := getAllTopics(ctx)
+	targets, err := getAllTopicsMultiCluster(ctx)
 	require.NoError(t, err)
 	require.NotEmpty(t, targets)
 
 	// Retrieve expected cluster name from metadata
-	client, err := createNewAdminClient(strings.Split(config.Config.SeedBrokers, ","))
+	clusterConfig, err := config.GetClusterConfig("test-cluster")
+	require.NoError(t, err)
+	client, err := createNewAdminClientWithConfig(strings.Split(clusterConfig.SeedBrokers, ","), clusterConfig)
 	require.NoError(t, err)
 	defer client.Close()
 

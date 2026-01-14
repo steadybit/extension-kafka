@@ -38,11 +38,18 @@ func TestWithMinikube(t *testing.T) {
 
 		ExtraArgs: func(m *e2e.Minikube) []string {
 			return []string{
-				"--set", "logging.lever=debug",
-				"--set", "kafka.seedBrokers='my-kafka.default.svc.cluster.local:9092'",
-				"--set", "kafka.auth.saslMechanism=PLAIN",
-				"--set", "kafka.auth.saslUser=user1",
-				"--set", "kafka.auth.saslPassword=steadybit",
+				"--set", "logging.level=debug",
+				// Multi-cluster configuration
+				"--set", "kafka.clusters[0].name=cluster-1",
+				"--set", "kafka.clusters[0].seedBrokers=my-kafka.default.svc.cluster.local:9092",
+				"--set", "kafka.clusters[0].auth.saslMechanism=PLAIN",
+				"--set", "kafka.clusters[0].auth.saslUser=user1",
+				"--set", "kafka.clusters[0].auth.saslPassword=steadybit",
+				"--set", "kafka.clusters[1].name=cluster-2",
+				"--set", "kafka.clusters[1].seedBrokers=my-kafka-2.default.svc.cluster.local:9092",
+				"--set", "kafka.clusters[1].auth.saslMechanism=PLAIN",
+				"--set", "kafka.clusters[1].auth.saslUser=user1",
+				"--set", "kafka.clusters[1].auth.saslPassword=steadybit",
 			}
 		},
 	}
@@ -93,14 +100,35 @@ func testDiscovery(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 	ctx, cancel := context.WithTimeout(t.Context(), 120*time.Second)
 	defer cancel()
 
-	target, err := e2e.PollForTarget(ctx, e, "com.steadybit.extension_kafka.broker", func(target discovery_kit_api.Target) bool {
-		return e2e.HasAttribute(target, "kafka.broker.node-id", "1")
+	// Verify broker from first cluster is discovered
+	target1, err := e2e.PollForTarget(ctx, e, "com.steadybit.extension_kafka.broker", func(target discovery_kit_api.Target) bool {
+		return e2e.HasAttribute(target, "kafka.broker.node-id", "1") &&
+			strings.Contains(target.Attributes["kafka.broker.host"][0], "my-kafka-controller")
 	})
 	require.NoError(t, err)
-	assert.Equal(t, target.TargetType, "com.steadybit.extension_kafka.broker")
-	assert.Equal(t, target.Attributes["kafka.broker.node-id"], []string{"1"})
-	assert.Equal(t, target.Attributes["kafka.broker.port"], []string{"9092"})
-	assert.Equal(t, target.Attributes["kafka.broker.host"], []string{"my-kafka-controller-1.my-kafka-controller-headless.default.svc.cluster.local"})
+	assert.Equal(t, target1.TargetType, "com.steadybit.extension_kafka.broker")
+	assert.Equal(t, target1.Attributes["kafka.broker.node-id"], []string{"1"})
+	assert.Equal(t, target1.Attributes["kafka.broker.port"], []string{"9092"})
+	assert.Equal(t, target1.Attributes["kafka.broker.host"], []string{"my-kafka-controller-1.my-kafka-controller-headless.default.svc.cluster.local"})
+	cluster1Name := target1.Attributes["kafka.cluster.name"][0]
+	require.NotEmpty(t, cluster1Name, "cluster name should be set for first cluster")
+
+	// Verify broker from second cluster is discovered (it has only 1 replica, so node-id is 0)
+	target2, err := e2e.PollForTarget(ctx, e, "com.steadybit.extension_kafka.broker", func(target discovery_kit_api.Target) bool {
+		return e2e.HasAttribute(target, "kafka.broker.node-id", "0") &&
+			strings.Contains(target.Attributes["kafka.broker.host"][0], "my-kafka-2-controller")
+	})
+	require.NoError(t, err)
+	assert.Equal(t, target2.TargetType, "com.steadybit.extension_kafka.broker")
+	assert.Equal(t, target2.Attributes["kafka.broker.node-id"], []string{"0"})
+	assert.Equal(t, target2.Attributes["kafka.broker.port"], []string{"9092"})
+	assert.Equal(t, target2.Attributes["kafka.broker.host"], []string{"my-kafka-2-controller-0.my-kafka-2-controller-headless.default.svc.cluster.local"})
+	cluster2Name := target2.Attributes["kafka.cluster.name"][0]
+	require.NotEmpty(t, cluster2Name, "cluster name should be set for second cluster")
+
+	// Verify the two clusters have different names
+	assert.NotEqual(t, cluster1Name, cluster2Name, "cluster names should be different for different Kafka clusters")
+	t.Logf("Discovered brokers from two different clusters: %s and %s", cluster1Name, cluster2Name)
 }
 
 func validateActions(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
@@ -108,10 +136,18 @@ func validateActions(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 }
 
 func testAlterNumIoThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
+	// Discover a target to get the cluster name - must be from first cluster (my-kafka) since kafkactl is configured for it
+	discoveredTarget, err := e2e.PollForTarget(t.Context(), e, "com.steadybit.extension_kafka.broker", func(target discovery_kit_api.Target) bool {
+		return e2e.HasAttribute(target, "kafka.broker.node-id", "0") &&
+			strings.Contains(target.Attributes["kafka.broker.host"][0], "my-kafka-controller-")
+	})
+	require.NoError(t, err)
+
 	target := &action_kit_api.Target{
 		Name: "test_broker",
 		Attributes: map[string][]string{
 			"kafka.broker.node-id": {"0"},
+			"kafka.cluster.name":   discoveredTarget.Attributes["kafka.cluster.name"],
 		},
 	}
 
@@ -156,10 +192,18 @@ func testAlterNumIoThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 }
 
 func testAlterNumNetworkThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
+	// Discover a target to get the cluster name - must be from first cluster (my-kafka) since kafkactl is configured for it
+	discoveredTarget, err := e2e.PollForTarget(t.Context(), e, "com.steadybit.extension_kafka.broker", func(target discovery_kit_api.Target) bool {
+		return e2e.HasAttribute(target, "kafka.broker.node-id", "0") &&
+			strings.Contains(target.Attributes["kafka.broker.host"][0], "my-kafka-controller-")
+	})
+	require.NoError(t, err)
+
 	target := &action_kit_api.Target{
 		Name: "test_broker",
 		Attributes: map[string][]string{
 			"kafka.broker.node-id": {"0"},
+			"kafka.cluster.name":   discoveredTarget.Attributes["kafka.cluster.name"],
 		},
 	}
 
@@ -204,10 +248,18 @@ func testAlterNumNetworkThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension)
 }
 
 func testAlterLimitConnectionCreationRate(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
+	// Discover a target to get the cluster name - must be from first cluster (my-kafka) since kafkactl is configured for it
+	discoveredTarget, err := e2e.PollForTarget(t.Context(), e, "com.steadybit.extension_kafka.broker", func(target discovery_kit_api.Target) bool {
+		return e2e.HasAttribute(target, "kafka.broker.node-id", "0") &&
+			strings.Contains(target.Attributes["kafka.broker.host"][0], "my-kafka-controller-")
+	})
+	require.NoError(t, err)
+
 	target := &action_kit_api.Target{
 		Name: "test_broker",
 		Attributes: map[string][]string{
 			"kafka.broker.node-id": {"0"},
+			"kafka.cluster.name":   discoveredTarget.Attributes["kafka.cluster.name"],
 		},
 	}
 
@@ -249,13 +301,21 @@ func testAlterMaxMessageBytes(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 		MaxBytes: 100,
 	}
 
-	// Change message size setting on all nodes
+	// Discover a target to get the cluster name - must be from first cluster (my-kafka) since kafkactl is configured for it
+	discoveredTarget, err := e2e.PollForTarget(t.Context(), e, "com.steadybit.extension_kafka.broker", func(target discovery_kit_api.Target) bool {
+		return e2e.HasAttribute(target, "kafka.broker.node-id", "0") &&
+			strings.Contains(target.Attributes["kafka.broker.host"][0], "my-kafka-controller-")
+	})
+	require.NoError(t, err)
+
+	// Change message size setting on all nodes (first cluster has 3 brokers)
 	var action client.ActionExecution
 	for i := 0; i < 3; i++ {
 		target := &action_kit_api.Target{
 			Name: "test_broker",
 			Attributes: map[string][]string{
 				"kafka.broker.node-id": {strconv.Itoa(i)},
+				"kafka.cluster.name":   discoveredTarget.Attributes["kafka.cluster.name"],
 			},
 		}
 		action, err = e.RunAction("com.steadybit.extension_kafka.broker.reduce-message-max-bytes", target, config, &action_kit_api.ExecutionContext{})
@@ -280,6 +340,8 @@ func helmInstallLocalStack(minikube *e2e.Minikube) error {
 	if err != nil {
 		return fmt.Errorf("failed to install helm chart: %s: %s", err, out)
 	}
+
+	// Install first Kafka cluster
 	out, err = exec.Command("helm",
 		"upgrade", "--install",
 		"--kube-context", minikube.Profile,
@@ -291,10 +353,29 @@ func helmInstallLocalStack(minikube *e2e.Minikube) error {
 		"--set", "global.security.allowInsecureImages=true",
 		"--namespace=default",
 		"--timeout=15m0s",
-		"my-kafka", "bitnami/kafka ", "--wait").CombinedOutput()
+		"my-kafka", "bitnami/kafka", "--wait").CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("failed to install helm chart: %s: %s", err, out)
+		return fmt.Errorf("failed to install first kafka helm chart: %s: %s", err, out)
 	}
+
+	// Install second Kafka cluster
+	out, err = exec.Command("helm",
+		"upgrade", "--install",
+		"--kube-context", minikube.Profile,
+		"--set", "sasl.client.passwords=steadybit",
+		"--set", "provisioning.enabled=true",
+		"--set", "provisioning.topics[0].name=bar",
+		"--set", "image.repository=bitnamilegacy/kafka",
+		"--set", "image.tag=4.0.0-debian-12-r10",
+		"--set", "global.security.allowInsecureImages=true",
+		"--set", "controller.replicaCount=1",
+		"--namespace=default",
+		"--timeout=15m0s",
+		"my-kafka-2", "bitnami/kafka", "--wait").CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to install second kafka helm chart: %s: %s", err, out)
+	}
+
 	return nil
 }
 

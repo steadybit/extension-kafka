@@ -29,6 +29,7 @@ type ConsumerGroupLagCheckState struct {
 	StateCheckSuccess bool
 	StateCheckFailed  bool
 	BrokerHosts       []string
+	ClusterName       string // Cluster name for multi-cluster support
 }
 
 // Make sure action implements all required interfaces
@@ -159,9 +160,17 @@ func (m *ConsumerGroupLagCheckAction) Prepare(_ context.Context, state *Consumer
 	duration := request.Config["duration"].(float64)
 	end := time.Now().Add(time.Millisecond * time.Duration(duration))
 
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
 	state.ConsumerGroupName = request.Target.Attributes["kafka.consumer-group.name"][0]
+	state.ClusterName = clusterName
+	state.BrokerHosts = strings.Split(clusterConfig.SeedBrokers, ",")
 	state.End = end
-	state.BrokerHosts = strings.Split(config.Config.SeedBrokers, ",")
 
 	return nil, nil
 }
@@ -177,7 +186,12 @@ func (m *ConsumerGroupLagCheckAction) Status(ctx context.Context, state *Consume
 func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagCheckState) (*action_kit_api.StatusResult, error) {
 	now := time.Now()
 
-	client, err := createNewAdminClient(state.BrokerHosts)
+	clusterConfig, err := config.GetClusterConfig(state.ClusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
+	}
+
+	client, err := createNewAdminClientWithConfig(state.BrokerHosts, clusterConfig)
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize kafka client: %s", err.Error())
 	}
