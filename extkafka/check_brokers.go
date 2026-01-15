@@ -271,7 +271,7 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 	}
 
 	metrics := []action_kit_api.Metric{
-		*toBrokerChangeMetric(state.ExpectedChanges, keys, changes, now),
+		*toBrokerChangeMetric(state.ClusterName, state.ExpectedChanges, keys, changes, now),
 	}
 
 	return &action_kit_api.StatusResult{
@@ -281,12 +281,12 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 	}, nil
 }
 
-func toBrokerChangeMetric(expectedChanges []string, changesNames []string, changes map[string][]int32, now time.Time) *action_kit_api.Metric {
+func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesNames []string, changes map[string][]int32, now time.Time) *action_kit_api.Metric {
 	var tooltip string
 	var state string
 
 	if len(changes) > 0 {
-		recap := "BROKER ACTIVITY"
+		recap := fmt.Sprintf("BROKER ACTIVITY [%s]", clusterName)
 		for k, v := range changes {
 			recap += "\n" + k + ":\n"
 			for _, nodeID := range v {
@@ -307,14 +307,14 @@ func toBrokerChangeMetric(expectedChanges []string, changesNames []string, chang
 			}
 		}
 	} else {
-		tooltip = "No changes"
+		tooltip = fmt.Sprintf("No changes [%s]", clusterName)
 		state = "info"
 	}
 
 	return extutil.Ptr(action_kit_api.Metric{
-		Name: extutil.Ptr("kafka_consumer_group_state"),
+		Name: extutil.Ptr("kafka_broker_state"),
 		Metric: map[string]string{
-			"metric.id": fmt.Sprintf("Expected: %s", strings.Join(expectedChanges, ",")),
+			"metric.id": fmt.Sprintf("%s - Expected: %s", clusterName, strings.Join(expectedChanges, ",")),
 			"url":       "",
 			"state":     state,
 			"tooltip":   tooltip,
