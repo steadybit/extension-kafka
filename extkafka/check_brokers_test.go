@@ -32,6 +32,8 @@ func TestCheckBrokers_Describe(t *testing.T) {
 	assert.Equal(t, "Check Brokers", response.Label)
 	assert.Equal(t, fmt.Sprintf("%s.check", kafkaBrokerTargetId), response.Id)
 	assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+	require.NotNil(t, response.TargetSelection)
+	assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 }
 
 func TestCheckBrokers_Prepare(t *testing.T) {
@@ -61,6 +63,11 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 		{
 			name: "Should return config",
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
+				Target: &action_kit_api.Target{
+					Attributes: map[string][]string{
+						"kafka.cluster.name": {"test-cluster"},
+					},
+				},
 				Config: map[string]interface{}{
 					"expectedChanges": []string{"test"},
 					"changeCheckMode": "allTheTime",
@@ -140,7 +147,7 @@ func TestCheckBrokers_Status(t *testing.T) {
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
-						"kafka.consumer-group.name": {"steadybit"},
+						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{
@@ -162,7 +169,7 @@ func TestCheckBrokers_Status(t *testing.T) {
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
-						"kafka.consumer-group.name": {"steadybit"},
+						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
 				Config: map[string]interface{}{

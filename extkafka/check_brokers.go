@@ -59,6 +59,17 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 		Description: "Check activity of brokers.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        extutil.Ptr(kafkaIcon),
+		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+			TargetType:          kafkaBrokerTargetId,
+			QuantityRestriction: extutil.Ptr(action_kit_api.QuantityRestrictionAll),
+			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+				{
+					Label:       "by cluster name",
+					Description: extutil.Ptr("Find brokers by cluster name"),
+					Query:       "kafka.cluster.name=\"\"",
+				},
+			}),
+		}),
 		Technology:  extutil.Ptr("Kafka"),
 		Category:    extutil.Ptr("Kafka"),
 		Kind:        action_kit_api.Check,
@@ -152,19 +163,11 @@ func (m *CheckBrokersAction) Prepare(ctx context.Context, state *CheckBrokersSta
 		stateCheckMode = fmt.Sprintf("%v", request.Config["changeCheckMode"])
 	}
 
-	// Get cluster configuration - for check actions, use first cluster if only one exists
-	clusters := config.GetAllClusterConfigs()
-	if len(clusters) == 0 {
-		return nil, fmt.Errorf("no cluster configuration found")
-	}
-
-	// Use first (and typically only) cluster for backward compatibility
-	var clusterName string
-	var clusterConfig *config.ClusterConfig
-	for name, cfg := range clusters {
-		clusterName = name
-		clusterConfig = cfg
-		break
+	// Get cluster name from target
+	clusterName := extutil.MustHaveValue(request.Target.Attributes, "kafka.cluster.name")[0]
+	clusterConfig, err := config.GetClusterConfig(clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get cluster config: %w", err)
 	}
 
 	state.ClusterName = clusterName
