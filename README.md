@@ -17,6 +17,10 @@ The extension-kafka is using these capacities, thus may need elevated rights on 
 
 ## Configuration
 
+### Single Cluster Configuration
+
+For connecting to a single Kafka cluster, use the following configuration:
+
 | Environment Variable                                                | Helm value                               | Meaning                                                                                                                                 | Required | Default |
 |---------------------------------------------------------------------|------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------|----------|---------|
 | `STEADYBIT_EXTENSION_SEED_BROKERS`                                  | `kafka.seedBrokers`                      | Brokers hosts (without scheme) with port separated by comma (example: "localhost:9092,localhost:9093"                                   | yes      |         |
@@ -30,6 +34,89 @@ The extension-kafka is using these capacities, thus may need elevated rights on 
 | `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_BROKERS`         | `discovery.attributes.excludes.broker`   | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*"                  | no       |         |
 | `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_TOPICS`          | `discovery.attributes.excludes.topic`    | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*"                  | no       |         |
 | `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_CONSUMER_GROUPS` | `discovery.attributes.excludes.consumer` | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*"                  | no       |         |
+
+### Multi-Cluster Configuration
+
+The extension supports connecting to multiple Kafka clusters simultaneously. When using multi-cluster configuration, all clusters are discovered in parallel and each target includes a `kafka.cluster.name` attribute to identify which cluster it belongs to.
+
+**Important:** When `kafka.clusters` is defined, the single-cluster configuration (`kafka.seedBrokers`, `kafka.auth.*`) is ignored.
+
+#### Helm Values
+
+Configure multiple clusters using the `kafka.clusters` array:
+
+```yaml
+kafka:
+  clusters:
+    - name: production                              # Descriptive name (for your reference)
+      seedBrokers: "broker1:9092,broker2:9092"      # Required: comma-separated broker list
+      auth:
+        saslMechanism: "SCRAM-SHA-256"              # Optional: PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512
+        saslUser: "prod-user"                       # Optional: SASL username
+        saslPassword: "prod-pass"                   # Optional: SASL password
+        useTLS: "true"                              # Optional: enable TLS
+        caFile: "/path/to/ca.pem"                   # Optional: CA certificate path
+        certChainFile: "/path/to/cert.pem"          # Optional: client certificate path
+        certKeyFile: "/path/to/key.pem"             # Optional: client key path
+
+    - name: staging
+      seedBrokers: "staging-broker:9092"
+      auth:
+        existingSecret: "staging-kafka-secret"      # Optional: use existing K8s secret for auth
+```
+
+#### Using Existing Secrets
+
+For each cluster, you can reference an existing Kubernetes secret containing the authentication credentials. The secret should contain the following keys:
+
+- `sasl-mechanism` - SASL mechanism (PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512)
+- `sasl-user` - SASL username
+- `sasl-password` - SASL password
+
+Example secret:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: staging-kafka-secret
+type: Opaque
+stringData:
+  sasl-mechanism: "SCRAM-SHA-256"
+  sasl-user: "staging-user"
+  sasl-password: "staging-password"
+```
+
+#### Environment Variables (Alternative)
+
+Multi-cluster configuration can also be done via indexed environment variables. Replace `X` with the cluster index (0, 1, 2, ...):
+
+| Environment Variable                                      | Meaning                                      |
+|-----------------------------------------------------------|----------------------------------------------|
+| `STEADYBIT_EXTENSION_CLUSTER_X_SEED_BROKERS`              | Comma-separated broker list                  |
+| `STEADYBIT_EXTENSION_CLUSTER_X_SASL_MECHANISM`            | PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512       |
+| `STEADYBIT_EXTENSION_CLUSTER_X_SASL_USER`                 | SASL username                                |
+| `STEADYBIT_EXTENSION_CLUSTER_X_SASL_PASSWORD`             | SASL password                                |
+| `STEADYBIT_EXTENSION_CLUSTER_X_KAFKA_CONNECTION_USE_TLS`  | Enable TLS (true/false)                      |
+| `STEADYBIT_EXTENSION_CLUSTER_X_KAFKA_CLUSTER_CA_FILE`     | CA certificate path                          |
+| `STEADYBIT_EXTENSION_CLUSTER_X_KAFKA_CLUSTER_CERT_CHAIN_FILE` | Client certificate path                  |
+| `STEADYBIT_EXTENSION_CLUSTER_X_KAFKA_CLUSTER_CERT_KEY_FILE`   | Client key path                          |
+
+Example:
+
+```bash
+# First cluster
+STEADYBIT_EXTENSION_CLUSTER_0_SEED_BROKERS=prod-broker1:9092,prod-broker2:9092
+STEADYBIT_EXTENSION_CLUSTER_0_SASL_MECHANISM=SCRAM-SHA-256
+STEADYBIT_EXTENSION_CLUSTER_0_SASL_USER=prod-user
+STEADYBIT_EXTENSION_CLUSTER_0_SASL_PASSWORD=prod-pass
+
+# Second cluster
+STEADYBIT_EXTENSION_CLUSTER_1_SEED_BROKERS=staging-broker:9092
+STEADYBIT_EXTENSION_CLUSTER_1_SASL_MECHANISM=PLAIN
+STEADYBIT_EXTENSION_CLUSTER_1_SASL_USER=staging-user
+STEADYBIT_EXTENSION_CLUSTER_1_SASL_PASSWORD=staging-pass
+```
 
 The extension supports all environment variables provided
 by [steadybit/extension-kit](https://github.com/steadybit/extension-kit#environment-variables).
