@@ -6,8 +6,9 @@ package extkafka
 import (
 	"context"
 	"fmt"
-	"github.com/steadybit/extension-kafka/config"
 	"strings"
+
+	"github.com/steadybit/extension-kafka/config"
 
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
@@ -311,10 +312,17 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 		state = "info"
 	}
 
+	var metricId string
+	if len(expectedChanges) > 0 {
+		metricId = fmt.Sprintf("%s - Expected: %s", clusterName, strings.Join(expectedChanges, ","))
+	} else {
+		metricId = fmt.Sprintf("%s - Expected: No changes", clusterName)
+	}
+
 	return extutil.Ptr(action_kit_api.Metric{
 		Name: extutil.Ptr("kafka_broker_state"),
 		Metric: map[string]string{
-			"metric.id": fmt.Sprintf("%s - Expected: %s", clusterName, strings.Join(expectedChanges, ",")),
+			"metric.id": metricId,
 			"url":       "",
 			"state":     state,
 			"tooltip":   tooltip,
