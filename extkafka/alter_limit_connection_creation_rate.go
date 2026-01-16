@@ -6,12 +6,13 @@ package extkafka
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
-	"strings"
 )
 
 type AlterLimitConnectionCreateRateAttack struct{}
@@ -42,8 +43,8 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "broker node id",
-					Description: extutil.Ptr("Find broker by node id"),
-					Query:       "kafka.broker.node-id=\"\"",
+					Description: extutil.Ptr("Find broker by cluster name and id"),
+					Query:       "kafka.cluster.name=\"\" AND kafka.broker.node-id=\"\"",
 				},
 			}),
 		}),

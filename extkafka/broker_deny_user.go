@@ -7,13 +7,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
+
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"strings"
 )
 
 type KafkaConsumerDenyAccessAttack struct{}
@@ -48,8 +49,8 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "consumer group name",
-					Description: extutil.Ptr("Find consumer group by name"),
-					Query:       "kafka.consumer-group.name=\"\"",
+					Description: extutil.Ptr("Find consumer group by cluster and name"),
+					Query:       "kafka.cluster.name=\"\" AND kafka.consumer-group.name=\"\"",
 				},
 			}),
 		}),

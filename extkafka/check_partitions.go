@@ -6,6 +6,11 @@ package extkafka
 import (
 	"context"
 	"fmt"
+	"slices"
+	"sort"
+	"strings"
+	"time"
+
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
@@ -14,10 +19,6 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"slices"
-	"sort"
-	"strings"
-	"time"
 )
 
 type PartitionsCheckAction struct{}
@@ -70,8 +71,8 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "topic name",
-					Description: extutil.Ptr("Find topic group by name"),
-					Query:       "kafka.topic.name=\"\"",
+					Description: extutil.Ptr("Find topic group by cluster and name"),
+					Query:       "kafka.cluster.name=\"\" AND kafka.topic.name=\"\"",
 				},
 			}),
 		}),

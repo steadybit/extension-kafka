@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
@@ -46,8 +47,8 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "topic name",
-					Description: extutil.Ptr("Find topic by name"),
-					Query:       "kafka.topic.name=\"\"",
+					Description: extutil.Ptr("Find topic by cluster and name"),
+					Query:       "kafka.cluster.name=\"\" AND kafka.topic.name=\"\"",
 				},
 			}),
 		}),

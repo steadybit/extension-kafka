@@ -7,6 +7,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
 	"github.com/steadybit/extension-kafka/config"
@@ -14,8 +17,6 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"strconv"
-	"strings"
 )
 
 type DeleteRecordsAttack struct{}
@@ -50,8 +51,8 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "topic name",
-					Description: extutil.Ptr("Find topic by name"),
-					Query:       "kafka.topic.name=\"\"",
+					Description: extutil.Ptr("Find topic by cluster and name"),
+					Query:       "kafka.cluster.name=\"\" AND kafka.topic.name=\"\"",
 				},
 			}),
 		}),

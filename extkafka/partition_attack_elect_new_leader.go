@@ -7,6 +7,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
+
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_sdk"
@@ -15,8 +18,6 @@ import (
 	"github.com/steadybit/extension-kit/extbuild"
 	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
-	"slices"
-	"strings"
 )
 
 type kafkaBrokerElectNewLeaderAttack struct {
@@ -43,9 +44,9 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 			TargetType: kafkaTopicTargetId,
 			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
 				{
-					Label:       "topic id",
-					Description: extutil.Ptr("Find topic by id"),
-					Query:       "kafka.topic.id=\"\"",
+					Label:       "topic name",
+					Description: extutil.Ptr("Find topic by cluster and name"),
+					Query:       "kafka.cluster.name=\"\" AND kafka.topic.name=\"\"",
 				},
 			}),
 		}),
