@@ -30,8 +30,8 @@ func TestDescribeTarget(t *testing.T) {
 	d := &kafkaTopicDiscovery{}
 	td := d.DescribeTarget()
 	assert.Equal(t, kafkaTopicTargetId, td.Id)
-	assert.Equal(t, "Kafka topic", td.Label.One)
-	assert.Equal(t, "Kafka topics", td.Label.Other)
+	assert.Equal(t, "Kafka Topic", td.Label.One)
+	assert.Equal(t, "Kafka Topics", td.Label.Other)
 	assert.Equal(t, "kafka", *td.Category)
 	assert.Len(t, td.Table.Columns, 6)
 	require.Len(t, td.Table.OrderBy, 1)
