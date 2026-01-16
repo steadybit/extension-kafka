@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.7
+
+- Support multi cluster for configuration
+- Breaking change: now Check Brokers needs broker targets.
+
 ## v1.2.6
 
 - Update dependencies
