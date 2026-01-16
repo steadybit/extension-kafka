@@ -46,7 +46,7 @@ func (r *kafkaTopicDiscovery) Describe() discovery_kit_api.DiscoveryDescription 
 func (r *kafkaTopicDiscovery) DescribeTarget() discovery_kit_api.TargetDescription {
 	return discovery_kit_api.TargetDescription{
 		Id:       kafkaTopicTargetId,
-		Label:    discovery_kit_api.PluralLabel{One: "Kafka topic", Other: "Kafka topics"},
+		Label:    discovery_kit_api.PluralLabel{One: "Kafka Topic", Other: "Kafka Topics"},
 		Category: extutil.Ptr("kafka"),
 		Version:  extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:     extutil.Ptr(kafkaIcon),

@@ -47,7 +47,7 @@ func (r *kafkaConsumerGroupDiscovery) Describe() discovery_kit_api.DiscoveryDesc
 func (r *kafkaConsumerGroupDiscovery) DescribeTarget() discovery_kit_api.TargetDescription {
 	return discovery_kit_api.TargetDescription{
 		Id:       kafkaConsumerTargetId,
-		Label:    discovery_kit_api.PluralLabel{One: "Kafka consumer group", Other: "Kafka consumer groups"},
+		Label:    discovery_kit_api.PluralLabel{One: "Kafka Consumer Group", Other: "Kafka Consumer Groups"},
 		Category: extutil.Ptr("kafka"),
 		Version:  extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:     extutil.Ptr(kafkaIcon),

@@ -32,8 +32,8 @@ func TestDescribeTargetTopic(t *testing.T) {
 	td := d.DescribeTarget()
 
 	require.Equal(t, kafkaTopicTargetId, td.Id)
-	require.Equal(t, "Kafka topic", td.Label.One)
-	require.Equal(t, "Kafka topics", td.Label.Other)
+	require.Equal(t, "Kafka Topic", td.Label.One)
+	require.Equal(t, "Kafka Topics", td.Label.Other)
 	require.NotNil(t, td.Category)
 	require.Equal(t, "kafka", *td.Category)
 	require.Len(t, td.Table.Columns, 6)
