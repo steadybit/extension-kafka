@@ -269,6 +269,15 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 				})
 			}
 		}
+	} else {
+		if len(changes) > 0 {
+			checkError = extutil.Ptr(action_kit_api.ActionKitError{
+				Title: fmt.Sprintf("Brokers got an unexpected change '%v' whereas '%s' is expected.",
+					keys,
+					"No changes"),
+				Status: extutil.Ptr(action_kit_api.Failed),
+			})
+		}
 	}
 
 	metrics := []action_kit_api.Metric{
@@ -295,7 +304,6 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 			}
 
 		}
-
 		tooltip = recap
 
 		sort.Strings(expectedChanges)
