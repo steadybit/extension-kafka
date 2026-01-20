@@ -304,13 +304,9 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 	var state string
 
 	if len(changes) > 0 {
-		recap := fmt.Sprintf("BROKER ACTIVITY [%s]", clusterName)
+		recap := fmt.Sprintf("BROKER ACTIVITY")
 		for k, v := range changes {
-			recap += "\n" + k + ":\n"
-			for _, nodeID := range v {
-				recap += fmt.Sprint(nodeID) + "\n"
-			}
-
+			recap += "\n" + k + fmt.Sprintf("(Node IDs: %v)", v)
 		}
 		tooltip = recap
 
