@@ -304,7 +304,7 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 	var state string
 
 	if len(changes) > 0 {
-		recap := fmt.Sprintf("BROKER ACTIVITY")
+		recap := "BROKER ACTIVITY"
 		for k, v := range changes {
 			recap += "\n" + k + fmt.Sprintf("(Node IDs: %v)", v)
 		}
