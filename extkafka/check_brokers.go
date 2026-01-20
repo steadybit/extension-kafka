@@ -254,6 +254,14 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 					})
 				}
 			}
+			if len(changes) == 0 {
+				checkError = extutil.Ptr(action_kit_api.ActionKitError{
+					Title: fmt.Sprintf("Brokers got an unexpected change '%v' whereas '%s' is expected.",
+						"No changes",
+						state.ExpectedChanges),
+					Status: extutil.Ptr(action_kit_api.Failed),
+				})
+			}
 		} else if state.StateCheckMode == stateCheckModeAtLeastOnce {
 			for _, c := range keys {
 				if slices.Contains(state.ExpectedChanges, c) {
@@ -316,13 +324,13 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 			}
 		}
 		if len(expectedChanges) == 0 {
-			state = "warn"
+			state = "danger"
 		}
 	} else {
 		tooltip = fmt.Sprintf("No changes [%s]", clusterName)
 		state = "info"
 		if len(expectedChanges) > 0 {
-			state = "warn"
+			state = "danger"
 		}
 	}
 
