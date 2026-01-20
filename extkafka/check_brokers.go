@@ -324,7 +324,7 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 			state = "danger"
 		}
 	} else {
-		tooltip = fmt.Sprintf("No changes [%s]", clusterName)
+		tooltip = "No changes"
 		state = "info"
 	}
 
