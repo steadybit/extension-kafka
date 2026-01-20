@@ -6,6 +6,7 @@ package extkafka
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/steadybit/extension-kafka/config"
@@ -304,9 +305,9 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 	var state string
 
 	if len(changes) > 0 {
-		recap := "BROKER ACTIVITY"
-		for k, v := range changes {
-			recap += "\n" + k + fmt.Sprintf("(Node IDs: %v)", v)
+		recap := "BROKER ACTIVITY\n"
+		for k, _ := range changes {
+			recap += fmt.Sprintf("%s: %s\n", k, joinInt32s(changes[k]))
 		}
 		tooltip = recap
 
@@ -374,4 +375,12 @@ func findMissingElements(slice1, slice2 []int32) []int32 {
 	}
 
 	return missing
+}
+
+func joinInt32s(nums []int32) string {
+	strs := make([]string, len(nums))
+	for i, n := range nums {
+		strs[i] = strconv.FormatInt(int64(n), 10)
+	}
+	return strings.Join(strs, ",")
 }
