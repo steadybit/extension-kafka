@@ -19,7 +19,7 @@ require (
 	github.com/steadybit/extension-kit v1.10.1
 	github.com/stretchr/testify v1.11.1
 	github.com/twmb/franz-go v1.20.6
-	github.com/twmb/franz-go/pkg/kadm v1.17.1
+	github.com/twmb/franz-go/pkg/kadm v1.17.2
 	github.com/twmb/franz-go/pkg/kfake v0.0.0-20250711145744-a849b8be17b7
 	go.uber.org/automaxprocs v1.6.0
 )
