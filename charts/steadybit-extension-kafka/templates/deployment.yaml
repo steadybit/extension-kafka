@@ -72,6 +72,8 @@ spec:
             {{/* Multi-cluster mode: generate CLUSTER_X_* env vars */}}
             {{- range $index, $cluster := .Values.kafka.clusters }}
             {{- $secretName := include "kafka.cluster.secret.name" (dict "cluster" $cluster "index" $index) }}
+            - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_NAME
+              value: {{ $cluster.name | quote }}
             - name: STEADYBIT_EXTENSION_CLUSTER_{{ $index }}_SEED_BROKERS
               valueFrom:
                 secretKeyRef:

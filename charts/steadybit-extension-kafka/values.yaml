@@ -26,7 +26,7 @@ kafka:
     useTLS: ""
 
   # -- Multi-cluster configuration. When defined, the legacy single-cluster config above is ignored.
-  # Each cluster is configured with an index (0, 1, 2, ...) which maps to STEADYBIT_EXTENSION_CLUSTER_X_* env vars.
+  # Each cluster requires a unique 'name' field which is used as the cluster identifier in the Steadybit UI.
   # Example:
   # clusters:
   #   - name: production

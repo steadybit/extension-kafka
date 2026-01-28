@@ -488,6 +488,8 @@ manifest should match snapshot with multi-cluster configuration:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_CLUSTER_0_NAME
+                  value: production
                 - name: STEADYBIT_EXTENSION_CLUSTER_0_SEED_BROKERS
                   valueFrom:
                     secretKeyRef:
@@ -528,6 +530,8 @@ manifest should match snapshot with multi-cluster configuration:
                     secretKeyRef:
                       key: useTLS
                       name: steadybit-extension-kafka-cluster-0
+                - name: STEADYBIT_EXTENSION_CLUSTER_1_NAME
+                  value: staging
                 - name: STEADYBIT_EXTENSION_CLUSTER_1_SEED_BROKERS
                   valueFrom:
                     secretKeyRef:
@@ -641,6 +645,8 @@ manifest should match snapshot with multi-cluster using existing secret:
         spec:
           containers:
             - env:
+                - name: STEADYBIT_EXTENSION_CLUSTER_0_NAME
+                  value: production
                 - name: STEADYBIT_EXTENSION_CLUSTER_0_SEED_BROKERS
                   valueFrom:
                     secretKeyRef:

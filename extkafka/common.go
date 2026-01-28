@@ -315,16 +315,16 @@ func RetryPendingClusters() {
 	for _, p := range pending {
 		clusterID, err := GetClusterNameFromConfig(p.Config)
 		if err != nil {
-			log.Warn().Err(err).Msgf("Still unable to resolve cluster ID for CLUSTER_%d, will retry on next discovery", p.Index)
+			log.Warn().Err(err).Msgf("Still unable to resolve cluster ID for CLUSTER_%d (%s), will retry on next discovery", p.Index, p.Name)
 			continue
 		}
 
-		if err := config.RegisterCluster(clusterID, p.Config, p.Index); err != nil {
-			log.Warn().Err(err).Msgf("Failed to register CLUSTER_%d", p.Index)
+		if err := config.RegisterCluster(p.Name, clusterID, p.Config, p.Index); err != nil {
+			log.Warn().Err(err).Msgf("Failed to register CLUSTER_%d (%s)", p.Index, p.Name)
 			continue
 		}
 
-		log.Info().Msgf("Successfully registered previously pending cluster: %d (id: %s, from CLUSTER_%d_*)", p.Index, clusterID, p.Index)
+		log.Info().Msgf("Successfully registered previously pending cluster: %s (id: %s, from CLUSTER_%d_*)", p.Name, clusterID, p.Index)
 	}
 }
 

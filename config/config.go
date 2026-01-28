@@ -51,6 +51,7 @@ type Specification struct {
 // PendingCluster represents a cluster configuration that failed name resolution at startup
 type PendingCluster struct {
 	Index  int
+	Name   string
 	Config *ClusterConfig
 }
 
@@ -136,18 +137,28 @@ func parseClusterConfigs() map[string]*ClusterConfig {
 			KafkaClusterCaFile:        os.Getenv(prefix + "KAFKA_CLUSTER_CA_FILE"),
 		}
 
+		// Get cluster name from env var, fall back to index if not set
+		clusterName := os.Getenv(prefix + "NAME")
+		if clusterName == "" {
+			clusterName = fmt.Sprintf("%d", i)
+		}
+
+		// Check for duplicate cluster names
+		if existingIndex, exists := clusterIndexMap[clusterName]; exists {
+			log.Fatal().Msgf("Duplicate cluster name '%s' detected (from CLUSTER_%d and CLUSTER_%d). Each cluster must have a unique name.", clusterName, existingIndex, i)
+		}
+
 		// Get cluster ID by connecting to this cluster
 		clusterID, err := getClusterName(clusterConfig)
 		if err != nil {
-			log.Warn().Err(err).Msgf("Failed to get cluster ID for CLUSTER_%d, will retry during discovery", i)
+			log.Warn().Err(err).Msgf("Failed to get cluster ID for CLUSTER_%d (%s), will retry during discovery", i, clusterName)
 			pendingMutex.Lock()
-			pendingClusters = append(pendingClusters, PendingCluster{Index: i, Config: clusterConfig})
+			pendingClusters = append(pendingClusters, PendingCluster{Index: i, Config: clusterConfig, Name: clusterName})
 			pendingMutex.Unlock()
 			continue
 		}
 
 		clusterConfig.ClusterID = clusterID
-		clusterName := fmt.Sprintf("%d", i)
 		clusters[clusterName] = clusterConfig
 		clusterIndexMap[clusterName] = i
 		log.Info().Msgf("Registered cluster: %s (id: %s, from CLUSTER_%d_*)", clusterName, clusterID, i)
@@ -209,13 +220,12 @@ func GetPendingClusters() []PendingCluster {
 }
 
 // RegisterCluster adds a resolved cluster to the active clusters map and removes it from pending.
-// The clusterID is the Kafka internal cluster ID from metadata. The map key is the index string.
-func RegisterCluster(clusterID string, clusterConfig *ClusterConfig, index int) error {
+// The clusterID is the Kafka internal cluster ID from metadata. The clusterName is the user-defined name.
+func RegisterCluster(clusterName string, clusterID string, clusterConfig *ClusterConfig, index int) error {
 	clustersMutex.Lock()
 	defer clustersMutex.Unlock()
 
 	clusterConfig.ClusterID = clusterID
-	clusterName := fmt.Sprintf("%d", index)
 	if _, exists := Config.Clusters[clusterName]; exists {
 		return fmt.Errorf("duplicate cluster name '%s' detected (from CLUSTER_%d)", clusterName, index)
 	}
