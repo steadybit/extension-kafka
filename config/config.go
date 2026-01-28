@@ -47,10 +47,19 @@ type Specification struct {
 	Clusters map[string]*ClusterConfig `json:"clusters" ignored:"true"`
 }
 
+// PendingCluster represents a cluster configuration that failed name resolution at startup
+type PendingCluster struct {
+	Index  int
+	Config *ClusterConfig
+}
+
 var (
 	Config Specification
 	// clustersMutex protects concurrent access to Config.Clusters
 	clustersMutex sync.RWMutex
+	// pendingClusters holds cluster configs that failed name resolution and need retry
+	pendingClusters []PendingCluster
+	pendingMutex    sync.Mutex
 )
 
 func ParseConfiguration() {
@@ -127,7 +136,10 @@ func parseClusterConfigs() map[string]*ClusterConfig {
 		// Get cluster name by connecting to this cluster
 		clusterName, err := getClusterName(clusterConfig)
 		if err != nil {
-			log.Warn().Err(err).Msgf("Failed to get cluster name for CLUSTER_%d, skipping", i)
+			log.Warn().Err(err).Msgf("Failed to get cluster name for CLUSTER_%d, will retry during discovery", i)
+			pendingMutex.Lock()
+			pendingClusters = append(pendingClusters, PendingCluster{Index: i, Config: clusterConfig})
+			pendingMutex.Unlock()
 			continue
 		}
 
@@ -185,4 +197,38 @@ func SetClustersForTest(clusters map[string]*ClusterConfig) {
 	clustersMutex.Lock()
 	defer clustersMutex.Unlock()
 	Config.Clusters = clusters
+}
+
+// GetPendingClusters returns a copy of the pending clusters list
+func GetPendingClusters() []PendingCluster {
+	pendingMutex.Lock()
+	defer pendingMutex.Unlock()
+	result := make([]PendingCluster, len(pendingClusters))
+	copy(result, pendingClusters)
+	return result
+}
+
+// RegisterCluster adds a resolved cluster to the active clusters map and removes it from pending.
+// Returns an error if the cluster name is already registered.
+func RegisterCluster(clusterName string, clusterConfig *ClusterConfig, index int) error {
+	clustersMutex.Lock()
+	defer clustersMutex.Unlock()
+
+	if _, exists := Config.Clusters[clusterName]; exists {
+		return fmt.Errorf("duplicate cluster name '%s' detected (from CLUSTER_%d)", clusterName, index)
+	}
+
+	Config.Clusters[clusterName] = clusterConfig
+
+	// Remove from pending
+	pendingMutex.Lock()
+	defer pendingMutex.Unlock()
+	for i, p := range pendingClusters {
+		if p.Index == index {
+			pendingClusters = append(pendingClusters[:i], pendingClusters[i+1:]...)
+			break
+		}
+	}
+
+	return nil
 }

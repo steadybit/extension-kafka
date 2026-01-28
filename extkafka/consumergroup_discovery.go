@@ -104,6 +104,7 @@ func (r *kafkaConsumerGroupDiscovery) DiscoverTargets(ctx context.Context) ([]di
 }
 
 func getAllConsumerGroupsMultiCluster(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	RetryPendingClusters()
 	clusters := config.GetAllClusterConfigs()
 
 	type clusterResult struct {

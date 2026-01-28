@@ -121,6 +121,7 @@ func (r *kafkaTopicDiscovery) DiscoverTargets(ctx context.Context) ([]discovery_
 }
 
 func getAllTopicsMultiCluster(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	RetryPendingClusters()
 	clusters := config.GetAllClusterConfigs()
 
 	type clusterResult struct {

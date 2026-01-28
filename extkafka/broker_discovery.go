@@ -206,6 +206,7 @@ func (r *kafkaBrokerDiscovery) DiscoverTargets(ctx context.Context) ([]discovery
 }
 
 func getAllBrokersMultiCluster(ctx context.Context) ([]discovery_kit_api.Target, error) {
+	RetryPendingClusters()
 	clusters := config.GetAllClusterConfigs()
 
 	type clusterResult struct {

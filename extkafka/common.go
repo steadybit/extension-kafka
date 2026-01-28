@@ -303,6 +303,31 @@ func GetClusterNameFromConfig(clusterConfig *config.ClusterConfig) (string, erro
 	return metadata.Cluster, nil
 }
 
+// RetryPendingClusters attempts to resolve cluster names for any clusters that were
+// unreachable at startup. Successfully resolved clusters are registered in the active config.
+func RetryPendingClusters() {
+	pending := config.GetPendingClusters()
+	if len(pending) == 0 {
+		return
+	}
+
+	log.Info().Msgf("Retrying %d pending cluster(s)...", len(pending))
+	for _, p := range pending {
+		clusterName, err := GetClusterNameFromConfig(p.Config)
+		if err != nil {
+			log.Warn().Err(err).Msgf("Still unable to resolve cluster name for CLUSTER_%d, will retry on next discovery", p.Index)
+			continue
+		}
+
+		if err := config.RegisterCluster(clusterName, p.Config, p.Index); err != nil {
+			log.Warn().Err(err).Msgf("Failed to register CLUSTER_%d", p.Index)
+			continue
+		}
+
+		log.Info().Msgf("Successfully registered previously pending cluster: %s (from CLUSTER_%d_*)", clusterName, p.Index)
+	}
+}
+
 func describeConfigInt(ctx context.Context, brokers []string, configName string, brokerID int32) (int, error) {
 	value, err := describeConfigStr(ctx, brokers, configName, brokerID)
 	if err != nil {
