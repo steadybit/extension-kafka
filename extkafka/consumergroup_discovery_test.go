@@ -72,7 +72,8 @@ func TestToTopicTarget(t *testing.T) {
 		},
 	}
 	cluster := "cluster-42"
-	tgt := toTopicTarget(td, cluster)
+	clusterID := "internal-id-42"
+	tgt := toTopicTarget(td, cluster, clusterID)
 
 	// Basic fields
 	assert.Equal(t, "my-topic-cluster-42", tgt.Id)
@@ -88,6 +89,7 @@ func TestToTopicTarget(t *testing.T) {
 	}
 
 	check("kafka.cluster.name", []string{cluster})
+	check("kafka.cluster.id", []string{clusterID})
 	check("kafka.topic.name", []string{"my-topic"})
 	check("kafka.topic.partitions", []string{"0", "1"})
 	check("kafka.topic.partitions-leaders", []string{"0->leader=100", "1->leader=101"})
@@ -138,20 +140,16 @@ func TestDiscoverTargetsClusterName(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, targets)
 
-	// Retrieve expected cluster name from metadata
-	clusterConfig, err := config.GetClusterConfig("test-cluster")
-	require.NoError(t, err)
-	client, err := createNewAdminClientWithConfig(strings.Split(clusterConfig.SeedBrokers, ","), clusterConfig)
-	require.NoError(t, err)
-	defer client.Close()
-	meta, err := client.BrokerMetadata(ctx)
-	require.NoError(t, err)
-	expected := meta.Cluster
-
-	// Assert each discovered target has the correct cluster name attribute
+	// Assert each discovered target has the correct cluster name and id attributes
 	for _, tgt := range targets {
-		values, ok := tgt.Attributes["kafka.cluster.name"]
+		// kafka.cluster.name should be the config map key
+		nameValues, ok := tgt.Attributes["kafka.cluster.name"]
 		require.True(t, ok, "missing kafka.cluster.name for target %s", tgt.Id)
-		require.Equal(t, []string{expected}, values)
+		require.Equal(t, []string{"test-cluster"}, nameValues)
+
+		// kafka.cluster.id should be the Kafka internal cluster ID
+		idValues, ok := tgt.Attributes["kafka.cluster.id"]
+		require.True(t, ok, "missing kafka.cluster.id for target %s", tgt.Id)
+		require.Equal(t, []string{"test"}, idValues)
 	}
 }

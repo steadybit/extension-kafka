@@ -150,6 +150,13 @@ func (r *kafkaBrokerDiscovery) DescribeAttributes() []discovery_kit_api.Attribut
 			},
 		},
 		{
+			Attribute: "kafka.cluster.id",
+			Label: discovery_kit_api.PluralLabel{
+				One:   "Kafka cluster id",
+				Other: "Kafka cluster ids",
+			},
+		},
+		{
 			Attribute: "kafka.broker.node-id",
 			Label: discovery_kit_api.PluralLabel{
 				One:   "Kafka broker node id",
@@ -269,7 +276,7 @@ func discoverBrokersForCluster(ctx context.Context, clusterName string, clusterC
 	log.Debug().Msgf("Cluster %s: Node IDs discovered: %v", clusterName, brokerDetails.NodeIDs())
 
 	for _, broker := range brokerDetails {
-		result = append(result, toBrokerTarget(broker, metadata.Controller, metadata.Cluster))
+		result = append(result, toBrokerTarget(broker, metadata.Controller, clusterName, metadata.Cluster))
 	}
 
 	return result, nil
@@ -280,12 +287,13 @@ func getAllBrokers(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	return getAllBrokersMultiCluster(ctx)
 }
 
-func toBrokerTarget(broker kadm.BrokerDetail, controller int32, clusterName string) discovery_kit_api.Target {
+func toBrokerTarget(broker kadm.BrokerDetail, controller int32, clusterName string, clusterID string) discovery_kit_api.Target {
 	id := broker.Host + "-" + strconv.Itoa(int(broker.Port))
 	label := broker.Host
 
 	attributes := make(map[string][]string)
 	attributes["kafka.cluster.name"] = []string{clusterName}
+	attributes["kafka.cluster.id"] = []string{clusterID}
 	attributes["kafka.broker.node-id"] = []string{fmt.Sprintf("%v", broker.NodeID)}
 	attributes["kafka.broker.is-controller"] = []string{"false"}
 	if broker.NodeID == controller {

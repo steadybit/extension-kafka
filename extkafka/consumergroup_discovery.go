@@ -162,7 +162,7 @@ func discoverConsumerGroupsForCluster(ctx context.Context, clusterName string, c
 	}
 
 	for _, group := range describedGroups.Sorted() {
-		result = append(result, toConsumerGroupTarget(group, clusterName))
+		result = append(result, toConsumerGroupTarget(group, clusterName, clusterConfig.ClusterID))
 	}
 
 	return result, nil
@@ -173,12 +173,13 @@ func getAllConsumerGroups(ctx context.Context) ([]discovery_kit_api.Target, erro
 	return getAllConsumerGroupsMultiCluster(ctx)
 }
 
-func toConsumerGroupTarget(group kadm.DescribedGroup, clusterName string) discovery_kit_api.Target {
+func toConsumerGroupTarget(group kadm.DescribedGroup, clusterName string, clusterID string) discovery_kit_api.Target {
 	id := fmt.Sprintf("%v-%s", group.Group, clusterName)
 	label := fmt.Sprintf("%v", group.Group)
 
 	attributes := make(map[string][]string)
 	attributes["kafka.cluster.name"] = []string{clusterName}
+	attributes["kafka.cluster.id"] = []string{clusterID}
 	attributes["kafka.consumer-group.name"] = []string{fmt.Sprintf("%v", group.Group)}
 	attributes["kafka.consumer-group.coordinator"] = []string{fmt.Sprintf("%v", group.Coordinator.Host)}
 	attributes["kafka.consumer-group.protocol-type"] = []string{group.ProtocolType}

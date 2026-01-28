@@ -181,7 +181,7 @@ func discoverTopicsForCluster(ctx context.Context, clusterName string, clusterCo
 
 	for _, t := range topicDetails {
 		if !t.IsInternal {
-			result = append(result, toTopicTarget(t, metadata.Cluster))
+			result = append(result, toTopicTarget(t, clusterName, metadata.Cluster))
 		}
 	}
 
@@ -193,7 +193,7 @@ func getAllTopics(ctx context.Context) ([]discovery_kit_api.Target, error) {
 	return getAllTopicsMultiCluster(ctx)
 }
 
-func toTopicTarget(topic kadm.TopicDetail, clusterName string) discovery_kit_api.Target {
+func toTopicTarget(topic kadm.TopicDetail, clusterName string, clusterID string) discovery_kit_api.Target {
 	label := topic.Topic
 
 	partitions := make([]string, len(topic.Partitions))
@@ -219,6 +219,7 @@ func toTopicTarget(topic kadm.TopicDetail, clusterName string) discovery_kit_api
 
 	attributes := make(map[string][]string)
 	attributes["kafka.cluster.name"] = []string{clusterName}
+	attributes["kafka.cluster.id"] = []string{clusterID}
 	attributes["kafka.topic.name"] = []string{topic.Topic}
 	attributes["kafka.topic.partitions"] = partitions
 	attributes["kafka.topic.partitions-leaders"] = partitionsLeaders
