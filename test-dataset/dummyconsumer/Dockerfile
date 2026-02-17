@@ -1,10 +1,16 @@
-FROM golang:1.25 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.25-alpine AS builder
+
+ARG TARGETOS
+ARG TARGETARCH
 
 WORKDIR /app
 COPY . .
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o myapp
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -o myapp
 
-FROM alpine:3.14
+##
+## Runtime
+##
+FROM alpine:3.19
 
 ARG USERNAME=steadybit
 ARG USER_UID=10000
