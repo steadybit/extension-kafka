@@ -1,5 +1,9 @@
 # Changelog
 
+## (next)
+
+- Fix Kafka admin client connection leak in broker config describe operations
+
 ## v1.2.8
 
 - Update dependencies

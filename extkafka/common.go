@@ -349,6 +349,7 @@ func describeConfigStr(ctx context.Context, brokers []string, configName string,
 	if err != nil {
 		return "", err
 	}
+	defer adminClient.Close()
 	return describeConfigOf(ctx, adminClient, configName, brokerID)
 }
 
@@ -357,6 +358,7 @@ func describeConfigStrWithConfig(ctx context.Context, brokers []string, configNa
 	if err != nil {
 		return "", err
 	}
+	defer adminClient.Close()
 	return describeConfigOf(ctx, adminClient, configName, brokerID)
 }
 
