@@ -8,6 +8,13 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"net"
+	"os"
+	"os/signal"
+	"strings"
+	"syscall"
+	"time"
+
 	_ "github.com/KimMachineGun/automemlimit" // By default, it sets `GOMEMLIMIT` to 90% of cgroup's memory limit.
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -29,13 +36,9 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
-	"net"
-	"os"
-	"os/signal"
-	"strings"
-	"syscall"
-	"time"
 )
+
+var startedAt = time.Now().Format(time.RFC3339)
 
 func main() {
 	// Most Steadybit extensions leverage zerolog. To encourage persistent logging setups across extensions,
@@ -118,7 +121,7 @@ func registerHandlers(ctx context.Context) {
 	action_kit_sdk.RegisterAction(extkafka.NewPartitionsCheckAction())
 	action_kit_sdk.RegisterAction(extkafka.NewBrokersCheckAction())
 
-	exthttp.RegisterHttpHandler("/", exthttp.GetterAsHandler(getExtensionList))
+	exthttp.RegisterHttpHandler("/", exthttp.IfNoneMatchHandler(func() string { return startedAt }, exthttp.GetterAsHandler(getExtensionList)))
 }
 
 func SignalCanceledContext() (context.Context, context.CancelFunc) {
