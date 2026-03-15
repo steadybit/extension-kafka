@@ -3,6 +3,7 @@
 ## (next)
 
 - Fix Kafka admin client connection leak in broker config describe operations
+- Retry on transient connection errors in broker config operations
 
 ## v1.2.8
 
