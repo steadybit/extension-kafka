@@ -156,10 +156,25 @@ func testAlterNumIoThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 		IoThreads float32 `json:"io_threads"`
 	}{
 		Duration:  20000,
-		IoThreads: 1.0,
+		IoThreads: 2.0,
 	}
 
 	// Reduce
+	reduceThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-io-threads", target, config, &action_kit_api.ExecutionContext{})
+	require.NoError(t, err)
+	defer func() { _ = reduceThreadsAction.Cancel() }()
+
+	require.EventuallyWithT(t, func(c *assert.CollectT) {
+		brokerConfig, err := kafkactl(t.Context(), "describe", "broker", "0")
+		assert.NoError(c, err, "Failed to describe broker config")
+		assert.Regexp(c, `num\.io\.threads\s+2\b`, brokerConfig, "property not found")
+	}, 20*time.Second, 1*time.Second, "num.io.threads should be set to 2")
+
+	require.NoError(t, reduceThreadsAction.Wait())
+	require.NotEmpty(t, reduceThreadsAction.Messages())
+
+	// Increase
+	config.IoThreads = 16.0
 	increaseThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-io-threads", target, config, &action_kit_api.ExecutionContext{})
 	require.NoError(t, err)
 	defer func() { _ = increaseThreadsAction.Cancel() }()
@@ -167,28 +182,11 @@ func testAlterNumIoThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 	require.EventuallyWithT(t, func(c *assert.CollectT) {
 		brokerConfig, err := kafkactl(t.Context(), "describe", "broker", "0")
 		assert.NoError(c, err, "Failed to describe broker config")
-		assert.Regexp(c, `num\.io\.threads\s+1`, brokerConfig, "property not found")
-	}, 20*time.Second, 1*time.Second, "num.io.threads should be set to 1")
+		assert.Regexp(c, `num\.io\.threads\s+16\b`, brokerConfig, "property not found")
+	}, 20*time.Second, 1*time.Second, "num.io.threads should be set to 16")
 
 	require.NoError(t, increaseThreadsAction.Wait())
-	require.NotEmpty(t, t, increaseThreadsAction.Messages())
-	require.NotEmpty(t, t, increaseThreadsAction.Metrics())
-
-	// Increase
-	config.IoThreads = 100.0
-	decreaseThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-io-threads", target, config, &action_kit_api.ExecutionContext{})
-	require.NoError(t, err)
-	defer func() { _ = decreaseThreadsAction.Cancel() }()
-
-	require.EventuallyWithT(t, func(c *assert.CollectT) {
-		brokerConfig, err := kafkactl(t.Context(), "describe", "broker", "0")
-		assert.NoError(c, err, "Failed to describe broker config")
-		assert.Regexp(c, `num\.io\.threads\s+1`, brokerConfig, "property not found")
-	}, 20*time.Second, 1*time.Second, "num.io.threads should be set to 100")
-
-	require.NoError(t, increaseThreadsAction.Wait())
-	require.NotEmpty(t, t, decreaseThreadsAction.Messages())
-	require.NotEmpty(t, t, decreaseThreadsAction.Metrics())
+	require.NotEmpty(t, increaseThreadsAction.Messages())
 }
 
 func testAlterNumNetworkThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
@@ -212,10 +210,25 @@ func testAlterNumNetworkThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension)
 		NetworkThreads int `json:"network_threads"`
 	}{
 		Duration:       20000,
-		NetworkThreads: 1,
+		NetworkThreads: 2,
 	}
 
 	// Reduce
+	reduceThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-network-threads", target, config, &action_kit_api.ExecutionContext{})
+	require.NoError(t, err)
+	defer func() { _ = reduceThreadsAction.Cancel() }()
+
+	require.EventuallyWithT(t, func(c *assert.CollectT) {
+		brokerConfig, err := kafkactl(t.Context(), "describe", "broker", "0")
+		assert.NoError(c, err, "Failed to describe broker config")
+		assert.Regexp(c, `num\.network\.threads\s+2\b`, brokerConfig, "property not found")
+	}, 20*time.Second, 1*time.Second, "num.network.threads should be set to 2")
+
+	require.NoError(t, reduceThreadsAction.Wait())
+	require.NotEmpty(t, reduceThreadsAction.Messages())
+
+	// Increase
+	config.NetworkThreads = 16
 	increaseThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-network-threads", target, config, &action_kit_api.ExecutionContext{})
 	require.NoError(t, err)
 	defer func() { _ = increaseThreadsAction.Cancel() }()
@@ -223,28 +236,11 @@ func testAlterNumNetworkThreads(t *testing.T, _ *e2e.Minikube, e *e2e.Extension)
 	require.EventuallyWithT(t, func(c *assert.CollectT) {
 		brokerConfig, err := kafkactl(t.Context(), "describe", "broker", "0")
 		assert.NoError(c, err, "Failed to describe broker config")
-		assert.Regexp(c, `num\.network\.threads\s+1`, brokerConfig, "property not found")
-	}, 20*time.Second, 1*time.Second, "num.network.threads should be set to 1")
+		assert.Regexp(c, `num\.network\.threads\s+16\b`, brokerConfig, "property not found")
+	}, 20*time.Second, 1*time.Second, "num.network.threads should be set to 16")
 
 	require.NoError(t, increaseThreadsAction.Wait())
-	require.NotEmpty(t, t, increaseThreadsAction.Messages())
-	require.NotEmpty(t, t, increaseThreadsAction.Metrics())
-
-	// Increase
-	config.NetworkThreads = 100.0
-	decreaseThreadsAction, err := e.RunAction("com.steadybit.extension_kafka.broker.limit-network-threads", target, config, &action_kit_api.ExecutionContext{})
-	require.NoError(t, err)
-	defer func() { _ = decreaseThreadsAction.Cancel() }()
-
-	require.EventuallyWithT(t, func(c *assert.CollectT) {
-		brokerConfig, err := kafkactl(t.Context(), "describe", "broker", "0")
-		assert.NoError(c, err, "Failed to describe broker config")
-		assert.Regexp(c, `num\.network\.threads\s+1`, brokerConfig, "property not found")
-	}, 20*time.Second, 1*time.Second, "num.network.threads should be set to 1")
-
-	require.NoError(t, increaseThreadsAction.Wait())
-	require.NotEmpty(t, t, decreaseThreadsAction.Messages())
-	require.NotEmpty(t, t, decreaseThreadsAction.Metrics())
+	require.NotEmpty(t, increaseThreadsAction.Messages())
 }
 
 func testAlterLimitConnectionCreationRate(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
@@ -284,12 +280,11 @@ func testAlterLimitConnectionCreationRate(t *testing.T, _ *e2e.Minikube, e *e2e.
 	}, 20*time.Second, 1*time.Second, "max.connection.creation.rate should be set to 1")
 
 	require.NoError(t, action.Wait())
-	require.NotEmpty(t, t, action.Messages())
-	require.NotEmpty(t, t, action.Metrics())
+	require.NotEmpty(t, action.Messages())
 }
 
 func testAlterMaxMessageBytes(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
-	message := fmt.Sprintf("{\"a\": \"%s\"}", strings.Repeat("x", 1000))
+	message := fmt.Sprintf("{\"a\": \"%s\"}", strings.Repeat("x", 50000))
 	out, err := kafkactl(t.Context(), "produce", "foo", "-v", message)
 	require.NoError(t, err, out)
 
@@ -298,7 +293,7 @@ func testAlterMaxMessageBytes(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 		MaxBytes int `json:"max_bytes"`
 	}{
 		Duration: 20000,
-		MaxBytes: 100,
+		MaxBytes: 40000,
 	}
 
 	// Discover a target to get the cluster name - must be from first cluster (my-kafka) since kafkactl is configured for it
@@ -331,8 +326,7 @@ func testAlterMaxMessageBytes(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 
 	//goland:noinspection GoDfaNilDereference
 	require.NoError(t, action.Wait())
-	require.NotEmpty(t, t, action.Messages())
-	require.NotEmpty(t, t, action.Metrics())
+	require.NotEmpty(t, action.Messages())
 }
 
 func helmInstallLocalStack(minikube *e2e.Minikube) error {
@@ -351,6 +345,7 @@ func helmInstallLocalStack(minikube *e2e.Minikube) error {
 		"--set", "image.repository=bitnamilegacy/kafka",
 		"--set", "image.tag=4.0.0-debian-12-r10",
 		"--set", "global.security.allowInsecureImages=true",
+		"--set", "controller.resources.limits.memory=1Gi",
 		"--namespace=default",
 		"--timeout=15m0s",
 		"my-kafka", "bitnami/kafka", "--wait").CombinedOutput()
@@ -369,6 +364,7 @@ func helmInstallLocalStack(minikube *e2e.Minikube) error {
 		"--set", "image.tag=4.0.0-debian-12-r10",
 		"--set", "global.security.allowInsecureImages=true",
 		"--set", "controller.replicaCount=1",
+		"--set", "controller.resources.limits.memory=1Gi",
 		"--namespace=default",
 		"--timeout=15m0s",
 		"my-kafka-2", "bitnami/kafka", "--wait").CombinedOutput()
@@ -393,8 +389,10 @@ func setupKafkactl(m *e2e.Minikube) error {
 	}
 
 	stop := func() {
-		if err := os.Rename(backupPath, configPath); err != nil {
-			log.Error().Err(err).Msg("Failed to restore original config")
+		if _, err := os.Stat(backupPath); err == nil {
+			if err := os.Rename(backupPath, configPath); err != nil {
+				log.Error().Err(err).Msg("Failed to restore original config")
+			}
 		}
 	}
 
