@@ -1,6 +1,7 @@
 # Changelog
 
 ## (next)
+- Support if-none-match for the extension list endpoint
 
 - Fix Kafka admin client connection leak in broker config describe operations
 - Retry on transient connection errors in broker config operations
