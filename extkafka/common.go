@@ -9,6 +9,12 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
+	"net"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
@@ -18,11 +24,6 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"github.com/twmb/franz-go/pkg/sasl/scram"
-	"net"
-	"os"
-	"strconv"
-	"strings"
-	"time"
 )
 
 const (
@@ -345,21 +346,25 @@ func describeConfigIntWithConfig(ctx context.Context, brokers []string, configNa
 }
 
 func describeConfigStr(ctx context.Context, brokers []string, configName string, brokerID int32) (string, error) {
-	adminClient, err := createNewAdminClient(brokers)
-	if err != nil {
-		return "", err
-	}
-	defer adminClient.Close()
-	return describeConfigOf(ctx, adminClient, configName, brokerID)
+	return retryOnTransientError(ctx, func() (string, error) {
+		adminClient, err := createNewAdminClient(brokers)
+		if err != nil {
+			return "", err
+		}
+		defer adminClient.Close()
+		return describeConfigOf(ctx, adminClient, configName, brokerID)
+	})
 }
 
 func describeConfigStrWithConfig(ctx context.Context, brokers []string, configName string, brokerID int32, clusterConfig *config.ClusterConfig) (string, error) {
-	adminClient, err := createNewAdminClientWithConfig(brokers, clusterConfig)
-	if err != nil {
-		return "", err
-	}
-	defer adminClient.Close()
-	return describeConfigOf(ctx, adminClient, configName, brokerID)
+	return retryOnTransientError(ctx, func() (string, error) {
+		adminClient, err := createNewAdminClientWithConfig(brokers, clusterConfig)
+		if err != nil {
+			return "", err
+		}
+		defer adminClient.Close()
+		return describeConfigOf(ctx, adminClient, configName, brokerID)
+	})
 }
 
 func describeConfigOf(ctx context.Context, adminClient *kadm.Client, configName string, brokerID int32) (configValue string, err error) {
@@ -406,50 +411,27 @@ func alterConfigIntWithConfig(ctx context.Context, brokers []string, configName 
 }
 
 func alterConfigStr(ctx context.Context, brokers []string, configName string, configValue string, brokerID int32) error {
-	adminClient, err := createNewAdminClient(brokers)
-	if err != nil {
-		return err
-	}
-	defer adminClient.Close()
-
-	op := kadm.SetConfig
-	if configValue == "" {
-		op = kadm.DeleteConfig
-	}
-	responses, err := adminClient.AlterBrokerConfigs(ctx, []kadm.AlterConfig{{Name: configName, Value: extutil.Ptr(configValue), Op: op}}, brokerID)
-	if err != nil {
-		return err
-	}
-	var errs []error
-	for _, response := range responses {
-		if response.Err != nil {
-			detailedError := fmt.Errorf("%w Response from Broker: %s", response.Err, response.ErrMessage)
-			errs = append(errs, detailedError)
-		}
-	}
-	if len(errs) > 0 {
-		return errors.Join(errs...)
-	}
-
-	// Changes may take time to be applied, wait accordingly
-	now := time.Now()
-	for {
-		if time.Since(now).Seconds() > 5 {
-			return fmt.Errorf("configuration change of %s to %s was not applied in time", configName, configValue)
-		}
-		value, err := describeConfigOf(ctx, adminClient, configName, brokerID)
-		if err != nil {
-			return err
-		}
-		if value == configValue {
-			return nil
-		}
-		log.Debug().Msgf("Configuration change of %s to %s was not applied yet, waiting", configName, configValue)
-	}
+	_, err := retryOnTransientError(ctx, func() (string, error) {
+		return "", doAlterConfig(ctx, brokers, configName, configValue, brokerID, nil)
+	})
+	return err
 }
 
 func alterConfigStrWithConfig(ctx context.Context, brokers []string, configName string, configValue string, brokerID int32, clusterConfig *config.ClusterConfig) error {
-	adminClient, err := createNewAdminClientWithConfig(brokers, clusterConfig)
+	_, err := retryOnTransientError(ctx, func() (string, error) {
+		return "", doAlterConfig(ctx, brokers, configName, configValue, brokerID, clusterConfig)
+	})
+	return err
+}
+
+func doAlterConfig(ctx context.Context, brokers []string, configName string, configValue string, brokerID int32, clusterConfig *config.ClusterConfig) error {
+	var adminClient *kadm.Client
+	var err error
+	if clusterConfig != nil {
+		adminClient, err = createNewAdminClientWithConfig(brokers, clusterConfig)
+	} else {
+		adminClient, err = createNewAdminClient(brokers)
+	}
 	if err != nil {
 		return err
 	}
@@ -477,7 +459,8 @@ func alterConfigStrWithConfig(ctx context.Context, brokers []string, configName 
 	// Changes may take time to be applied, wait accordingly
 	now := time.Now()
 	for {
-		if time.Since(now).Seconds() > 5 {
+		elapsed := time.Since(now).Seconds()
+		if elapsed > 5 {
 			return fmt.Errorf("configuration change of %s to %s was not applied in time", configName, configValue)
 		}
 		value, err := describeConfigOf(ctx, adminClient, configName, brokerID)
@@ -485,9 +468,11 @@ func alterConfigStrWithConfig(ctx context.Context, brokers []string, configName 
 			return err
 		}
 		if value == configValue {
+			log.Debug().Msgf("configuration change of %s to %s was applied after %.2fs", configName, configValue, elapsed)
 			return nil
 		}
 		log.Debug().Msgf("Configuration change of %s to %s was not applied yet, waiting", configName, configValue)
+		time.Sleep(100 * time.Millisecond)
 	}
 }
 
@@ -508,6 +493,42 @@ func adjustThreads(ctx context.Context, hosts []string, configName string, targe
 		}
 	}
 	return nil
+}
+
+func isTransientError(err error) bool {
+	if err == nil {
+		return false
+	}
+	var netErr *net.OpError
+	if errors.As(err, &netErr) {
+		return true
+	}
+	msg := err.Error()
+	return strings.Contains(msg, "connection refused") || strings.Contains(msg, "unable to dial")
+}
+
+func retryOnTransientError[T any](ctx context.Context, fn func() (T, error)) (T, error) {
+	var zero T
+	var lastErr error
+	for attempt := 0; attempt < 3; attempt++ {
+		if attempt > 0 {
+			log.Debug().Err(lastErr).Msgf("Retrying after transient error (attempt %d/3)", attempt+1)
+			select {
+			case <-ctx.Done():
+				return zero, ctx.Err()
+			case <-time.After(time.Duration(attempt) * time.Second):
+			}
+		}
+		result, err := fn()
+		if err == nil {
+			return result, nil
+		}
+		if !isTransientError(err) {
+			return zero, err
+		}
+		lastErr = err
+	}
+	return zero, lastErr
 }
 
 func adjustThreadsWithConfig(ctx context.Context, hosts []string, configName string, targetValue int, brokerId int32, clusterConfig *config.ClusterConfig) error {
