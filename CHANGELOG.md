@@ -1,10 +1,13 @@
 # Changelog
 
-## (next)
-- Support if-none-match for the extension list endpoint
+## v1.2.9
 
+- Support if-none-match for the extension list endpoint
 - Fix Kafka admin client connection leak in broker config describe operations
 - Retry on transient connection errors in broker config operations
+- feat(chart): split image.name into image.registry + image.name
+- Support global.priorityClassName
+- Update dependencies
 
 ## v1.2.8
 
