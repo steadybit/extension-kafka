@@ -142,6 +142,9 @@ func (k *DeleteRecordsAttack) Start(ctx context.Context, state *DeleteRecordsSta
 
 		newOffsets := kadm.Offsets{}
 		newOffset := endOffset.Offset - state.Offset
+		if newOffset < 0 {
+			newOffset = 0
+		}
 		newOffsets.Add(kadm.Offset{Topic: endOffset.Topic, Partition: endOffset.Partition, LeaderEpoch: endOffset.LeaderEpoch, At: newOffset})
 
 		var offsetResponses kadm.DeleteRecordsResponses
