@@ -96,7 +96,7 @@ resources:
     cpu: "50m"
   limits:
     # resources.limits.memory -- The limit of memory to be used
-    memory: "32Mi"
+    memory: "124Mi"
     # resources.limits.cpu -- The limit of cpu share to be used during its interval
     cpu: "200m"
 
