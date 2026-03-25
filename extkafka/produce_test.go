@@ -4,6 +4,7 @@
 package extkafka
 
 import (
+	"context"
 	"github.com/google/uuid"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/extension-kafka/config"
@@ -173,12 +174,15 @@ func TestAction_Stop(t *testing.T) {
 }
 
 func getExecutionRunData(successCounter uint64, counter uint64) *ExecutionRunData {
+	ctx, cancel := context.WithCancel(context.Background())
 	data := &ExecutionRunData{
+		cancel:                cancel,
+		ctx:                   ctx,
+		metrics:               make(chan action_kit_api.Metric, 1),
 		requestSuccessCounter: atomic.Uint64{},
 		requestCounter:        atomic.Uint64{},
 	}
 	data.requestCounter.Store(counter)
 	data.requestSuccessCounter.Store(successCounter)
 	return data
-
 }

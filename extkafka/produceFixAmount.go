@@ -156,7 +156,7 @@ func (l *produceMessageActionFixedAmount) Status(_ context.Context, state *Kafka
 
 	completed := checkEndedProduceFixedAmount(executionRunData, state)
 	if completed {
-		stopTickers(executionRunData)
+		stopExecution(executionRunData)
 		log.Info().Msg("Action completed")
 	}
 

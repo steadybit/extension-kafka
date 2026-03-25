@@ -19,7 +19,8 @@ import (
 )
 
 type ExecutionRunData struct {
-	stopTicker            chan bool                  // stores the stop channels for each execution
+	cancel                context.CancelFunc         // cancels all goroutines for this execution
+	ctx                   context.Context            // context for all goroutines in this execution
 	jobs                  chan time.Time             // stores the jobs for each execution
 	tickers               *time.Ticker               // stores the tickers for each execution, to be able to stop them
 	metrics               chan action_kit_api.Metric // stores the metrics for each execution
@@ -92,8 +93,10 @@ func loadExecutionRunData(executionID uuid.UUID) (*ExecutionRunData, error) {
 }
 
 func initExecutionRunData(state *KafkaBrokerAttackState) {
+	ctx, cancel := context.WithCancel(context.Background())
 	saveExecutionRunData(state.ExecutionID, &ExecutionRunData{
-		stopTicker:            make(chan bool),
+		cancel:                cancel,
+		ctx:                   ctx,
 		jobs:                  make(chan time.Time, state.MaxConcurrent),
 		metrics:               make(chan action_kit_api.Metric, state.MaxConcurrent),
 		requestCounter:        atomic.Uint64{},
@@ -130,56 +133,37 @@ func requestProducerWorker(executionRunData *ExecutionRunData, state *KafkaBroke
 		log.Error().Err(err).Msg("Failed to create client")
 		return
 	}
-	for range executionRunData.jobs {
-		if !checkEnded(executionRunData, state) {
-			//var started = time.Now()
+	defer client.Close()
+
+	for {
+		select {
+		case <-executionRunData.ctx.Done():
+			log.Debug().Msg("Worker stopping: context cancelled")
+			if err := client.Flush(executionRunData.ctx); err != nil {
+				log.Debug().Err(err).Msg("Flush after cancel (expected)")
+			}
+			return
+		case _, ok := <-executionRunData.jobs:
+			if !ok {
+				log.Debug().Msg("Worker stopping: jobs channel closed")
+				if err := client.Flush(context.Background()); err != nil {
+					log.Error().Err(err).Msg("Failed to flush")
+				}
+				return
+			}
+			if checkEnded(executionRunData, state) {
+				continue
+			}
 			rec := createRecord(state)
-
-			//var producedRecord *kgo.Record
-			_, err = client.ProduceSync(context.Background(), rec).First()
+			_, err = client.ProduceSync(executionRunData.ctx, rec).First()
 			executionRunData.requestCounter.Add(1)
-
 			if err != nil {
 				log.Error().Err(err).Msg("Failed to produce record")
-				//now := time.Now()
-				//executionRunData.metrics <- action_kit_api.Metric{
-				//	Metric: map[string]string{
-				//		"topic":    rec.Topic,
-				//		"producer": strconv.Itoa(int(rec.ProducerID)),
-				//		"brokers":  config.Config.SeedBrokers,
-				//		"error":    err.Error(),
-				//	},
-				//	Name:      extutil.Ptr("producer_response_time"),
-				//	Value:     float64(now.Sub(started).Milliseconds()),
-				//	Timestamp: now,
-				//}
 			} else {
-				// Successfully produced the record
-				//recordProducerLatency := float64(producedRecord.Timestamp.Sub(started).Milliseconds())
-				//metricMap := map[string]string{
-				//	"topic":    rec.Topic,
-				//	"producer": strconv.Itoa(int(rec.ProducerID)),
-				//	"brokers":  config.Config.SeedBrokers,
-				//	"error":    "",
-				//}
-
 				executionRunData.requestSuccessCounter.Add(1)
-
-				//metric := action_kit_api.Metric{
-				//	Name:      extutil.Ptr("record_latency"),
-				//	Metric:    metricMap,
-				//	Value:     recordProducerLatency,
-				//	Timestamp: producedRecord.Timestamp,
-				//}
-				//executionRunData.metrics <- metric
 			}
 		}
 	}
-	err = client.Flush(context.Background())
-	if err != nil {
-		log.Error().Err(err).Msg("Failed to flush")
-	}
-	defer client.Close()
 }
 
 //func requestConsumerWorker(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState, checkEnded func(executionRunData *ExecutionRunData, state *KafkaBrokerAttackState) bool) {
@@ -235,7 +219,6 @@ func start(state *KafkaBrokerAttackState) {
 		log.Error().Err(err).Msg("Failed to load execution run data")
 	}
 	executionRunData.tickers = time.NewTicker(time.Duration(state.DelayBetweenRequestsInMS) * time.Millisecond)
-	executionRunData.stopTicker = make(chan bool)
 
 	now := time.Now()
 	log.Debug().Msgf("Schedule first record at %v", now)
@@ -243,16 +226,19 @@ func start(state *KafkaBrokerAttackState) {
 	go func() {
 		for {
 			select {
-			case <-executionRunData.stopTicker:
+			case <-executionRunData.ctx.Done():
 				log.Debug().Msg("Stop Record Scheduler")
 				return
 			case t := <-executionRunData.tickers.C:
 				log.Debug().Msgf("Schedule Record at %v", t)
-				executionRunData.jobs <- t
+				select {
+				case executionRunData.jobs <- t:
+				case <-executionRunData.ctx.Done():
+					return
+				}
 			}
 		}
 	}()
-	ExecutionRunDataMap.Store(state.ExecutionID, executionRunData)
 }
 
 func retrieveLatestMetrics(metrics chan action_kit_api.Metric) []action_kit_api.Metric {
@@ -281,13 +267,17 @@ func stop(state *KafkaBrokerAttackState) (*action_kit_api.StopResult, error) {
 		log.Debug().Err(err).Msg("Execution run data not found, stop was already called")
 		return nil, nil
 	}
-	stopTickers(executionRunData)
+	stopExecution(executionRunData)
+	ExecutionRunDataMap.Delete(state.ExecutionID)
 
 	latestMetrics := retrieveLatestMetrics(executionRunData.metrics)
 	// calculate the success rate
-	successRate := float64(executionRunData.requestSuccessCounter.Load()) / float64(executionRunData.requestCounter.Load()) * 100
+	requestCount := executionRunData.requestCounter.Load()
+	var successRate float64
+	if requestCount > 0 {
+		successRate = float64(executionRunData.requestSuccessCounter.Load()) / float64(requestCount) * 100
+	}
 	log.Debug().Msgf("Success Rate: %v%%", successRate)
-	ExecutionRunDataMap.Delete(state.ExecutionID)
 	if successRate < float64(state.SuccessRate) {
 		log.Info().Msgf("Success Rate (%.2f%%) was below %v%%", successRate, state.SuccessRate)
 		return extutil.Ptr(action_kit_api.StopResult{
@@ -304,16 +294,11 @@ func stop(state *KafkaBrokerAttackState) (*action_kit_api.StopResult, error) {
 	}), nil
 }
 
-func stopTickers(executionRunData *ExecutionRunData) {
+func stopExecution(executionRunData *ExecutionRunData) {
 	ticker := executionRunData.tickers
 	if ticker != nil {
 		ticker.Stop()
 	}
-	// non-blocking send
-	select {
-	case executionRunData.stopTicker <- true: // stop the ticker
-		log.Trace().Msg("Stopped ticker")
-	default:
-		log.Debug().Msg("Ticker already stopped")
-	}
+	// Cancel context to stop scheduler and all workers
+	executionRunData.cancel()
 }
