@@ -6,6 +6,15 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/rs/zerolog/log"
 	"github.com/steadybit/action-kit/go/action_kit_api/v2"
 	"github.com/steadybit/action-kit/go/action_kit_test/client"
@@ -16,14 +25,6 @@ import (
 	"github.com/steadybit/extension-kit/extlogging"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"io"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"strconv"
-	"strings"
-	"testing"
-	"time"
 )
 
 var kafkactl func(ctx context.Context, commands ...string) (string, error)
@@ -44,12 +45,12 @@ func TestWithMinikube(t *testing.T) {
 				"--set", "kafka.clusters[0].seedBrokers=my-kafka.default.svc.cluster.local:9092",
 				"--set", "kafka.clusters[0].auth.saslMechanism=PLAIN",
 				"--set", "kafka.clusters[0].auth.saslUser=user1",
-				"--set", "kafka.clusters[0].auth.saslPassword=steadybit",
+				"--set", "kafka.clusters[0].auth.saslPassword=steadybit", //NOSONAR go:S2068
 				"--set", "kafka.clusters[1].name=cluster-2",
 				"--set", "kafka.clusters[1].seedBrokers=my-kafka-2.default.svc.cluster.local:9092",
 				"--set", "kafka.clusters[1].auth.saslMechanism=PLAIN",
 				"--set", "kafka.clusters[1].auth.saslUser=user1",
-				"--set", "kafka.clusters[1].auth.saslPassword=steadybit",
+				"--set", "kafka.clusters[1].auth.saslPassword=steadybit", //NOSONAR go:S2068
 			}
 		},
 	}
