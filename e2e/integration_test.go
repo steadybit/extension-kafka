@@ -331,13 +331,13 @@ func testAlterMaxMessageBytes(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 }
 
 func helmInstallLocalStack(minikube *e2e.Minikube) error {
-	out, err := exec.Command("helm", "repo", "add", "bitnami", "https://charts.bitnami.com/bitnami").CombinedOutput()
+	out, err := exec.Command("helm", "repo", "add", "bitnami", "https://charts.bitnami.com/bitnami").CombinedOutput() //NOSONAR go:S4036
 	if err != nil {
 		return fmt.Errorf("failed to install helm chart: %s: %s", err, out)
 	}
 
 	// Install first Kafka cluster
-	out, err = exec.Command("helm",
+	out, err = exec.Command("helm", //NOSONAR go:S4036
 		"upgrade", "--install",
 		"--kube-context", minikube.Profile,
 		"--set", "sasl.client.passwords=steadybit",
@@ -355,7 +355,7 @@ func helmInstallLocalStack(minikube *e2e.Minikube) error {
 	}
 
 	// Install second Kafka cluster
-	out, err = exec.Command("helm",
+	out, err = exec.Command("helm", //NOSONAR go:S4036
 		"upgrade", "--install",
 		"--kube-context", minikube.Profile,
 		"--set", "sasl.client.passwords=steadybit",
@@ -419,8 +419,7 @@ func setupKafkactl(m *e2e.Minikube) error {
 	}
 
 	kafkactl = func(ctx context.Context, commands ...string) (string, error) {
-		cmd := exec.CommandContext(ctx, "kafkactl", append(commands, "--context", "e2e")...)
-		output, err := cmd.CombinedOutput()
+		output, err := exec.CommandContext(ctx, "kafkactl", append(commands, "--context", "e2e")...).CombinedOutput() //NOSONAR go:S4036
 		if err != nil {
 			return "", fmt.Errorf("kafkactl command failed: %w, output: %s", err, string(output))
 		}
