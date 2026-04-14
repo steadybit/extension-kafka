@@ -280,8 +280,8 @@ func stop(state *KafkaBrokerAttackState) (*action_kit_api.StopResult, error) {
 	log.Debug().Msgf("Success Rate: %v%%", successRate)
 	if successRate < float64(state.SuccessRate) {
 		log.Info().Msgf("Success Rate (%.2f%%) was below %v%%", successRate, state.SuccessRate)
-		return extutil.Ptr(action_kit_api.StopResult{
-			Metrics: extutil.Ptr(latestMetrics),
+		return new(action_kit_api.StopResult{
+			Metrics: new(latestMetrics),
 			Error: &action_kit_api.ActionKitError{
 				Title:  fmt.Sprintf("Success Rate (%.2f%%) was below %v%%", successRate, state.SuccessRate),
 				Status: extutil.Ptr(action_kit_api.Failed),
@@ -289,8 +289,8 @@ func stop(state *KafkaBrokerAttackState) (*action_kit_api.StopResult, error) {
 		}), nil
 	}
 	log.Info().Msgf("Success Rate (%.2f%%) was above/equal %v%%", successRate, state.SuccessRate)
-	return extutil.Ptr(action_kit_api.StopResult{
-		Metrics: extutil.Ptr(latestMetrics),
+	return new(action_kit_api.StopResult{
+		Metrics: new(latestMetrics),
 	}), nil
 }
 

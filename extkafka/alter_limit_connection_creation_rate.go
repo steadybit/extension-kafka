@@ -37,30 +37,30 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 		Label:       "Limit Connection Creation Rate",
 		Description: "Limit the Connection Creation Rate",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType: kafkaBrokerTargetId,
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "broker node id",
-					Description: extutil.Ptr("Find broker by cluster name and id"),
+					Description: new("Find broker by cluster name and id"),
 					Query:       "kafka.cluster.name=\"\" AND kafka.broker.node-id=\"\"",
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
-		Category:    extutil.Ptr("Kafka"),
+		Technology:  new("Kafka"),
+		Category:    new("Kafka"),
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
 			durationAlter,
 			{
 				Label:        "Connection creation rate",
-				Description:  extutil.Ptr("Limit the connection creation rate to simulate slow acceptance of new connections."),
+				Description:  new("Limit the connection creation rate to simulate slow acceptance of new connections."),
 				Name:         "connection_rate",
 				Type:         action_kit_api.ActionParameterTypeInteger,
-				DefaultValue: extutil.Ptr("10"),
-				Required:     extutil.Ptr(true),
+				DefaultValue: new("10"),
+				Required:     new(true),
 			},
 		},
 	}

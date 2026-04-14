@@ -39,29 +39,29 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 		Label:       "Elect New Partition Leader",
 		Description: "Elect a new leader for a given topic and partition, only by trying to elect a new preferred replica. The current leader of the partition will be placed at the end of replicas through a reassignment",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType: kafkaTopicTargetId,
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "topic name",
-					Description: extutil.Ptr("Find topic by cluster and name"),
+					Description: new("Find topic by cluster and name"),
 					Query:       "kafka.cluster.name=\"\" AND kafka.topic.name=\"\"",
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
-		Category:    extutil.Ptr("Kafka"),
+		Technology:  new("Kafka"),
+		Category:    new("Kafka"),
 		TimeControl: action_kit_api.TimeControlInstantaneous,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
 			{
 				Name:        "partitions",
 				Label:       "Partition to elect a new leader (preferred replica)",
-				Description: extutil.Ptr("The partition to elect a new leader"),
+				Description: new("The partition to elect a new leader"),
 				Type:        action_kit_api.ActionParameterTypeString,
-				Required:    extutil.Ptr(true),
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+				Required:    new(true),
+				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ParameterOptionsFromTargetAttribute{
 						Attribute: "kafka.topic.partitions",
 					},
@@ -105,7 +105,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 	// Find the corresponding leader info
 	topics, err := client.ListTopics(ctx, state.Topic)
 	if err != nil {
-		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve topics from Kafka for name %s. Full response: %v", state.Topic, err), err))
+		return nil, new(extension_kit.ToError(fmt.Sprintf("Failed to retrieve topics from Kafka for name %s. Full response: %v", state.Topic, err), err))
 	}
 
 	var topicDetail kadm.TopicDetail
@@ -152,7 +152,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Start(ctx context.Context, state *Kafka
 		}
 	}
 	if len(errs) > 0 {
-		errorElectLeader = action_kit_api.ActionKitError{Title: "Election failed for partition(s)", Detail: extutil.Ptr(errors.Join(errs...).Error())}
+		errorElectLeader = action_kit_api.ActionKitError{Title: "Election failed for partition(s)", Detail: new(errors.Join(errs...).Error())}
 		return &action_kit_api.StartResult{
 			Messages: &messages,
 			Error:    &errorElectLeader,

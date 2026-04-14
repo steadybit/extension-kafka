@@ -33,7 +33,7 @@ func TestCheckTopicLag_Describe(t *testing.T) {
 	assert.Equal(t, "Check Topic Lag", response.Label)
 	assert.Equal(t, kafkaConsumerTargetId, response.TargetSelection.TargetType)
 	assert.Equal(t, fmt.Sprintf("%s.check-lag", kafkaConsumerTargetId), response.Id)
-	assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+	assert.Equal(t, new("Kafka"), response.Technology)
 }
 
 func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
@@ -59,7 +59,7 @@ func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
 						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"duration":      10000,
 					"topic":         "steadybit",
 					"acceptableLag": "1",
@@ -79,7 +79,7 @@ func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"duration":      10000,
 					"topic":         "steadybit",
 					"acceptableLag": "1",
@@ -144,7 +144,7 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 	defer cl.Close()
 
 	// produce messages for lags
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		cl.ProduceSync(context.TODO(), &kgo.Record{Key: []byte("steadybit"), Value: []byte("test")})
 	}
 
@@ -163,7 +163,7 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"duration":      5000,
 					"topic":         "steadybit",
 					"acceptableLag": "15",
@@ -186,7 +186,7 @@ func TestCheckConsumerGroupLag_Status(t *testing.T) {
 						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"duration":      5000,
 					"topic":         "steadybit",
 					"acceptableLag": "1",

@@ -53,7 +53,7 @@ func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"recordsPerSecond": 1,
 					"maxConcurrent":    2,
 					"recordKey":        "steadybit5",
@@ -81,7 +81,7 @@ func TestNewProduceMessageActionPeriodically_Prepare(t *testing.T) {
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"recordsPerSecond": 1,
 					"maxConcurrent":    2,
 					"recordKey":        "steadybit5",
@@ -150,7 +150,7 @@ func TestNewHTTPCheckActionPeriodically_All_Success(t *testing.T) {
 				"kafka.cluster.name": {"test-cluster"},
 			},
 		},
-		Config: map[string]interface{}{
+		Config: map[string]any{
 			"recordsPerSecond": 1,
 			"maxConcurrent":    2,
 			"recordKey":        "steadybit5",
@@ -225,7 +225,7 @@ func TestNewHTTPCheckActionPeriodically_All_Failure(t *testing.T) {
 				"kafka.cluster.name": {"test-cluster"},
 			},
 		},
-		Config: map[string]interface{}{
+		Config: map[string]any{
 			"recordsPerSecond": 1,
 			"maxConcurrent":    1,
 			"recordKey":        "steadybit5",

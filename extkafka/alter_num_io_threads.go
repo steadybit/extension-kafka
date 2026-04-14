@@ -37,30 +37,30 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 		Label:       "Limit IO Threads",
 		Description: "Limit the number of IO threads",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType: kafkaBrokerTargetId,
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "broker node id",
-					Description: extutil.Ptr("Find broker by cluster name and id"),
+					Description: new("Find broker by cluster name and id"),
 					Query:       "kafka.cluster.name=\"\" AND kafka.broker.node-id=\"\"",
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
-		Category:    extutil.Ptr("Kafka"),
+		Technology:  new("Kafka"),
+		Category:    new("Kafka"),
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
 			durationAlter,
 			{
 				Label:        "Number of IO Threads",
-				Description:  extutil.Ptr("Reduce the number of I/O threads to limit the broker’s capacity to perform disk operations, potentially causing increased latency or request timeouts."),
+				Description:  new("Reduce the number of I/O threads to limit the broker’s capacity to perform disk operations, potentially causing increased latency or request timeouts."),
 				Name:         "io_threads",
 				Type:         action_kit_api.ActionParameterTypeInteger,
-				DefaultValue: extutil.Ptr("4"),
-				Required:     extutil.Ptr(true),
+				DefaultValue: new("4"),
+				Required:     new(true),
 			},
 		},
 	}

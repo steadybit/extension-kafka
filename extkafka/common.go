@@ -74,65 +74,65 @@ var (
 	topic = action_kit_api.ActionParameter{
 		Name:        "topic",
 		Label:       "Topic",
-		Description: extutil.Ptr("The Topic to send records to"),
+		Description: new("The Topic to send records to"),
 		Type:        action_kit_api.ActionParameterTypeString,
-		Required:    extutil.Ptr(true),
+		Required:    new(true),
 	}
 	recordKey = action_kit_api.ActionParameter{
 		Name:        "recordKey",
 		Label:       "Record key",
-		Description: extutil.Ptr("The Record Key. If none is set, the partition will be choose with round-robin algorithm."),
+		Description: new("The Record Key. If none is set, the partition will be choose with round-robin algorithm."),
 		Type:        action_kit_api.ActionParameterTypeString,
 	}
 	recordValue = action_kit_api.ActionParameter{
 		Name:        "recordValue",
 		Label:       "Record value",
-		Description: extutil.Ptr("The Record Value."),
+		Description: new("The Record Value."),
 		Type:        action_kit_api.ActionParameterTypeString,
-		Required:    extutil.Ptr(true),
+		Required:    new(true),
 	}
 	recordHeaders = action_kit_api.ActionParameter{
 		Name:        "recordHeaders",
 		Label:       "Record Headers",
-		Description: extutil.Ptr("The Record Headers."),
+		Description: new("The Record Headers."),
 		Type:        action_kit_api.ActionParameterTypeKeyValue,
 	}
 	durationAlter = action_kit_api.ActionParameter{
 		Label:        "Duration",
-		Description:  extutil.Ptr("The duration of the action. The broker configuration will be reverted at the end of the action."),
+		Description:  new("The duration of the action. The broker configuration will be reverted at the end of the action."),
 		Name:         "duration",
 		Type:         action_kit_api.ActionParameterTypeDuration,
-		DefaultValue: extutil.Ptr("60s"),
-		Required:     extutil.Ptr(true),
+		DefaultValue: new("60s"),
+		Required:     new(true),
 	}
 	duration = action_kit_api.ActionParameter{
 		Name:         "duration",
 		Label:        "Duration",
-		Description:  extutil.Ptr("In which timeframe should the specified records be produced?"),
+		Description:  new("In which timeframe should the specified records be produced?"),
 		Type:         action_kit_api.ActionParameterTypeDuration,
-		DefaultValue: extutil.Ptr("10s"),
-		Required:     extutil.Ptr(true),
+		DefaultValue: new("10s"),
+		Required:     new(true),
 	}
 	successRate = action_kit_api.ActionParameter{
 		Name:         "successRate",
 		Label:        "Required Success Rate",
-		Description:  extutil.Ptr("How many percent of the records must be at least successful (in terms of the following response verifications) to continue the experiment execution? The result will be evaluated and the end of the given duration."),
+		Description:  new("How many percent of the records must be at least successful (in terms of the following response verifications) to continue the experiment execution? The result will be evaluated and the end of the given duration."),
 		Type:         action_kit_api.ActionParameterTypePercentage,
-		DefaultValue: extutil.Ptr("100"),
-		Required:     extutil.Ptr(true),
-		MinValue:     extutil.Ptr(0),
-		MaxValue:     extutil.Ptr(100),
+		DefaultValue: new("100"),
+		Required:     new(true),
+		MinValue:     new(0),
+		MaxValue:     new(100),
 	}
 	maxConcurrent = action_kit_api.ActionParameter{
 		Name:         "maxConcurrent",
 		Label:        "Max concurrent requests",
-		Description:  extutil.Ptr("Maximum count on parallel producing requests. (min 1, max 10)"),
+		Description:  new("Maximum count on parallel producing requests. (min 1, max 10)"),
 		Type:         action_kit_api.ActionParameterTypeInteger,
-		DefaultValue: extutil.Ptr("5"),
-		MinValue:     extutil.Ptr(1),
-		MaxValue:     extutil.Ptr(10),
-		Required:     extutil.Ptr(true),
-		Advanced:     extutil.Ptr(true),
+		DefaultValue: new("5"),
+		MinValue:     new(1),
+		MaxValue:     new(10),
+		Required:     new(true),
+		Advanced:     new(true),
 	}
 )
 
@@ -441,7 +441,7 @@ func doAlterConfig(ctx context.Context, brokers []string, configName string, con
 	if configValue == "" {
 		op = kadm.DeleteConfig
 	}
-	responses, err := adminClient.AlterBrokerConfigs(ctx, []kadm.AlterConfig{{Name: configName, Value: extutil.Ptr(configValue), Op: op}}, brokerID)
+	responses, err := adminClient.AlterBrokerConfigs(ctx, []kadm.AlterConfig{{Name: configName, Value: new(configValue), Op: op}}, brokerID)
 	if err != nil {
 		return err
 	}
@@ -510,7 +510,7 @@ func isTransientError(err error) bool {
 func retryOnTransientError[T any](ctx context.Context, fn func() (T, error)) (T, error) {
 	var zero T
 	var lastErr error
-	for attempt := 0; attempt < 3; attempt++ {
+	for attempt := range 3 {
 		if attempt > 0 {
 			log.Debug().Err(lastErr).Msgf("Retrying after transient error (attempt %d/3)", attempt+1)
 			select {

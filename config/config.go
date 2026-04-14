@@ -5,6 +5,7 @@ package config
 
 import (
 	"fmt"
+	"maps"
 	"os"
 	"sync"
 
@@ -196,9 +197,7 @@ func GetAllClusterConfigs() map[string]*ClusterConfig {
 
 	// Return a shallow copy to avoid holding the lock while caller uses the map
 	clusters := make(map[string]*ClusterConfig, len(Config.Clusters))
-	for k, v := range Config.Clusters {
-		clusters[k] = v
-	}
+	maps.Copy(clusters, Config.Clusters)
 	return clusters
 }
 

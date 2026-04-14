@@ -12,7 +12,6 @@ import (
 	"github.com/steadybit/discovery-kit/go/discovery_kit_sdk"
 	"github.com/steadybit/extension-kafka/config"
 	"github.com/steadybit/extension-kit/extbuild"
-	"github.com/steadybit/extension-kit/extutil"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"strconv"
 	"strings"
@@ -40,7 +39,7 @@ func (r *kafkaBrokerDiscovery) Describe() discovery_kit_api.DiscoveryDescription
 	return discovery_kit_api.DiscoveryDescription{
 		Id: kafkaBrokerTargetId,
 		Discover: discovery_kit_api.DescribingEndpointReferenceWithCallInterval{
-			CallInterval: extutil.Ptr(fmt.Sprintf("%ds", config.Config.DiscoveryIntervalKafkaBroker)),
+			CallInterval: new(fmt.Sprintf("%ds", config.Config.DiscoveryIntervalKafkaBroker)),
 		},
 	}
 }
@@ -49,9 +48,9 @@ func (r *kafkaBrokerDiscovery) DescribeTarget() discovery_kit_api.TargetDescript
 	return discovery_kit_api.TargetDescription{
 		Id:       kafkaBrokerTargetId,
 		Label:    discovery_kit_api.PluralLabel{One: "Kafka Broker", Other: "Kafka Brokers"},
-		Category: extutil.Ptr("kafka"),
+		Category: new("kafka"),
 		Version:  extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:     extutil.Ptr(kafkaIcon),
+		Icon:     new(kafkaIcon),
 		Table: discovery_kit_api.Table{
 			Columns: []discovery_kit_api.Column{
 				{Attribute: "steadybit.label"},

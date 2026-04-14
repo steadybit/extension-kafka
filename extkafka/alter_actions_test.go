@@ -5,7 +5,6 @@ package extkafka
 
 import (
 	"fmt"
-	"github.com/steadybit/extension-kit/extutil"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -22,7 +21,7 @@ func TestAlterActions_Describe(t *testing.T) {
 		assert.Equal(t, "Limit Connection Creation Rate", response.Label)
 		assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 		assert.Equal(t, fmt.Sprintf("%s.limit-connection-creation", kafkaBrokerTargetId), response.Id)
-		assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+		assert.Equal(t, new("Kafka"), response.Technology)
 	})
 
 	t.Run("AlterMessageMaxBytes", func(t *testing.T) {
@@ -36,7 +35,7 @@ func TestAlterActions_Describe(t *testing.T) {
 		assert.Equal(t, "Reduce Message Batch Size", response.Label)
 		assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 		assert.Equal(t, fmt.Sprintf("%s.reduce-message-max-bytes", kafkaBrokerTargetId), response.Id)
-		assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+		assert.Equal(t, new("Kafka"), response.Technology)
 	})
 
 	t.Run("AlterNumberIOThreads", func(t *testing.T) {
@@ -50,7 +49,7 @@ func TestAlterActions_Describe(t *testing.T) {
 		assert.Equal(t, "Limit IO Threads", response.Label)
 		assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 		assert.Equal(t, fmt.Sprintf("%s.limit-io-threads", kafkaBrokerTargetId), response.Id)
-		assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+		assert.Equal(t, new("Kafka"), response.Technology)
 	})
 
 	t.Run("AlterNumberNetworkThreads", func(t *testing.T) {
@@ -64,6 +63,6 @@ func TestAlterActions_Describe(t *testing.T) {
 		assert.Equal(t, "Limit Network Threads", response.Label)
 		assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 		assert.Equal(t, fmt.Sprintf("%s.limit-network-threads", kafkaBrokerTargetId), response.Id)
-		assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+		assert.Equal(t, new("Kafka"), response.Technology)
 	})
 }

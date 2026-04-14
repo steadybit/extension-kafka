@@ -41,13 +41,13 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 		Label:       "Produce (# of Records)",
 		Description: "Produce a certain amount of kafka records for a given duration",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType: kafkaTopicTargetId,
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "topic name",
-					Description: extutil.Ptr("Find topic by cluster and name"),
+					Description: new("Find topic by cluster and name"),
 					Query:       "kafka.cluster.name=\"\" AND kafka.topic.name=\"\"",
 				},
 			}),
@@ -60,8 +60,8 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 		//}),
 
 		// Technology for the targets to appear in
-		Technology: extutil.Ptr("Kafka"),
-		Category:   extutil.Ptr("Kafka"),
+		Technology: new("Kafka"),
+		Category:   new("Kafka"),
 
 		// To clarify the purpose of the action:
 		//   Check: Will perform checks on the targets
@@ -85,22 +85,22 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 				Name:  "-",
 				Label: "-",
 				Type:  action_kit_api.ActionParameterTypeSeparator,
-				Order: extutil.Ptr(5),
+				Order: new(5),
 			},
 			{
 				Name:         "numberOfRecords",
 				Label:        "Number of Records.",
-				Description:  extutil.Ptr("Fixed number of Records, distributed to given duration"),
+				Description:  new("Fixed number of Records, distributed to given duration"),
 				Type:         action_kit_api.ActionParameterTypeInteger,
-				Required:     extutil.Ptr(true),
-				DefaultValue: extutil.Ptr("1"),
+				Required:     new(true),
+				DefaultValue: new("1"),
 			},
 			duration,
 			{
 				Name:  "-",
 				Label: "-",
 				Type:  action_kit_api.ActionParameterTypeSeparator,
-				Order: extutil.Ptr(9),
+				Order: new(9),
 			},
 			successRate,
 			//------------------------
@@ -109,10 +109,10 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 
 			maxConcurrent,
 		},
-		Status: extutil.Ptr(action_kit_api.MutatingEndpointReferenceWithCallInterval{
-			CallInterval: extutil.Ptr("1s"),
+		Status: new(action_kit_api.MutatingEndpointReferenceWithCallInterval{
+			CallInterval: new("1s"),
 		}),
-		Stop: extutil.Ptr(action_kit_api.MutatingEndpointReference{}),
+		Stop: new(action_kit_api.MutatingEndpointReference{}),
 	}
 }
 
@@ -164,7 +164,7 @@ func (l *produceMessageActionFixedAmount) Status(_ context.Context, state *Kafka
 
 	return &action_kit_api.StatusResult{
 		Completed: completed,
-		Metrics:   extutil.Ptr(latestMetrics),
+		Metrics:   new(latestMetrics),
 	}, nil
 }
 
