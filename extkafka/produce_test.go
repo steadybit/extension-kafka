@@ -38,7 +38,7 @@ func TestAction_Prepare(t *testing.T) {
 						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"numberOfRecords": 10,
 					"maxConcurrent":   4,
 					"recordKey":       "steadybit5",
@@ -70,7 +70,7 @@ func TestAction_Prepare(t *testing.T) {
 						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"action":        "prepare",
 					"maxConcurrent": 4,
 					"recordHeaders": "test:test",
@@ -88,7 +88,7 @@ func TestAction_Prepare(t *testing.T) {
 						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"action":        "prepare",
 					"maxConcurrent": 0,
 				},

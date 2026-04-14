@@ -43,44 +43,44 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 		Label:       "Deny Access",
 		Description: "Deny access to a topic for one or many consumer groups on all kafka hosts",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType: kafkaConsumerTargetId,
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "consumer group name",
-					Description: extutil.Ptr("Find consumer group by cluster and name"),
+					Description: new("Find consumer group by cluster and name"),
 					Query:       "kafka.cluster.name=\"\" AND kafka.consumer-group.name=\"\"",
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
-		Category:    extutil.Ptr("Kafka"),
+		Technology:  new("Kafka"),
+		Category:    new("Kafka"),
 		TimeControl: action_kit_api.TimeControlExternal,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
 			{
 				Label:        "Duration",
-				Description:  extutil.Ptr("The duration of the action. The broker configuration will be reverted at the end of the action."),
+				Description:  new("The duration of the action. The broker configuration will be reverted at the end of the action."),
 				Name:         "duration",
 				Type:         action_kit_api.ActionParameterTypeDuration,
-				DefaultValue: extutil.Ptr("180s"),
-				Required:     extutil.Ptr(true),
+				DefaultValue: new("180s"),
+				Required:     new(true),
 			},
 			{
 				Label:       "User",
-				Description: extutil.Ptr("The user affected by the ACL."),
+				Description: new("The user affected by the ACL."),
 				Name:        "user",
 				Type:        action_kit_api.ActionParameterTypeString,
-				Required:    extutil.Ptr(true),
+				Required:    new(true),
 			},
 			{
 				Label:       "Topic to deny access",
 				Name:        "topic",
-				Description: extutil.Ptr("One topic to deny access to"),
+				Description: new("One topic to deny access to"),
 				Type:        action_kit_api.ActionParameterTypeString,
-				Required:    extutil.Ptr(true),
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+				Required:    new(true),
+				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ParameterOptionsFromTargetAttribute{
 						Attribute: "kafka.consumer-group.topics",
 					},

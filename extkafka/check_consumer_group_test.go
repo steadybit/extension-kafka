@@ -32,7 +32,7 @@ func TestCheckConsumerGroup_Describe(t *testing.T) {
 	assert.Equal(t, "Check Consumer State", response.Label)
 	assert.Equal(t, kafkaConsumerTargetId, response.TargetSelection.TargetType)
 	assert.Equal(t, fmt.Sprintf("%s.check", kafkaConsumerTargetId), response.Id)
-	assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+	assert.Equal(t, new("Kafka"), response.Technology)
 }
 
 func TestCheckConsumerGroup_Prepare(t *testing.T) {
@@ -58,7 +58,7 @@ func TestCheckConsumerGroup_Prepare(t *testing.T) {
 						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"expectedStateList": []string{"test"},
 					"stateCheckMode":    "test",
 					"duration":          10000,
@@ -80,7 +80,7 @@ func TestCheckConsumerGroup_Prepare(t *testing.T) {
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"expectedStateList": []string{"test"},
 					"stateCheckMode":    "test",
 					"duration":          10000,
@@ -159,7 +159,7 @@ func TestCheckConsumerGroup_Status(t *testing.T) {
 						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"expectedStateList": []string{"Dead"},
 					"stateCheckMode":    "atLeastOnce",
 					"duration":          5000,
@@ -183,7 +183,7 @@ func TestCheckConsumerGroup_Status(t *testing.T) {
 						"kafka.cluster.name":        {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"expectedStateList": []string{"Dead"},
 					"stateCheckMode":    "allTheTime",
 					"duration":          5000,

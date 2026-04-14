@@ -41,7 +41,7 @@ func TestNewHTTPCheckActionFixedAmount_Prepare(t *testing.T) {
 						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"numberOfRecords": 10,
 					"maxConcurrent":   4,
 					"recordKey":       "steadybit5",
@@ -118,7 +118,7 @@ func TestNewHTTPCheckActionFixedAmount_All_Success(t *testing.T) {
 				"kafka.cluster.name": {"test-cluster"},
 			},
 		},
-		Config: map[string]interface{}{
+		Config: map[string]any{
 			"numberOfRecords": 10,
 			"maxConcurrent":   4,
 			"recordKey":       "steadybit5",
@@ -196,7 +196,7 @@ func TestNewHTTPCheckActionFixedAmount_All_Failure(t *testing.T) {
 				"kafka.cluster.name": {"test-cluster"},
 			},
 		},
-		Config: map[string]interface{}{
+		Config: map[string]any{
 			"numberOfRecords": 1,
 			"maxConcurrent":   4,
 			"recordKey":       "steadybit5",

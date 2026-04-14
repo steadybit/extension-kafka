@@ -53,38 +53,38 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 		Label:       "Check Topic Lag",
 		Description: "Check the consumer lag for a given topic (lag is calculated by the difference between topic offset and consumer offset)",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType:          kafkaConsumerTargetId,
 			QuantityRestriction: extutil.Ptr(action_kit_api.QuantityRestrictionAll),
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "consumer group name",
-					Description: extutil.Ptr("Find consumer group by cluster and name"),
+					Description: new("Find consumer group by cluster and name"),
 					Query:       "kafka.cluster.name=\"\" AND kafka.consumer-group.name=\"\"",
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
-		Category:    extutil.Ptr("Kafka"),
+		Technology:  new("Kafka"),
+		Category:    new("Kafka"),
 		Kind:        action_kit_api.Check,
 		TimeControl: action_kit_api.TimeControlInternal,
 		Parameters: []action_kit_api.ActionParameter{
 			{
 				Name:         "duration",
 				Label:        "Duration",
-				Description:  extutil.Ptr(""),
+				Description:  new(""),
 				Type:         action_kit_api.ActionParameterTypeDuration,
-				DefaultValue: extutil.Ptr("30s"),
-				Required:     extutil.Ptr(true),
+				DefaultValue: new("30s"),
+				Required:     new(true),
 			},
 			{
 				Name:        "topic",
 				Label:       "Topic to track lag",
-				Description: extutil.Ptr("One topic to track lags"),
+				Description: new("One topic to track lags"),
 				Type:        action_kit_api.ActionParameterTypeString,
-				Required:    extutil.Ptr(true),
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+				Required:    new(true),
+				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ParameterOptionsFromTargetAttribute{
 						Attribute: "kafka.consumer-group.topics",
 					},
@@ -93,13 +93,13 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 			{
 				Name:         "acceptableLag",
 				Label:        "Lag alert threshold",
-				Description:  extutil.Ptr("How much lag is acceptable for this topic"),
+				Description:  new("How much lag is acceptable for this topic"),
 				Type:         action_kit_api.ActionParameterTypeInteger,
-				Required:     extutil.Ptr(true),
-				DefaultValue: extutil.Ptr("10"),
+				Required:     new(true),
+				DefaultValue: new("10"),
 			},
 		},
-		Widgets: extutil.Ptr([]action_kit_api.Widget{
+		Widgets: new([]action_kit_api.Widget{
 			action_kit_api.LineChartWidget{
 				Type:  action_kit_api.ComSteadybitWidgetLineChart,
 				Title: "Consumer Group Lag",
@@ -108,8 +108,8 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 					From:       "id",
 					Mode:       action_kit_api.ComSteadybitWidgetLineChartIdentityModeSelect,
 				},
-				Grouping: extutil.Ptr(action_kit_api.LineChartWidgetGroupingConfig{
-					ShowSummary: extutil.Ptr(true),
+				Grouping: new(action_kit_api.LineChartWidgetGroupingConfig{
+					ShowSummary: new(true),
 					Groups: []action_kit_api.LineChartWidgetGroup{
 						{
 							Title: "Under Acceptable Lag",
@@ -129,8 +129,8 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 						},
 					},
 				}),
-				Tooltip: extutil.Ptr(action_kit_api.LineChartWidgetTooltipConfig{
-					MetricValueTitle: extutil.Ptr("Lag"),
+				Tooltip: new(action_kit_api.LineChartWidgetTooltipConfig{
+					MetricValueTitle: new("Lag"),
 					AdditionalContent: []action_kit_api.LineChartWidgetTooltipContent{
 						{
 							From:  "consumer",
@@ -144,8 +144,8 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 				}),
 			},
 		}),
-		Status: extutil.Ptr(action_kit_api.MutatingEndpointReferenceWithCallInterval{
-			CallInterval: extutil.Ptr("1s"),
+		Status: new(action_kit_api.MutatingEndpointReferenceWithCallInterval{
+			CallInterval: new("1s"),
 		}),
 	}
 }
@@ -200,7 +200,7 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 
 	lags, err := client.Lag(ctx, state.ConsumerGroupName)
 	if err != nil {
-		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve consumer groups from Kafka for name %s. Full response: %v", state.ConsumerGroupName, err), err))
+		return nil, new(extension_kit.ToError(fmt.Sprintf("Failed to retrieve consumer groups from Kafka for name %s. Full response: %v", state.ConsumerGroupName, err), err))
 	}
 
 	var groupLag kadm.DescribedGroupLag
@@ -213,10 +213,10 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 	}
 
 	if groupLag.FetchErr != nil {
-		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Error when fetching or describing the consumer group %s: %s", state.ConsumerGroupName, groupLag.FetchErr.Error()), groupLag.FetchErr))
+		return nil, new(extension_kit.ToError(fmt.Sprintf("Error when fetching or describing the consumer group %s: %s", state.ConsumerGroupName, groupLag.FetchErr.Error()), groupLag.FetchErr))
 	}
 	if groupLag.DescribeErr != nil {
-		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Error when fetching or describing the consumer group %s: %s", state.ConsumerGroupName, groupLag.DescribeErr.Error()), groupLag.DescribeErr))
+		return nil, new(extension_kit.ToError(fmt.Sprintf("Error when fetching or describing the consumer group %s: %s", state.ConsumerGroupName, groupLag.DescribeErr.Error()), groupLag.DescribeErr))
 
 	}
 	topicLag := groupLag.Lag.TotalByTopic()[state.Topic].Lag
@@ -229,7 +229,7 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 		state.StateCheckFailed = true
 	}
 	if completed && state.StateCheckFailed {
-		checkError = extutil.Ptr(action_kit_api.ActionKitError{
+		checkError = new(action_kit_api.ActionKitError{
 			Title: fmt.Sprintf("Consumer Group Lag was higher at least once than acceptable threshold  '%d'.",
 				state.AcceptableLag),
 			Status: extutil.Ptr(action_kit_api.Failed),
@@ -243,13 +243,13 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 	return &action_kit_api.StatusResult{
 		Completed: completed,
 		Error:     checkError,
-		Metrics:   extutil.Ptr(metrics),
+		Metrics:   new(metrics),
 	}, nil
 }
 
 func toMetric(topicLag int64, stateGroupLag *ConsumerGroupLagCheckState, now time.Time) *action_kit_api.Metric {
-	return extutil.Ptr(action_kit_api.Metric{
-		Name: extutil.Ptr("kafka_consumer_group_lag"),
+	return new(action_kit_api.Metric{
+		Name: new("kafka_consumer_group_lag"),
 		Metric: map[string]string{
 			"lag_constraints_fulfilled": strconv.FormatBool(topicLag < stateGroupLag.AcceptableLag),
 			"consumer":                  stateGroupLag.ConsumerGroupName,

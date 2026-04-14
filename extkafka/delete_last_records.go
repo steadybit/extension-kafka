@@ -45,29 +45,29 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 		Label:       "Trigger Delete Records",
 		Description: "Trigger delete records to move the offset relative to the last known offset for each selected partition",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType: kafkaTopicTargetId,
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "topic name",
-					Description: extutil.Ptr("Find topic by cluster and name"),
+					Description: new("Find topic by cluster and name"),
 					Query:       "kafka.cluster.name=\"\" AND kafka.topic.name=\"\"",
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
-		Category:    extutil.Ptr("Kafka"),
+		Technology:  new("Kafka"),
+		Category:    new("Kafka"),
 		TimeControl: action_kit_api.TimeControlInstantaneous,
 		Kind:        action_kit_api.Attack,
 		Parameters: []action_kit_api.ActionParameter{
 			{
 				Name:        "partitions",
 				Label:       "Partition to issue delete records requests",
-				Description: extutil.Ptr("One or more partitions to delete the records"),
+				Description: new("One or more partitions to delete the records"),
 				Type:        action_kit_api.ActionParameterTypeStringArray,
-				Required:    extutil.Ptr(true),
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+				Required:    new(true),
+				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ParameterOptionsFromTargetAttribute{
 						Attribute: "kafka.topic.partitions",
 					},
@@ -75,11 +75,11 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 			},
 			{
 				Label:        "X from newest Offset",
-				Description:  extutil.Ptr("To move the offset in the past, 0 means to the last known offset (skipping every records from where the consumer was)."),
+				Description:  new("To move the offset in the past, 0 means to the last known offset (skipping every records from where the consumer was)."),
 				Name:         "offset",
 				Type:         action_kit_api.ActionParameterTypeInteger,
-				DefaultValue: extutil.Ptr("0"),
-				Required:     extutil.Ptr(true),
+				DefaultValue: new("0"),
+				Required:     new(true),
 			},
 		},
 	}
@@ -141,10 +141,7 @@ func (k *DeleteRecordsAttack) Start(ctx context.Context, state *DeleteRecordsSta
 		}
 
 		newOffsets := kadm.Offsets{}
-		newOffset := endOffset.Offset - state.Offset
-		if newOffset < 0 {
-			newOffset = 0
-		}
+		newOffset := max(endOffset.Offset-state.Offset, 0)
 		newOffsets.Add(kadm.Offset{Topic: endOffset.Topic, Partition: endOffset.Partition, LeaderEpoch: endOffset.LeaderEpoch, At: newOffset})
 
 		var offsetResponses kadm.DeleteRecordsResponses

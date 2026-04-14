@@ -14,7 +14,7 @@ import (
 // resolveStatusCodeExpression resolves the given status code expression into a list of status codes
 func resolveStatusCodeExpression(statusCodes string) ([]int, *action_kit_api.ActionKitError) {
 	result := make([]int, 0)
-	for _, code := range strings.Split(strings.Trim(statusCodes, " "), ";") {
+	for code := range strings.SplitSeq(strings.Trim(statusCodes, " "), ";") {
 		if strings.Contains(code, "-") {
 			rangeParts := strings.Split(code, "-")
 			if len(rangeParts) != 2 {

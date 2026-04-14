@@ -64,37 +64,37 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 		Label:       "Check Partitions",
 		Description: "Check topic partitions changes for leader, in-sync-replicas, replicas and offline replicas",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType:          kafkaTopicTargetId,
 			QuantityRestriction: extutil.Ptr(action_kit_api.QuantityRestrictionAll),
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "topic name",
-					Description: extutil.Ptr("Find topic group by cluster and name"),
+					Description: new("Find topic group by cluster and name"),
 					Query:       "kafka.cluster.name=\"\" AND kafka.topic.name=\"\"",
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
-		Category:    extutil.Ptr("Kafka"),
+		Technology:  new("Kafka"),
+		Category:    new("Kafka"),
 		Kind:        action_kit_api.Check,
 		TimeControl: action_kit_api.TimeControlInternal,
 		Parameters: []action_kit_api.ActionParameter{
 			{
 				Name:         "duration",
 				Label:        "Duration",
-				Description:  extutil.Ptr(""),
+				Description:  new(""),
 				Type:         action_kit_api.ActionParameterTypeDuration,
-				DefaultValue: extutil.Ptr("30s"),
-				Required:     extutil.Ptr(true),
+				DefaultValue: new("30s"),
+				Required:     new(true),
 			},
 			{
 				Name:        "expectedChanges",
 				Label:       "Expected Changes",
-				Description: extutil.Ptr(""),
+				Description: new(""),
 				Type:        action_kit_api.ActionParameterTypeStringArray,
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{
 						Label: "New Leader Elected",
 						Value: LeaderChanged,
@@ -112,15 +112,15 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 						Value: InSyncReplicasChanged,
 					},
 				}),
-				Required: extutil.Ptr(false),
+				Required: new(false),
 			},
 			{
 				Name:         "changeCheckMode",
 				Label:        "Change Check Mode",
-				Description:  extutil.Ptr("How do we check the change of the topic?"),
+				Description:  new("How do we check the change of the topic?"),
 				Type:         action_kit_api.ActionParameterTypeString,
-				DefaultValue: extutil.Ptr(stateCheckModeAllTheTime),
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+				DefaultValue: new(stateCheckModeAllTheTime),
+				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{
 						Label: "All the time",
 						Value: stateCheckModeAllTheTime,
@@ -130,10 +130,10 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 						Value: stateCheckModeAtLeastOnce,
 					},
 				}),
-				Required: extutil.Ptr(true),
+				Required: new(true),
 			},
 		},
-		Widgets: extutil.Ptr([]action_kit_api.Widget{
+		Widgets: new([]action_kit_api.Widget{
 			action_kit_api.StateOverTimeWidget{
 				Type:  action_kit_api.ComSteadybitWidgetStateOverTime,
 				Title: "Kafka Topic Changes",
@@ -149,16 +149,16 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 				Tooltip: action_kit_api.StateOverTimeWidgetTooltipConfig{
 					From: "tooltip",
 				},
-				Url: extutil.Ptr(action_kit_api.StateOverTimeWidgetUrlConfig{
-					From: extutil.Ptr("url"),
+				Url: new(action_kit_api.StateOverTimeWidgetUrlConfig{
+					From: new("url"),
 				}),
-				Value: extutil.Ptr(action_kit_api.StateOverTimeWidgetValueConfig{
-					Hide: extutil.Ptr(true),
+				Value: new(action_kit_api.StateOverTimeWidgetValueConfig{
+					Hide: new(true),
 				}),
 			},
 		}),
-		Status: extutil.Ptr(action_kit_api.MutatingEndpointReferenceWithCallInterval{
-			CallInterval: extutil.Ptr("2s"),
+		Status: new(action_kit_api.MutatingEndpointReferenceWithCallInterval{
+			CallInterval: new("2s"),
 		}),
 	}
 }
@@ -226,7 +226,7 @@ func TopicCheckStatus(ctx context.Context, state *PartitionsCheckState) (*action
 
 	topics, err := client.ListTopics(ctx, state.TopicName)
 	if err != nil {
-		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve topics from Kafka for name %s. Full response: %v", state.TopicName, err), err))
+		return nil, new(extension_kit.ToError(fmt.Sprintf("Failed to retrieve topics from Kafka for name %s. Full response: %v", state.TopicName, err), err))
 	}
 
 	var topicDetail kadm.TopicDetail
@@ -290,7 +290,7 @@ func TopicCheckStatus(ctx context.Context, state *PartitionsCheckState) (*action
 		if state.StateCheckMode == stateCheckModeAllTheTime {
 			for _, c := range keys {
 				if !slices.Contains(state.ExpectedChanges, c) {
-					checkError = extutil.Ptr(action_kit_api.ActionKitError{
+					checkError = new(action_kit_api.ActionKitError{
 						Title: fmt.Sprintf("Topic '%s' has an unexpected change '%s' whereas '%s' is expected. Change(s) : %v",
 							state.TopicName,
 							c,
@@ -308,7 +308,7 @@ func TopicCheckStatus(ctx context.Context, state *PartitionsCheckState) (*action
 			}
 
 			if completed && !state.StateCheckSuccess {
-				checkError = extutil.Ptr(action_kit_api.ActionKitError{
+				checkError = new(action_kit_api.ActionKitError{
 					Title: fmt.Sprintf("Topic '%s' didn't have the expected changes '%s' at least once.",
 						state.TopicName,
 						state.ExpectedChanges),
@@ -325,7 +325,7 @@ func TopicCheckStatus(ctx context.Context, state *PartitionsCheckState) (*action
 	return &action_kit_api.StatusResult{
 		Completed: completed,
 		Error:     checkError,
-		Metrics:   extutil.Ptr(metrics),
+		Metrics:   new(metrics),
 	}, nil
 }
 
@@ -334,13 +334,14 @@ func toTopicChangeMetric(topicName string, expectedChanges []string, changesName
 	var state string
 
 	if len(changes) > 0 {
-		recap := "PARTITION ACTIVITY"
+		var recap strings.Builder
+		recap.WriteString("PARTITION ACTIVITY")
 		for k, v := range changes {
-			recap += "\n" + k + ":\n"
-			recap += strings.Join(v, "\n")
+			recap.WriteString("\n" + k + ":\n")
+			recap.WriteString(strings.Join(v, "\n"))
 		}
 
-		tooltip = recap
+		tooltip = recap.String()
 
 		sort.Strings(expectedChanges)
 		sort.Strings(changesNames)
@@ -357,8 +358,8 @@ func toTopicChangeMetric(topicName string, expectedChanges []string, changesName
 		state = "info"
 	}
 
-	return extutil.Ptr(action_kit_api.Metric{
-		Name: extutil.Ptr("kafka_consumer_group_state"),
+	return new(action_kit_api.Metric{
+		Name: new("kafka_consumer_group_state"),
 		Metric: map[string]string{
 			"kafka.topic.name": topicName,
 			"url":              "",

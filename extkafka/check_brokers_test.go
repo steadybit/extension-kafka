@@ -31,7 +31,7 @@ func TestCheckBrokers_Describe(t *testing.T) {
 	assert.Equal(t, "Check activity of brokers.", response.Description)
 	assert.Equal(t, "Check Brokers", response.Label)
 	assert.Equal(t, fmt.Sprintf("%s.check", kafkaBrokerTargetId), response.Id)
-	assert.Equal(t, extutil.Ptr("Kafka"), response.Technology)
+	assert.Equal(t, new("Kafka"), response.Technology)
 	require.NotNil(t, response.TargetSelection)
 	assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 }
@@ -68,7 +68,7 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"expectedChanges": []string{"test"},
 					"changeCheckMode": "allTheTime",
 					"duration":        10000,
@@ -143,14 +143,14 @@ func TestCheckBrokers_Status(t *testing.T) {
 	}{
 		{
 			name:     "Should return status ok",
-			killNode: extutil.Ptr(1),
+			killNode: new(1),
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
 						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"expectedChanges": []string{"kafka broker with downtime"},
 					"changeCheckMode": "atLeastOnce",
 					"duration":        5000,
@@ -165,14 +165,14 @@ func TestCheckBrokers_Status(t *testing.T) {
 		},
 		{
 			name:     "Should return status ok with all the time check mode",
-			killNode: extutil.Ptr(2),
+			killNode: new(2),
 			requestBody: extutil.JsonMangle(action_kit_api.PrepareActionRequestBody{
 				Target: &action_kit_api.Target{
 					Attributes: map[string][]string{
 						"kafka.cluster.name": {"test-cluster"},
 					},
 				},
-				Config: map[string]interface{}{
+				Config: map[string]any{
 					"expectedChanges": []string{"Dead"},
 					"changeCheckMode": "allTheTime",
 					"duration":        5000,

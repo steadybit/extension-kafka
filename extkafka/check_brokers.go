@@ -60,37 +60,37 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 		Label:       "Check Brokers",
 		Description: "Check activity of brokers.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
-		Icon:        extutil.Ptr(kafkaIcon),
-		TargetSelection: extutil.Ptr(action_kit_api.TargetSelection{
+		Icon:        new(kafkaIcon),
+		TargetSelection: new(action_kit_api.TargetSelection{
 			TargetType:          kafkaBrokerTargetId,
 			QuantityRestriction: extutil.Ptr(action_kit_api.QuantityRestrictionAll),
-			SelectionTemplates: extutil.Ptr([]action_kit_api.TargetSelectionTemplate{
+			SelectionTemplates: new([]action_kit_api.TargetSelectionTemplate{
 				{
 					Label:       "by cluster name",
-					Description: extutil.Ptr("Find brokers by cluster name"),
+					Description: new("Find brokers by cluster name"),
 					Query:       "kafka.cluster.name=\"\"",
 				},
 			}),
 		}),
-		Technology:  extutil.Ptr("Kafka"),
-		Category:    extutil.Ptr("Kafka"),
+		Technology:  new("Kafka"),
+		Category:    new("Kafka"),
 		Kind:        action_kit_api.Check,
 		TimeControl: action_kit_api.TimeControlInternal,
 		Parameters: []action_kit_api.ActionParameter{
 			{
 				Name:         "duration",
 				Label:        "Duration",
-				Description:  extutil.Ptr(""),
+				Description:  new(""),
 				Type:         action_kit_api.ActionParameterTypeDuration,
-				DefaultValue: extutil.Ptr("30s"),
-				Required:     extutil.Ptr(true),
+				DefaultValue: new("30s"),
+				Required:     new(true),
 			},
 			{
 				Name:        "expectedChanges",
 				Label:       "Expected Changes",
-				Description: extutil.Ptr(""),
+				Description: new(""),
 				Type:        action_kit_api.ActionParameterTypeStringArray,
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{
 						Label: "New Controller Elected",
 						Value: BrokerControllerChanged,
@@ -100,15 +100,15 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 						Value: BrokerDowntime,
 					},
 				}),
-				Required: extutil.Ptr(false),
+				Required: new(false),
 			},
 			{
 				Name:         "changeCheckMode",
 				Label:        "Change Check Mode",
-				Description:  extutil.Ptr("How do we check the change of the broker?"),
+				Description:  new("How do we check the change of the broker?"),
 				Type:         action_kit_api.ActionParameterTypeString,
-				DefaultValue: extutil.Ptr(stateCheckModeAllTheTime),
-				Options: extutil.Ptr([]action_kit_api.ParameterOption{
+				DefaultValue: new(stateCheckModeAllTheTime),
+				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{
 						Label: "All the time",
 						Value: stateCheckModeAllTheTime,
@@ -118,10 +118,10 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 						Value: stateCheckModeAtLeastOnce,
 					},
 				}),
-				Required: extutil.Ptr(true),
+				Required: new(true),
 			},
 		},
-		Widgets: extutil.Ptr([]action_kit_api.Widget{
+		Widgets: new([]action_kit_api.Widget{
 			action_kit_api.StateOverTimeWidget{
 				Type:  action_kit_api.ComSteadybitWidgetStateOverTime,
 				Title: "Kafka Broker Changes",
@@ -137,16 +137,16 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 				Tooltip: action_kit_api.StateOverTimeWidgetTooltipConfig{
 					From: "tooltip",
 				},
-				Url: extutil.Ptr(action_kit_api.StateOverTimeWidgetUrlConfig{
-					From: extutil.Ptr("url"),
+				Url: new(action_kit_api.StateOverTimeWidgetUrlConfig{
+					From: new("url"),
 				}),
-				Value: extutil.Ptr(action_kit_api.StateOverTimeWidgetValueConfig{
-					Hide: extutil.Ptr(true),
+				Value: new(action_kit_api.StateOverTimeWidgetValueConfig{
+					Hide: new(true),
 				}),
 			},
 		}),
-		Status: extutil.Ptr(action_kit_api.MutatingEndpointReferenceWithCallInterval{
-			CallInterval: extutil.Ptr("2s"),
+		Status: new(action_kit_api.MutatingEndpointReferenceWithCallInterval{
+			CallInterval: new("2s"),
 		}),
 	}
 }
@@ -183,7 +183,7 @@ func (m *CheckBrokersAction) Prepare(ctx context.Context, state *CheckBrokersSta
 
 	metadata, err := client.BrokerMetadata(ctx)
 	if err != nil {
-		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve brokers from Kafka. Full response: %v", err), err))
+		return nil, new(extension_kit.ToError(fmt.Sprintf("Failed to retrieve brokers from Kafka. Full response: %v", err), err))
 	}
 
 	state.End = end
@@ -220,7 +220,7 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 
 	metadata, err := client.BrokerMetadata(ctx)
 	if err != nil {
-		return nil, extutil.Ptr(extension_kit.ToError(fmt.Sprintf("Failed to retrieve brokers from Kafka. Full response: %v", err), err))
+		return nil, new(extension_kit.ToError(fmt.Sprintf("Failed to retrieve brokers from Kafka. Full response: %v", err), err))
 	}
 
 	// Check for changes
@@ -247,7 +247,7 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 		if state.StateCheckMode == stateCheckModeAllTheTime {
 			for _, c := range keys {
 				if !slices.Contains(state.ExpectedChanges, c) {
-					checkError = extutil.Ptr(action_kit_api.ActionKitError{
+					checkError = new(action_kit_api.ActionKitError{
 						Title: fmt.Sprintf("Brokers got an unexpected change '%s' whereas '%s' is expected.",
 							c,
 							state.ExpectedChanges),
@@ -256,7 +256,7 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 				}
 			}
 			if len(changes) == 0 {
-				checkError = extutil.Ptr(action_kit_api.ActionKitError{
+				checkError = new(action_kit_api.ActionKitError{
 					Title: fmt.Sprintf("Brokers got an unexpected change '%v' whereas '%s' is expected.",
 						"No changes",
 						state.ExpectedChanges),
@@ -271,7 +271,7 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 			}
 
 			if completed && !state.StateCheckSuccess {
-				checkError = extutil.Ptr(action_kit_api.ActionKitError{
+				checkError = new(action_kit_api.ActionKitError{
 					Title: fmt.Sprintf("Brokers didn't get the expected changes '%s' at least once.",
 						state.ExpectedChanges),
 					Status: extutil.Ptr(action_kit_api.Failed),
@@ -280,7 +280,7 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 		}
 	} else {
 		if len(changes) > 0 {
-			checkError = extutil.Ptr(action_kit_api.ActionKitError{
+			checkError = new(action_kit_api.ActionKitError{
 				Title: fmt.Sprintf("Brokers got an unexpected change '%v' whereas '%s' is expected.",
 					keys,
 					"No changes"),
@@ -296,7 +296,7 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 	return &action_kit_api.StatusResult{
 		Completed: completed,
 		Error:     checkError,
-		Metrics:   extutil.Ptr(metrics),
+		Metrics:   new(metrics),
 	}, nil
 }
 
@@ -305,11 +305,12 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 	var state string
 
 	if len(changes) > 0 {
-		recap := "BROKER ACTIVITY\n"
+		var recap strings.Builder
+		recap.WriteString("BROKER ACTIVITY\n")
 		for k := range changes {
-			recap += fmt.Sprintf("%s: %s\n", k, joinInt32s(changes[k]))
+			recap.WriteString(fmt.Sprintf("%s: %s\n", k, joinInt32s(changes[k])))
 		}
-		tooltip = recap
+		tooltip = recap.String()
 
 		sort.Strings(expectedChanges)
 		sort.Strings(changesNames)
@@ -335,8 +336,8 @@ func toBrokerChangeMetric(clusterName string, expectedChanges []string, changesN
 		metricId = fmt.Sprintf("%s - Expected: No changes", clusterName)
 	}
 
-	return extutil.Ptr(action_kit_api.Metric{
-		Name: extutil.Ptr("kafka_broker_state"),
+	return new(action_kit_api.Metric{
+		Name: new("kafka_broker_state"),
 		Metric: map[string]string{
 			"metric.id": metricId,
 			"url":       "",
@@ -354,8 +355,8 @@ func areSlicesEqualUnordered(slice1, slice2 []int32) bool {
 	}
 	sorted1 := slices.Clone(slice1) // Create a copy to avoid modifying the original slices
 	sorted2 := slices.Clone(slice2)
-	sort.Slice(sorted1, func(i, j int) bool { return sorted1[i] < sorted1[j] })
-	sort.Slice(sorted2, func(i, j int) bool { return sorted2[i] < sorted2[j] })
+	slices.Sort(sorted1)
+	slices.Sort(sorted2)
 	return slices.Equal(sorted1, sorted2)
 }
 

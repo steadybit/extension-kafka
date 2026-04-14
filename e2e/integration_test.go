@@ -306,7 +306,7 @@ func testAlterMaxMessageBytes(t *testing.T, _ *e2e.Minikube, e *e2e.Extension) {
 
 	// Change message size setting on all nodes (first cluster has 3 brokers)
 	var action client.ActionExecution
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		target := &action_kit_api.Target{
 			Name: "test_broker",
 			Attributes: map[string][]string{
