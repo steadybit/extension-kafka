@@ -36,7 +36,7 @@ RUN make licenses-report
 ##
 ## Runtime
 ##
-FROM alpine:3.19
+FROM alpine:3.23
 
 ARG VERSION=unknown
 ARG REVISION=unknown
@@ -45,6 +45,7 @@ LABEL "steadybit.com.discovery-disabled"="true"
 LABEL "version"="${VERSION}"
 LABEL "revision"="${REVISION}"
 RUN echo "$VERSION" > /version.txt && echo "$REVISION" > /revision.txt
+RUN apk update && apk upgrade --no-cache
 
 ARG USERNAME=steadybit
 ARG USER_UID=10000
