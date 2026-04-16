@@ -114,7 +114,7 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:         "stateCheckMode",
 				Label:        "State Check Mode",
-				Description:  new("How the expected state is evaluated. 'All the time' means every poll must find the consumer in one of the expected states. 'At least once' means the expected state must be observed at least once during the duration. Note: this parameter is named 'stateCheckMode' — topic partition checks use 'changeCheckMode' instead."),
+				Description:  new("How the expected state is evaluated. 'All the time': every poll must match. 'At least once': match once during the duration. Note: partition checks use 'changeCheckMode' instead."),
 				Type:         action_kit_api.ActionParameterTypeString,
 				DefaultValue: new(stateCheckModeAllTheTime),
 				Options: new([]action_kit_api.ParameterOption{

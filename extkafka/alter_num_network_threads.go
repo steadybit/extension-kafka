@@ -56,7 +56,7 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 			durationAlter,
 			{
 				Label:        "Number of Network Threads",
-				Description:  new("The target number of network threads per broker. Set to a low value (e.g., 1) to severely limit network request processing capacity. The original value is restored at the end of the attack. The change may be applied incrementally if Kafka’s permissible range requires it."),
+				Description:  new("Target number of network threads per broker. Set low (e.g., 1) to limit request processing. Restored on attack end. May be applied incrementally per Kafka’s permissible range."),
 				Name:         "network_threads",
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: new("4"),
