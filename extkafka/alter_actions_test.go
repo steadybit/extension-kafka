@@ -17,7 +17,7 @@ func TestAlterActions_Describe(t *testing.T) {
 		response := action.Describe()
 
 		//Then
-		assert.Equal(t, "Limit the Connection Creation Rate", response.Description)
+		assert.Equal(t, "Reduce the broker's max.connection.creation.rate to simulate slow acceptance of new client connections. The original value is restored when the attack ends.", response.Description)
 		assert.Equal(t, "Limit Connection Creation Rate", response.Label)
 		assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 		assert.Equal(t, fmt.Sprintf("%s.limit-connection-creation", kafkaBrokerTargetId), response.Id)
@@ -31,7 +31,7 @@ func TestAlterActions_Describe(t *testing.T) {
 		response := action.Describe()
 
 		//Then
-		assert.Equal(t, "Reduce the max bytes allowed per message", response.Description)
+		assert.Equal(t, "Reduce the broker's message.max.bytes to reject messages exceeding the new size limit. The original value is restored when the attack ends.", response.Description)
 		assert.Equal(t, "Reduce Message Batch Size", response.Label)
 		assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 		assert.Equal(t, fmt.Sprintf("%s.reduce-message-max-bytes", kafkaBrokerTargetId), response.Id)
@@ -45,7 +45,7 @@ func TestAlterActions_Describe(t *testing.T) {
 		response := action.Describe()
 
 		//Then
-		assert.Equal(t, "Limit the number of IO threads", response.Description)
+		assert.Equal(t, "Reduce the broker's num.io.threads to degrade disk I/O capacity, causing increased latency or request timeouts. The original value is restored when the attack ends.", response.Description)
 		assert.Equal(t, "Limit IO Threads", response.Label)
 		assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 		assert.Equal(t, fmt.Sprintf("%s.limit-io-threads", kafkaBrokerTargetId), response.Id)
@@ -59,7 +59,7 @@ func TestAlterActions_Describe(t *testing.T) {
 		response := action.Describe()
 
 		//Then
-		assert.Equal(t, "Limit the number of network threads", response.Description)
+		assert.Equal(t, "Reduce the broker's num.network.threads to limit its ability to process network requests from clients. The original value is restored when the attack ends.", response.Description)
 		assert.Equal(t, "Limit Network Threads", response.Label)
 		assert.Equal(t, kafkaBrokerTargetId, response.TargetSelection.TargetType)
 		assert.Equal(t, fmt.Sprintf("%s.limit-network-threads", kafkaBrokerTargetId), response.Id)

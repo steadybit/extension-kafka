@@ -58,7 +58,7 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check", kafkaBrokerTargetId),
 		Label:       "Check Brokers",
-		Description: "Check activity of brokers.",
+		Description: "Monitor broker-level changes such as controller elections and broker downtime during an experiment. For topic partition changes, use Check Partitions instead. For consumer group state, use Check Consumer State.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -80,7 +80,7 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:         "duration",
 				Label:        "Duration",
-				Description:  new(""),
+				Description:  new("How long the check runs. Broker state is polled continuously for this duration."),
 				Type:         action_kit_api.ActionParameterTypeDuration,
 				DefaultValue: new("30s"),
 				Required:     new(true),
@@ -88,7 +88,7 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:        "expectedChanges",
 				Label:       "Expected Changes",
-				Description: new(""),
+				Description: new("Which broker-level changes to watch for. If left empty, any broker change triggers the check."),
 				Type:        action_kit_api.ActionParameterTypeStringArray,
 				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{
@@ -105,7 +105,7 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:         "changeCheckMode",
 				Label:        "Change Check Mode",
-				Description:  new("How do we check the change of the broker?"),
+				Description:  new("How the expected changes are evaluated. 'All the time' means every poll must detect the change. 'At least once' means the change must be observed at least once during the duration."),
 				Type:         action_kit_api.ActionParameterTypeString,
 				DefaultValue: new(stateCheckModeAllTheTime),
 				Options: new([]action_kit_api.ParameterOption{

@@ -24,7 +24,7 @@ func TestNewProduceMessageActionPeriodically_Describe(t *testing.T) {
 	description := action.Describe()
 
 	assert.Equal(t, "Produce (Records / s)", description.Label)
-	assert.Equal(t, "Produce records periodically (records per second)", description.Description)
+	assert.Equal(t, "Produce records to a topic at a constant rate (records per second) for the attack duration. For producing a fixed total number of records, use Produce (# of Records) instead.", description.Description)
 	assert.Equal(t, kafkaTopicTargetId, description.TargetSelection.TargetType)
 }
 

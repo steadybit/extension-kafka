@@ -35,7 +35,7 @@ func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.reduce-message-max-bytes", kafkaBrokerTargetId),
 		Label:       "Reduce Message Batch Size",
-		Description: "Reduce the max bytes allowed per message",
+		Description: "Reduce the broker's message.max.bytes to reject messages exceeding the new size limit. The original value is restored when the attack ends.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -56,7 +56,7 @@ func (k *AlterMessageMaxBytesAttack) Describe() action_kit_api.ActionDescription
 			durationAlter,
 			{
 				Label:        "Max bytes per message",
-				Description:  new("Set a very low max bytes per message to simulate message size rejections."),
+				Description:  new("The maximum allowed size in bytes for a message batch. Messages larger than this value are rejected by the broker. Set to a very low value (e.g., 100) to force rejections. The original value is restored at the end of the attack."),
 				Name:         "max_bytes",
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: new("100"),

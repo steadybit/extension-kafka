@@ -35,7 +35,7 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.limit-io-threads", kafkaBrokerTargetId),
 		Label:       "Limit IO Threads",
-		Description: "Limit the number of IO threads",
+		Description: "Reduce the broker's num.io.threads to degrade disk I/O capacity, causing increased latency or request timeouts. The original value is restored when the attack ends.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -56,7 +56,7 @@ func (k *AlterNumberIOThreadsAttack) Describe() action_kit_api.ActionDescription
 			durationAlter,
 			{
 				Label:        "Number of IO Threads",
-				Description:  new("Reduce the number of I/O threads to limit the broker’s capacity to perform disk operations, potentially causing increased latency or request timeouts."),
+				Description:  new("The target number of I/O threads per broker. Set to a low value (e.g., 1) to severely limit disk I/O capacity. The original value is restored at the end of the attack. The change may be applied incrementally if Kafka’s permissible range requires it."),
 				Name:         "io_threads",
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: new("4"),

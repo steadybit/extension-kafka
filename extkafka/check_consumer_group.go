@@ -51,7 +51,7 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check", kafkaConsumerTargetId),
 		Label:       "Check Consumer State",
-		Description: "Check the consumer state",
+		Description: "Monitor consumer group state transitions (Stable, Dead, Rebalancing) during an experiment. For broker-level monitoring, use Check Brokers. For topic partition changes, use Check Partitions.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -73,7 +73,7 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:         "duration",
 				Label:        "Duration",
-				Description:  new(""),
+				Description:  new("How long the check runs. Consumer group state is polled continuously for this duration."),
 				Type:         action_kit_api.ActionParameterTypeDuration,
 				DefaultValue: new("30s"),
 				Required:     new(true),
@@ -81,7 +81,7 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:        "expectedStateList",
 				Label:       "Expected State List",
-				Description: new(""),
+				Description: new("Which consumer group states to expect. The check succeeds if the group is in any of the selected states. This parameter is specific to consumer group checks — for topic partition checks, use 'expectedChanges' instead."),
 				Type:        action_kit_api.ActionParameterTypeStringArray,
 				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{
@@ -114,7 +114,7 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:         "stateCheckMode",
 				Label:        "State Check Mode",
-				Description:  new("How often should the state be checked ?"),
+				Description:  new("How the expected state is evaluated. 'All the time' means every poll must find the consumer in one of the expected states. 'At least once' means the expected state must be observed at least once during the duration. Note: this parameter is named 'stateCheckMode' — topic partition checks use 'changeCheckMode' instead."),
 				Type:         action_kit_api.ActionParameterTypeString,
 				DefaultValue: new(stateCheckModeAllTheTime),
 				Options: new([]action_kit_api.ParameterOption{

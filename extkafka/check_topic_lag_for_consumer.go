@@ -51,7 +51,7 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check-lag", kafkaConsumerTargetId),
 		Label:       "Check Topic Lag",
-		Description: "Check the consumer lag for a given topic (lag is calculated by the difference between topic offset and consumer offset)",
+		Description: "Fail the experiment if consumer lag exceeds a threshold for a specific topic. Lag is the offset difference between the topic's latest offset and the consumer group's committed offset. For consumer group state monitoring (Stable, Dead, etc.), use Check Consumer State instead.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -73,7 +73,7 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 			{
 				Name:         "duration",
 				Label:        "Duration",
-				Description:  new(""),
+				Description:  new("How long the check runs. Consumer lag is polled continuously for this duration."),
 				Type:         action_kit_api.ActionParameterTypeDuration,
 				DefaultValue: new("30s"),
 				Required:     new(true),
@@ -81,7 +81,7 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 			{
 				Name:        "topic",
 				Label:       "Topic to track lag",
-				Description: new("One topic to track lags"),
+				Description: new("The name of the Kafka topic to monitor lag for. The topic's latest offset will be compared against the consumer group's committed offset."),
 				Type:        action_kit_api.ActionParameterTypeString,
 				Required:    new(true),
 				Options: new([]action_kit_api.ParameterOption{
@@ -93,7 +93,7 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 			{
 				Name:         "acceptableLag",
 				Label:        "Lag alert threshold",
-				Description:  new("How much lag is acceptable for this topic"),
+				Description:  new("Maximum acceptable offset difference between the topic's latest offset and the consumer group's committed offset. If lag exceeds this value, the experiment fails. Specified as a number of messages."),
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				Required:     new(true),
 				DefaultValue: new("10"),

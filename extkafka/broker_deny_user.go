@@ -41,7 +41,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.deny-access", kafkaConsumerTargetId),
 		Label:       "Deny Access",
-		Description: "Deny access to a topic for one or many consumer groups on all kafka hosts",
+		Description: "Block a Kafka user from reading a topic via ACL deny rules on all brokers, simulating authorization failures for consumer groups. Requires Kafka ACL security to be enabled.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -61,7 +61,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 		Parameters: []action_kit_api.ActionParameter{
 			{
 				Label:        "Duration",
-				Description:  new("The duration of the action. The broker configuration will be reverted at the end of the action."),
+				Description:  new("How long the ACL deny rule stays in effect. The rule is automatically removed when the duration expires."),
 				Name:         "duration",
 				Type:         action_kit_api.ActionParameterTypeDuration,
 				DefaultValue: new("180s"),
@@ -69,7 +69,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 			},
 			{
 				Label:       "User",
-				Description: new("The user affected by the ACL."),
+				Description: new("The Kafka principal (user identity) to block. This should match the user configured in the consumer group's authentication. A deny ACL is created for this user."),
 				Name:        "user",
 				Type:        action_kit_api.ActionParameterTypeString,
 				Required:    new(true),
@@ -77,7 +77,7 @@ func (k *KafkaConsumerDenyAccessAttack) Describe() action_kit_api.ActionDescript
 			{
 				Label:       "Topic to deny access",
 				Name:        "topic",
-				Description: new("One topic to deny access to"),
+				Description: new("The Kafka topic to deny access to. A deny ACL rule is created for this specific topic, preventing the specified user from reading it."),
 				Type:        action_kit_api.ActionParameterTypeString,
 				Required:    new(true),
 				Options: new([]action_kit_api.ParameterOption{

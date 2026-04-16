@@ -35,7 +35,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.limit-connection-creation", kafkaBrokerTargetId),
 		Label:       "Limit Connection Creation Rate",
-		Description: "Limit the Connection Creation Rate",
+		Description: "Reduce the broker's max.connection.creation.rate to simulate slow acceptance of new client connections. The original value is restored when the attack ends.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -56,7 +56,7 @@ func (k *AlterLimitConnectionCreateRateAttack) Describe() action_kit_api.ActionD
 			durationAlter,
 			{
 				Label:        "Connection creation rate",
-				Description:  new("Limit the connection creation rate to simulate slow acceptance of new connections."),
+				Description:  new("The maximum number of new connections the broker accepts per second. Set to a low value (e.g., 1) to simulate severe throttling. The original value is restored at the end of the attack."),
 				Name:         "connection_rate",
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: new("10"),

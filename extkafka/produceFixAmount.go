@@ -39,7 +39,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.produce-fixed-amount", kafkaTopicTargetId),
 		Label:       "Produce (# of Records)",
-		Description: "Produce a certain amount of kafka records for a given duration",
+		Description: "Produce a fixed total number of records to a topic, distributed evenly across the duration. For rate-based production (records/second), use Produce (Records / s) instead.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -90,7 +90,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 			{
 				Name:         "numberOfRecords",
 				Label:        "Number of Records.",
-				Description:  new("Fixed number of Records, distributed to given duration"),
+				Description:  new("Total number of records to produce across the entire duration. The production rate is this value divided by the duration."),
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				Required:     new(true),
 				DefaultValue: new("1"),

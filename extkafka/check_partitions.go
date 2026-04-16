@@ -62,7 +62,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.check-partitions", kafkaTopicTargetId),
 		Label:       "Check Partitions",
-		Description: "Check topic partitions changes for leader, in-sync-replicas, replicas and offline replicas",
+		Description: "Monitor topic partition changes (leader elections, replica and in-sync-replica changes, offline replicas) during an experiment. Uses 'changeCheckMode' and 'expectedChanges' parameters — not 'stateCheckMode' (that belongs to Check Consumer State).",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -84,7 +84,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:         "duration",
 				Label:        "Duration",
-				Description:  new(""),
+				Description:  new("How long the check runs. Partition metadata is polled continuously for this duration."),
 				Type:         action_kit_api.ActionParameterTypeDuration,
 				DefaultValue: new("30s"),
 				Required:     new(true),
@@ -92,7 +92,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:        "expectedChanges",
 				Label:       "Expected Changes",
-				Description: new(""),
+				Description: new("Which partition-level changes to watch for. If left empty, any partition change triggers the check. This parameter is specific to partition checks — consumer group checks use 'expectedStateList' instead."),
 				Type:        action_kit_api.ActionParameterTypeStringArray,
 				Options: new([]action_kit_api.ParameterOption{
 					action_kit_api.ExplicitParameterOption{
@@ -117,7 +117,7 @@ func (m *PartitionsCheckAction) Describe() action_kit_api.ActionDescription {
 			{
 				Name:         "changeCheckMode",
 				Label:        "Change Check Mode",
-				Description:  new("How do we check the change of the topic?"),
+				Description:  new("How the expected changes are evaluated. 'All the time' means every poll must detect the change. 'At least once' means the change must be observed at least once during the duration."),
 				Type:         action_kit_api.ActionParameterTypeString,
 				DefaultValue: new(stateCheckModeAllTheTime),
 				Options: new([]action_kit_api.ParameterOption{

@@ -35,7 +35,7 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.limit-network-threads", kafkaBrokerTargetId),
 		Label:       "Limit Network Threads",
-		Description: "Limit the number of network threads",
+		Description: "Reduce the broker's num.network.threads to limit its ability to process network requests from clients. The original value is restored when the attack ends.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -56,7 +56,7 @@ func (k *AlterNumberNetworkThreadsAttack) Describe() action_kit_api.ActionDescri
 			durationAlter,
 			{
 				Label:        "Number of Network Threads",
-				Description:  new("Reduce the num.network.threads to limit the broker’s ability to process network requests."),
+				Description:  new("The target number of network threads per broker. Set to a low value (e.g., 1) to severely limit network request processing capacity. The original value is restored at the end of the attack. The change may be applied incrementally if Kafka’s permissible range requires it."),
 				Name:         "network_threads",
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: new("4"),

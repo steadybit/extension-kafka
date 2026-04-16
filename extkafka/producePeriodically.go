@@ -38,7 +38,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.produce-periodically", kafkaTopicTargetId),
 		Label:       "Produce (Records / s)",
-		Description: "Produce records periodically (records per second)",
+		Description: "Produce records to a topic at a constant rate (records per second) for the attack duration. For producing a fixed total number of records, use Produce (# of Records) instead.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{

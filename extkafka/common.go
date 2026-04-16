@@ -81,25 +81,25 @@ var (
 	recordKey = action_kit_api.ActionParameter{
 		Name:        "recordKey",
 		Label:       "Record key",
-		Description: new("The Record Key. If none is set, the partition will be choose with round-robin algorithm."),
+		Description: new("Optional. The Kafka record key. Determines which partition receives the record based on the topic's partitioning strategy. If not set, partitions are selected using round-robin."),
 		Type:        action_kit_api.ActionParameterTypeString,
 	}
 	recordValue = action_kit_api.ActionParameter{
 		Name:        "recordValue",
 		Label:       "Record value",
-		Description: new("The Record Value."),
+		Description: new("Required. The message body to produce. Every record uses this same value."),
 		Type:        action_kit_api.ActionParameterTypeString,
 		Required:    new(true),
 	}
 	recordHeaders = action_kit_api.ActionParameter{
 		Name:        "recordHeaders",
 		Label:       "Record Headers",
-		Description: new("The Record Headers."),
+		Description: new("Optional. Kafka record headers to attach to each produced record, specified as key-value pairs."),
 		Type:        action_kit_api.ActionParameterTypeKeyValue,
 	}
 	durationAlter = action_kit_api.ActionParameter{
 		Label:        "Duration",
-		Description:  new("The duration of the action. The broker configuration will be reverted at the end of the action."),
+		Description:  new("How long the configuration change stays in effect. The original broker configuration value is automatically restored when the duration expires."),
 		Name:         "duration",
 		Type:         action_kit_api.ActionParameterTypeDuration,
 		DefaultValue: new("60s"),
@@ -108,7 +108,7 @@ var (
 	duration = action_kit_api.ActionParameter{
 		Name:         "duration",
 		Label:        "Duration",
-		Description:  new("In which timeframe should the specified records be produced?"),
+		Description:  new("How long the producer runs. Records are produced continuously for this duration."),
 		Type:         action_kit_api.ActionParameterTypeDuration,
 		DefaultValue: new("10s"),
 		Required:     new(true),
@@ -116,7 +116,7 @@ var (
 	successRate = action_kit_api.ActionParameter{
 		Name:         "successRate",
 		Label:        "Required Success Rate",
-		Description:  new("How many percent of the records must be at least successful (in terms of the following response verifications) to continue the experiment execution? The result will be evaluated and the end of the given duration."),
+		Description:  new("Minimum percentage of records that must be produced without errors for the action to succeed. If the actual success rate drops below this threshold, the experiment fails. Evaluated at the end of the duration."),
 		Type:         action_kit_api.ActionParameterTypePercentage,
 		DefaultValue: new("100"),
 		Required:     new(true),
@@ -126,7 +126,7 @@ var (
 	maxConcurrent = action_kit_api.ActionParameter{
 		Name:         "maxConcurrent",
 		Label:        "Max concurrent requests",
-		Description:  new("Maximum count on parallel producing requests. (min 1, max 10)"),
+		Description:  new("Maximum number of parallel produce requests in flight at once. Min: 1, Max: 10."),
 		Type:         action_kit_api.ActionParameterTypeInteger,
 		DefaultValue: new("5"),
 		MinValue:     new(1),

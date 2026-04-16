@@ -28,7 +28,7 @@ func TestCheckBrokers_Describe(t *testing.T) {
 	response := action.Describe()
 
 	//Then
-	assert.Equal(t, "Check activity of brokers.", response.Description)
+	assert.Equal(t, "Monitor broker-level changes such as controller elections and broker downtime during an experiment. For topic partition changes, use Check Partitions instead. For consumer group state, use Check Consumer State.", response.Description)
 	assert.Equal(t, "Check Brokers", response.Label)
 	assert.Equal(t, fmt.Sprintf("%s.check", kafkaBrokerTargetId), response.Id)
 	assert.Equal(t, new("Kafka"), response.Technology)

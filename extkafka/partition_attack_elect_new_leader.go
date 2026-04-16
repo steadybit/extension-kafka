@@ -37,7 +37,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.elect-new-leader", kafkaTopicTargetId),
 		Label:       "Elect New Partition Leader",
-		Description: "Elect a new leader for a given topic and partition, only by trying to elect a new preferred replica. The current leader of the partition will be placed at the end of replicas through a reassignment",
+		Description: "Trigger a partition leader election by reordering replicas so the next in-sync replica becomes the preferred leader. Warning: the replica order change persists after the action completes.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -58,7 +58,7 @@ func (f kafkaBrokerElectNewLeaderAttack) Describe() action_kit_api.ActionDescrip
 			{
 				Name:        "partitions",
 				Label:       "Partition to elect a new leader (preferred replica)",
-				Description: new("The partition to elect a new leader"),
+				Description: new("One or more partition IDs to trigger a leader election on. Each selected partition will have its replica order changed to force a new preferred leader election."),
 				Type:        action_kit_api.ActionParameterTypeString,
 				Required:    new(true),
 				Options: new([]action_kit_api.ParameterOption{

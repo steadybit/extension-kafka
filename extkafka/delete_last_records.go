@@ -43,7 +43,7 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 	return action_kit_api.ActionDescription{
 		Id:          fmt.Sprintf("%s.delete-records", kafkaTopicTargetId),
 		Label:       "Trigger Delete Records",
-		Description: "Trigger delete records to move the offset relative to the last known offset for each selected partition",
+		Description: "Delete records from topic partitions by advancing the offset, simulating message loss for consumers. Records deleted this way are permanently inaccessible.",
 		Version:     extbuild.GetSemverVersionStringOrUnknown(),
 		Icon:        new(kafkaIcon),
 		TargetSelection: new(action_kit_api.TargetSelection{
@@ -64,7 +64,7 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 			{
 				Name:        "partitions",
 				Label:       "Partition to issue delete records requests",
-				Description: new("One or more partitions to delete the records"),
+				Description: new("One or more partition IDs to delete records from. Only the selected partitions are affected."),
 				Type:        action_kit_api.ActionParameterTypeStringArray,
 				Required:    new(true),
 				Options: new([]action_kit_api.ParameterOption{
@@ -75,7 +75,7 @@ func (k *DeleteRecordsAttack) Describe() action_kit_api.ActionDescription {
 			},
 			{
 				Label:        "X from newest Offset",
-				Description:  new("To move the offset in the past, 0 means to the last known offset (skipping every records from where the consumer was)."),
+				Description:  new("How many records to keep relative to the newest offset. 0 means advance to the latest offset, skipping all records. 10 means keep the 10 most recent records and delete everything before them. Applied per partition."),
 				Name:         "offset",
 				Type:         action_kit_api.ActionParameterTypeInteger,
 				DefaultValue: new("0"),
