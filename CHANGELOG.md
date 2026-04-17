@@ -3,6 +3,7 @@
 ## (next)
 
 - Bump Go to 1.26.2
+- Update alpine packages in Docker image
 
 ## v1.2.11
 
