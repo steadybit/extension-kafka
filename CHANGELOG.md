@@ -1,6 +1,6 @@
 # Changelog
 
-## (next)
+## v1.2.12
 
 - Bump Go to 1.26.2
 - Update alpine packages in Docker image
