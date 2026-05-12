@@ -1,8 +1,9 @@
 # Changelog
 
-## (next)
+## v1.2.13
 
 - Bump Go to 1.26.3
+- Update dependencies
 
 ## v1.2.12
 
