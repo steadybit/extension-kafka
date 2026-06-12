@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.15
+
+- build(deps): bump github.com/twmb/franz-go from 1.21.2 to 1.21.3
+- chore: update to go 1.26.4
+- feat: add weekly auto patch-release workflow
+
 ## v1.2.14
 
 - Support discovery group attribute via `STEADYBIT_EXTENSION_DISCOVERY_GROUP` env var (or `discovery.group` Helm value) — when set, the extension adds `steadybit.group=<value>` to every discovered target
