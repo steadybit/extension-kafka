@@ -16,7 +16,7 @@ require (
 	github.com/steadybit/discovery-kit/go/discovery_kit_sdk v1.3.5
 	github.com/steadybit/discovery-kit/go/discovery_kit_test v1.2.1
 	github.com/steadybit/event-kit/go/event_kit_api v1.6.2
-	github.com/steadybit/extension-kit v1.10.4
+	github.com/steadybit/extension-kit v1.10.5
 	github.com/stretchr/testify v1.11.1
 	github.com/twmb/franz-go v1.21.3
 	github.com/twmb/franz-go/pkg/kadm v1.18.0
