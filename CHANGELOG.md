@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.16
+
+- build(deps): bump actions/checkout from 6 to 7
+- build(deps): bump github.com/steadybit/extension-kit
+- build: rename workflow_dispatch input labels for the GH UI
+- chore(deps): bump golang.org/x/net to v0.55.0 (CVE-2026-39821) (#117)
+
 ## v1.2.15
 
 - build(deps): bump github.com/twmb/franz-go from 1.21.2 to 1.21.3
