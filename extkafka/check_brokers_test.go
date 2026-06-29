@@ -101,6 +101,7 @@ func TestCheckBrokers_Prepare(t *testing.T) {
 				assert.Equal(t, tt.wantedState.ExpectedChanges, state.ExpectedChanges)
 				assert.Equal(t, tt.wantedState.StateCheckMode, state.StateCheckMode)
 				assert.Equal(t, tt.wantedState.StateCheckSuccess, state.StateCheckSuccess)
+				assert.True(t, state.FailEarly) // defaults to true when not provided (non-breaking)
 				assert.NotNil(t, state.End)
 			}
 		})

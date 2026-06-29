@@ -111,6 +111,7 @@ func TestCheckConsumerGroup_Prepare(t *testing.T) {
 				assert.Equal(t, tt.wantedState.ConsumerGroupName, state.ConsumerGroupName)
 				assert.Equal(t, tt.wantedState.ExpectedState, state.ExpectedState)
 				assert.False(t, state.StateCheckSuccess)
+				assert.True(t, state.FailEarly) // defaults to true when not provided (non-breaking)
 				assert.NotNil(t, state.End)
 			}
 		})

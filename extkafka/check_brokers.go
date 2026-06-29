@@ -31,8 +31,13 @@ type CheckBrokersState struct {
 	ExpectedChanges    []string
 	StateCheckMode     string
 	StateCheckSuccess  bool
-	BrokerHosts        []string
-	ClusterName        string // Cluster name for multi-cluster support
+	FailEarly          bool
+	// DeviationSeen and DeviationTitle are used in 'fail at end' mode (FailEarly = false) to remember
+	// that a deviating change was observed during the step so the failure can be reported once the step ends.
+	DeviationSeen     bool
+	DeviationTitle    string
+	BrokerHosts       []string
+	ClusterName       string // Cluster name for multi-cluster support
 }
 
 const (
@@ -120,6 +125,15 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 				}),
 				Required: new(true),
 			},
+			{
+				Name:         "failEarly",
+				Label:        "Fail early",
+				Description:  new("If enabled, the check fails as soon as a deviating change is observed. If disabled, the check keeps collecting events for the whole duration and only fails at the end of the step. Only affects the 'All the time' mode; 'At least once' can only be evaluated at the end of the step."),
+				Type:         action_kit_api.ActionParameterTypeBoolean,
+				DefaultValue: new("true"),
+				Advanced:     new(true),
+				Required:     new(false),
+			},
 		},
 		Widgets: new([]action_kit_api.Widget{
 			action_kit_api.StateOverTimeWidget{
@@ -186,6 +200,12 @@ func (m *CheckBrokersAction) Prepare(ctx context.Context, state *CheckBrokersSta
 		return nil, new(extension_kit.ToError(fmt.Sprintf("Failed to retrieve brokers from Kafka. Full response: %v", err), err))
 	}
 
+	// Default to failing early to preserve the previous behavior for experiments that don't set this parameter.
+	state.FailEarly = true
+	if request.Config["failEarly"] != nil {
+		state.FailEarly = extutil.ToBool(request.Config["failEarly"])
+	}
+
 	state.End = end
 	state.ExpectedChanges = expectedState
 	state.StateCheckMode = stateCheckMode
@@ -243,25 +263,34 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 		keys = append(keys, k)
 	}
 
+	// recordDeviation either fails immediately (fail early) or remembers the deviation so it can be
+	// reported once the step ends (fail at end). The broker change messages are already phrased in the
+	// past tense, so the same message reads correctly in both cases.
+	recordDeviation := func(title string) {
+		if state.FailEarly {
+			checkError = new(action_kit_api.ActionKitError{
+				Title:  title,
+				Status: extutil.Ptr(action_kit_api.Failed),
+			})
+		} else {
+			state.DeviationSeen = true
+			state.DeviationTitle = title
+		}
+	}
+
 	if len(state.ExpectedChanges) > 0 {
 		if state.StateCheckMode == stateCheckModeAllTheTime {
 			for _, c := range keys {
 				if !slices.Contains(state.ExpectedChanges, c) {
-					checkError = new(action_kit_api.ActionKitError{
-						Title: fmt.Sprintf("Brokers got an unexpected change '%s' whereas '%s' is expected.",
-							c,
-							state.ExpectedChanges),
-						Status: extutil.Ptr(action_kit_api.Failed),
-					})
+					recordDeviation(fmt.Sprintf("Brokers got an unexpected change '%s' whereas '%s' is expected.",
+						c,
+						state.ExpectedChanges))
 				}
 			}
 			if len(changes) == 0 {
-				checkError = new(action_kit_api.ActionKitError{
-					Title: fmt.Sprintf("Brokers got an unexpected change '%v' whereas '%s' is expected.",
-						"No changes",
-						state.ExpectedChanges),
-					Status: extutil.Ptr(action_kit_api.Failed),
-				})
+				recordDeviation(fmt.Sprintf("Brokers got an unexpected change '%v' whereas '%s' is expected.",
+					"No changes",
+					state.ExpectedChanges))
 			}
 		} else if state.StateCheckMode == stateCheckModeAtLeastOnce {
 			for _, c := range keys {
@@ -280,13 +309,17 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 		}
 	} else {
 		if len(changes) > 0 {
-			checkError = new(action_kit_api.ActionKitError{
-				Title: fmt.Sprintf("Brokers got an unexpected change '%v' whereas '%s' is expected.",
-					keys,
-					"No changes"),
-				Status: extutil.Ptr(action_kit_api.Failed),
-			})
+			recordDeviation(fmt.Sprintf("Brokers got an unexpected change '%v' whereas '%s' is expected.",
+				keys,
+				"No changes"))
 		}
+	}
+
+	if !state.FailEarly && completed && state.DeviationSeen {
+		checkError = new(action_kit_api.ActionKitError{
+			Title:  state.DeviationTitle,
+			Status: extutil.Ptr(action_kit_api.Failed),
+		})
 	}
 
 	metrics := []action_kit_api.Metric{
