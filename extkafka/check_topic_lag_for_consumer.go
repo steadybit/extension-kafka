@@ -29,6 +29,7 @@ type ConsumerGroupLagCheckState struct {
 	AcceptableLag     int64
 	StateCheckSuccess bool
 	StateCheckFailed  bool
+	FailEarly         bool
 	BrokerHosts       []string
 	ClusterName       string // Cluster name for multi-cluster support
 }
@@ -98,6 +99,15 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 				Required:     new(true),
 				DefaultValue: new("10"),
 			},
+			{
+				Name:         "failEarly",
+				Label:        "Fail early",
+				Description:  new("If enabled, the check fails as soon as the lag exceeds the threshold. If disabled (the default, matching the previous behavior), the check keeps collecting lag for the whole duration and only fails at the end of the step."),
+				Type:         action_kit_api.ActionParameterTypeBoolean,
+				DefaultValue: new("false"),
+				Advanced:     new(true),
+				Required:     new(false),
+			},
 		},
 		Widgets: new([]action_kit_api.Widget{
 			action_kit_api.LineChartWidget{
@@ -157,6 +167,12 @@ func (m *ConsumerGroupLagCheckAction) Prepare(_ context.Context, state *Consumer
 	state.Topic = extutil.ToString(request.Config["topic"])
 	state.AcceptableLag = extutil.ToInt64(request.Config["acceptableLag"])
 	state.StateCheckFailed = false
+	// Default to failing at the end to preserve the previous behavior for experiments that don't set
+	// this parameter (this check historically only reported a lag breach once the step ended).
+	state.FailEarly = false
+	if request.Config["failEarly"] != nil {
+		state.FailEarly = extutil.ToBool(request.Config["failEarly"])
+	}
 
 	duration := request.Config["duration"].(float64)
 	end := time.Now().Add(time.Millisecond * time.Duration(duration))
@@ -223,12 +239,24 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 
 	completed := now.After(state.End)
 	var checkError *action_kit_api.ActionKitError
-	if topicLag < state.AcceptableLag {
-		state.StateCheckSuccess = true
-	} else {
+	breaching := topicLag >= state.AcceptableLag
+	if breaching {
 		state.StateCheckFailed = true
+	} else {
+		state.StateCheckSuccess = true
 	}
-	if completed && state.StateCheckFailed {
+	if state.FailEarly {
+		// Fail while the lag is currently over the threshold (present tense), evaluated per poll so the
+		// check recovers when the lag drops back - consistent with the other fail-early checks.
+		if breaching {
+			checkError = new(action_kit_api.ActionKitError{
+				Title: fmt.Sprintf("Consumer Group Lag is higher than the acceptable threshold '%d'.",
+					state.AcceptableLag),
+				Status: extutil.Ptr(action_kit_api.Failed),
+			})
+		}
+	} else if completed && state.StateCheckFailed {
+		// Otherwise only report a breach once the step ends (past tense - it may have recovered).
 		checkError = new(action_kit_api.ActionKitError{
 			Title: fmt.Sprintf("Consumer Group Lag was higher at least once than acceptable threshold  '%d'.",
 				state.AcceptableLag),

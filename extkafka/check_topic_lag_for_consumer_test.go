@@ -109,6 +109,7 @@ func TestCheckConsumerGroupLag_Prepare(t *testing.T) {
 				assert.Equal(t, state.ConsumerGroupName, state.ConsumerGroupName)
 				assert.Equal(t, state.Topic, state.Topic)
 				assert.False(t, state.StateCheckSuccess)
+				assert.False(t, state.FailEarly) // defaults to false for this check (preserves fail-at-end behavior)
 				assert.NotNil(t, state.End)
 			}
 		})

@@ -29,8 +29,13 @@ type ConsumerGroupCheckState struct {
 	ExpectedState     []string
 	StateCheckMode    string
 	StateCheckSuccess bool
-	BrokerHosts       []string
-	ClusterName       string // Cluster name for multi-cluster support
+	FailEarly         bool
+	// DeviationSeen and DeviationTitle are used in 'fail at end' mode (FailEarly = false) to remember
+	// that a deviating state was observed during the step so the failure can be reported once the step ends.
+	DeviationSeen  bool
+	DeviationTitle string
+	BrokerHosts    []string
+	ClusterName    string // Cluster name for multi-cluster support
 }
 
 // Make sure action implements all required interfaces
@@ -129,6 +134,15 @@ func (m *ConsumerGroupCheckAction) Describe() action_kit_api.ActionDescription {
 				}),
 				Required: new(true),
 			},
+			{
+				Name:         "failEarly",
+				Label:        "Fail early",
+				Description:  new("If enabled, the check fails as soon as a deviating state is observed. If disabled, the check keeps collecting events for the whole duration and only fails at the end of the step. Only affects the 'All the time' mode; 'At least once' can only be evaluated at the end of the step."),
+				Type:         action_kit_api.ActionParameterTypeBoolean,
+				DefaultValue: new("true"),
+				Advanced:     new(true),
+				Required:     new(false),
+			},
 		},
 		Widgets: new([]action_kit_api.Widget{
 			action_kit_api.StateOverTimeWidget{
@@ -176,6 +190,12 @@ func (m *ConsumerGroupCheckAction) Prepare(_ context.Context, state *ConsumerGro
 	var stateCheckMode string
 	if request.Config["stateCheckMode"] != nil {
 		stateCheckMode = fmt.Sprintf("%v", request.Config["stateCheckMode"])
+	}
+
+	// Default to failing early to preserve the previous behavior for experiments that don't set this parameter.
+	state.FailEarly = true
+	if request.Config["failEarly"] != nil {
+		state.FailEarly = extutil.ToBool(request.Config["failEarly"])
 	}
 
 	// Get cluster name from target
@@ -237,11 +257,31 @@ func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckStat
 	if len(state.ExpectedState) > 0 {
 		if state.StateCheckMode == stateCheckModeAllTheTime {
 			if !slices.Contains(state.ExpectedState, group.State) {
+				if state.FailEarly {
+					// Fail as soon as a deviating state is observed (present tense - it is deviating now).
+					checkError = new(action_kit_api.ActionKitError{
+						Title: fmt.Sprintf("Consumer Group '%s' has state '%s' whereas '%s' is expected.",
+							group.Group,
+							group.State,
+							state.ExpectedState),
+						Status: extutil.Ptr(action_kit_api.Failed),
+					})
+				} else {
+					// Keep collecting events and remember the deviation to report it at the end of the
+					// step (past tense - the state may have recovered by the time this is reported).
+					// Keep the first-seen deviation rather than letting a later one overwrite it.
+					state.DeviationSeen = true
+					if state.DeviationTitle == "" {
+						state.DeviationTitle = fmt.Sprintf("Consumer Group '%s' had state '%s' whereas '%s' is expected.",
+							group.Group,
+							group.State,
+							state.ExpectedState)
+					}
+				}
+			}
+			if !state.FailEarly && completed && state.DeviationSeen {
 				checkError = new(action_kit_api.ActionKitError{
-					Title: fmt.Sprintf("Consumer Group '%s' has state '%s' whereas '%s' is expected.",
-						group.Group,
-						group.State,
-						state.ExpectedState),
+					Title:  state.DeviationTitle,
 					Status: extutil.Ptr(action_kit_api.Failed),
 				})
 			}
