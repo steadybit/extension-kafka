@@ -274,7 +274,11 @@ func BrokerCheckStatus(ctx context.Context, state *CheckBrokersState) (*action_k
 			})
 		} else {
 			state.DeviationSeen = true
-			state.DeviationTitle = title
+			// Keep the first-seen deviation, which is usually the most actionable, rather than
+			// letting a later deviation (this poll or a subsequent one) overwrite it.
+			if state.DeviationTitle == "" {
+				state.DeviationTitle = title
+			}
 		}
 	}
 

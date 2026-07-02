@@ -269,11 +269,14 @@ func ConsumerGroupCheckStatus(ctx context.Context, state *ConsumerGroupCheckStat
 				} else {
 					// Keep collecting events and remember the deviation to report it at the end of the
 					// step (past tense - the state may have recovered by the time this is reported).
+					// Keep the first-seen deviation rather than letting a later one overwrite it.
 					state.DeviationSeen = true
-					state.DeviationTitle = fmt.Sprintf("Consumer Group '%s' had state '%s' whereas '%s' is expected.",
-						group.Group,
-						group.State,
-						state.ExpectedState)
+					if state.DeviationTitle == "" {
+						state.DeviationTitle = fmt.Sprintf("Consumer Group '%s' had state '%s' whereas '%s' is expected.",
+							group.Group,
+							group.State,
+							state.ExpectedState)
+					}
 				}
 			}
 			if !state.FailEarly && completed && state.DeviationSeen {

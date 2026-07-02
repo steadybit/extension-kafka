@@ -323,12 +323,15 @@ func TopicCheckStatus(ctx context.Context, state *PartitionsCheckState) (*action
 					} else {
 						// Keep collecting events and remember the deviation to report it at the end of the
 						// step (past tense - the topic may have recovered by the time this is reported).
+						// Keep the first-seen deviation rather than letting a later one overwrite it.
 						state.DeviationSeen = true
-						state.DeviationTitle = fmt.Sprintf("Topic '%s' had an unexpected change '%s' whereas '%s' is expected. Change(s) : %v",
-							state.TopicName,
-							c,
-							state.ExpectedChanges,
-							changes[c])
+						if state.DeviationTitle == "" {
+							state.DeviationTitle = fmt.Sprintf("Topic '%s' had an unexpected change '%s' whereas '%s' is expected. Change(s) : %v",
+								state.TopicName,
+								c,
+								state.ExpectedChanges,
+								changes[c])
+						}
 					}
 				}
 			}

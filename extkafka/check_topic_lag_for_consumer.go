@@ -239,27 +239,29 @@ func ConsumerGroupLagCheckStatus(ctx context.Context, state *ConsumerGroupLagChe
 
 	completed := now.After(state.End)
 	var checkError *action_kit_api.ActionKitError
-	if topicLag < state.AcceptableLag {
-		state.StateCheckSuccess = true
-	} else {
+	breaching := topicLag >= state.AcceptableLag
+	if breaching {
 		state.StateCheckFailed = true
+	} else {
+		state.StateCheckSuccess = true
 	}
-	if state.StateCheckFailed {
-		if state.FailEarly {
-			// Fail as soon as the lag exceeds the threshold (present tense - it is too high now).
+	if state.FailEarly {
+		// Fail while the lag is currently over the threshold (present tense), evaluated per poll so the
+		// check recovers when the lag drops back - consistent with the other fail-early checks.
+		if breaching {
 			checkError = new(action_kit_api.ActionKitError{
 				Title: fmt.Sprintf("Consumer Group Lag is higher than the acceptable threshold '%d'.",
 					state.AcceptableLag),
 				Status: extutil.Ptr(action_kit_api.Failed),
 			})
-		} else if completed {
-			// Otherwise only report the breach once the step ends (past tense - it may have recovered).
-			checkError = new(action_kit_api.ActionKitError{
-				Title: fmt.Sprintf("Consumer Group Lag was higher at least once than acceptable threshold  '%d'.",
-					state.AcceptableLag),
-				Status: extutil.Ptr(action_kit_api.Failed),
-			})
 		}
+	} else if completed && state.StateCheckFailed {
+		// Otherwise only report a breach once the step ends (past tense - it may have recovered).
+		checkError = new(action_kit_api.ActionKitError{
+			Title: fmt.Sprintf("Consumer Group Lag was higher at least once than acceptable threshold  '%d'.",
+				state.AcceptableLag),
+			Status: extutil.Ptr(action_kit_api.Failed),
+		})
 	}
 
 	metrics := []action_kit_api.Metric{
