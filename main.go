@@ -38,8 +38,6 @@ import (
 	"github.com/twmb/franz-go/pkg/sasl/scram"
 )
 
-var startedAt = time.Now().Format(time.RFC3339)
-
 func main() {
 	// Most Steadybit extensions leverage zerolog. To encourage persistent logging setups across extensions,
 	// you may leverage the extlogging package to initialize zerolog. Among others, this package supports
@@ -121,7 +119,7 @@ func registerHandlers(ctx context.Context) {
 	action_kit_sdk.RegisterAction(extkafka.NewPartitionsCheckAction())
 	action_kit_sdk.RegisterAction(extkafka.NewBrokersCheckAction())
 
-	exthttp.RegisterHttpHandler("/", exthttp.IfNoneMatchHandler(func() string { return startedAt }, exthttp.GetterAsHandler(getExtensionList)))
+	exthttp.RegisterRevisionedHandler("/", getExtensionList)
 }
 
 func SignalCanceledContext() (context.Context, context.CancelFunc) {
