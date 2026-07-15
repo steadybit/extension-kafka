@@ -68,6 +68,8 @@ jobs:
       - name: Build and push Docker image
         id: push
         uses: docker/build-push-action@v7 # NOSONAR githubactions:S7637 - verified action creator
+        env:
+          DOCKER_BUILD_RECORD_UPLOAD: "false"
         with:
           context: ./test-dataset/dummyconsumer/
           file: ./test-dataset/dummyconsumer/Dockerfile
