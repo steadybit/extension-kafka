@@ -1,8 +1,20 @@
 # Changelog
 
-## Unreleased
+## v1.2.17
 
 - Add a "Fail early" option to the broker, consumer group, partition and topic lag checks. When enabled, the check fails as soon as a deviating event is observed; when disabled, it keeps collecting events for the whole duration and only fails at the end of the step. The broker/consumer-group/partition checks default to fail-early (matching their previous behavior); the topic lag check defaults to fail-at-end (matching its previous behavior). Only affects the "All the time" mode of the mode-based checks.
+- Merge pull request #123 from steadybit/feat/check-fail-early-option
+- build(deps): bump github.com/steadybit/event-kit/go/event_kit_api
+- build(deps): bump github.com/twmb/franz-go from 1.21.3 to 1.21.5
+- build(deps): bump golang.org/x/crypto in /test-dataset/dummyconsumer
+- chore(deps): bump go to 1.26.5 (#125)
+- chore(deps): bump go-openapi/swag/loading to fix go mod tidy (#128)
+- chore(deps): update dependencies
+- chore: add Claude Code workflows (#122)
+- chore: normalize dependabot-auto-merge workflow to the standard version (#124)
+- chore: silence SonarQube finding on secrets: inherit in Claude workflows
+- ci: skip build on .trivyignore.yml-only changes [skip ci]
+- refactor: register extension index via exthttp.RegisterRevisionedHandler (#127)
 
 ## v1.2.16
 
