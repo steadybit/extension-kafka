@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.18
+
+- chore(deps): update dependencies
+- chore: run CI build/test on free ubuntu-latest runner (#131)
+
 ## v1.2.17
 
 - Add a "Fail early" option to the broker, consumer group, partition and topic lag checks. When enabled, the check fails as soon as a deviating event is observed; when disabled, it keeps collecting events for the whole duration and only fails at the end of the step. The broker/consumer-group/partition checks default to fail-early (matching their previous behavior); the topic lag check defaults to fail-at-end (matching its previous behavior). Only affects the "All the time" mode of the mode-based checks.
