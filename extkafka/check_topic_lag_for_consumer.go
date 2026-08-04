@@ -192,8 +192,17 @@ func (m *ConsumerGroupLagCheckAction) Prepare(_ context.Context, state *Consumer
 	return nil, nil
 }
 
-func (m *ConsumerGroupLagCheckAction) Start(_ context.Context, _ *ConsumerGroupLagCheckState) (*action_kit_api.StartResult, error) {
-	return nil, nil
+func (m *ConsumerGroupLagCheckAction) Start(ctx context.Context, state *ConsumerGroupLagCheckState) (*action_kit_api.StartResult, error) {
+	statusResult, err := ConsumerGroupLagCheckStatus(ctx, state)
+	if statusResult == nil {
+		return nil, err
+	}
+	return &action_kit_api.StartResult{
+		Artifacts: statusResult.Artifacts,
+		Error:     statusResult.Error,
+		Messages:  statusResult.Messages,
+		Metrics:   statusResult.Metrics,
+	}, err
 }
 
 func (m *ConsumerGroupLagCheckAction) Status(ctx context.Context, state *ConsumerGroupLagCheckState) (*action_kit_api.StatusResult, error) {
