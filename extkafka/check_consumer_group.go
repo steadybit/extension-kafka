@@ -215,8 +215,17 @@ func (m *ConsumerGroupCheckAction) Prepare(_ context.Context, state *ConsumerGro
 	return nil, nil
 }
 
-func (m *ConsumerGroupCheckAction) Start(_ context.Context, _ *ConsumerGroupCheckState) (*action_kit_api.StartResult, error) {
-	return nil, nil
+func (m *ConsumerGroupCheckAction) Start(ctx context.Context, state *ConsumerGroupCheckState) (*action_kit_api.StartResult, error) {
+	statusResult, err := ConsumerGroupCheckStatus(ctx, state)
+	if statusResult == nil {
+		return nil, err
+	}
+	return &action_kit_api.StartResult{
+		Artifacts: statusResult.Artifacts,
+		Error:     statusResult.Error,
+		Messages:  statusResult.Messages,
+		Metrics:   statusResult.Metrics,
+	}, err
 }
 
 func (m *ConsumerGroupCheckAction) Status(ctx context.Context, state *ConsumerGroupCheckState) (*action_kit_api.StatusResult, error) {
