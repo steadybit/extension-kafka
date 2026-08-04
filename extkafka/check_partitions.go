@@ -222,8 +222,17 @@ func (m *PartitionsCheckAction) Prepare(_ context.Context, state *PartitionsChec
 	return nil, nil
 }
 
-func (m *PartitionsCheckAction) Start(_ context.Context, _ *PartitionsCheckState) (*action_kit_api.StartResult, error) {
-	return nil, nil
+func (m *PartitionsCheckAction) Start(ctx context.Context, state *PartitionsCheckState) (*action_kit_api.StartResult, error) {
+	statusResult, err := TopicCheckStatus(ctx, state)
+	if statusResult == nil {
+		return nil, err
+	}
+	return &action_kit_api.StartResult{
+		Artifacts: statusResult.Artifacts,
+		Error:     statusResult.Error,
+		Messages:  statusResult.Messages,
+		Metrics:   statusResult.Metrics,
+	}, err
 }
 
 func (m *PartitionsCheckAction) Status(ctx context.Context, state *PartitionsCheckState) (*action_kit_api.StatusResult, error) {
