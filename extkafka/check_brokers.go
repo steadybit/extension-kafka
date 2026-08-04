@@ -216,8 +216,17 @@ func (m *CheckBrokersAction) Prepare(ctx context.Context, state *CheckBrokersSta
 	return nil, nil
 }
 
-func (m *CheckBrokersAction) Start(_ context.Context, _ *CheckBrokersState) (*action_kit_api.StartResult, error) {
-	return nil, nil
+func (m *CheckBrokersAction) Start(ctx context.Context, state *CheckBrokersState) (*action_kit_api.StartResult, error) {
+	statusResult, err := BrokerCheckStatus(ctx, state)
+	if statusResult == nil {
+		return nil, err
+	}
+	return &action_kit_api.StartResult{
+		Artifacts: statusResult.Artifacts,
+		Error:     statusResult.Error,
+		Messages:  statusResult.Messages,
+		Metrics:   statusResult.Metrics,
+	}, err
 }
 
 func (m *CheckBrokersAction) Status(ctx context.Context, state *CheckBrokersState) (*action_kit_api.StatusResult, error) {
