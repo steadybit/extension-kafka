@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.19
+
+- feat: support filtering targets out of discovery
+- fix: emit broker/consumer group check metrics immediately on Start (#132)
+- fix: emit partition/lag check metrics immediately on Start (#133)
+
 ## v1.2.18
 
 - chore(deps): update dependencies
