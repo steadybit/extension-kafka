@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.20
+
+- build(deps): bump github.com/twmb/franz-go from 1.21.5 to 1.21.6
+
 ## v1.2.19
 
 - feat: support filtering targets out of discovery
