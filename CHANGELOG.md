@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.21
+
+- chore(deps): bump steadybit kits and drop Go patch pin (#135)
+
 ## v1.2.20
 
 - build(deps): bump github.com/twmb/franz-go from 1.21.5 to 1.21.6
