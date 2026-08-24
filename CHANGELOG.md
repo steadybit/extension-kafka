@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.2.22
+
+- build(deps): bump github.com/steadybit/action-kit/go/action_kit_test
+- build(deps): bump github.com/steadybit/discovery-kit/go/discovery_kit_test
+- build(deps): bump github.com/stretchr/testify from 1.11.1 to 1.12.1
+
 ## v1.2.21
 
 - chore(deps): bump steadybit kits and drop Go patch pin (#135)
