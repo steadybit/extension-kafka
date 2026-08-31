@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.23
+
+- build(deps): bump github.com/steadybit/action-kit/go/action_kit_test
+
 ## v1.2.22
 
 - build(deps): bump github.com/steadybit/action-kit/go/action_kit_test
