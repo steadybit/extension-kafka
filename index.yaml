@@ -12,6 +12,35 @@ entries:
           url: https://hub.steadybit.com
     apiVersion: v2
     appVersion: v1.2.24
+    created: "2026-09-21T07:13:57.691326759Z"
+    dependencies:
+    - name: extensionlib
+      repository: https://steadybit.github.io/helm-charts
+      version: ^1.6.0
+    description: Steadybit scaffold extension Helm chart for Kubernetes.
+    digest: 0f741af7b2315110ec1ee22e6e05ee15ad52dbb1feed0efceb68543d72fd37ed
+    home: https://www.steadybit.com/
+    icon: https://steadybit-website-assets.s3.amazonaws.com/logo-symbol-transparent.png
+    maintainers:
+    - email: antoine@steadybit.com
+      name: achoimet
+    name: steadybit-extension-kafka
+    sources:
+    - https://github.com/steadybit/extension-kafka
+    urls:
+    - https://github.com/steadybit/extension-kafka/releases/download/steadybit-extension-kafka-1.0.56/steadybit-extension-kafka-1.0.56.tgz
+    version: 1.0.56
+  - annotations:
+      artifacthub.io/images: |
+        - name: logo
+          image: https://steadybit-website-assets.s3.amazonaws.com/logo-symbol-transparent.png
+      artifacthub.io/links: |-
+        - name: Steadybit website
+          url: https://www.steadybit.com
+        - name: Steadybit reliability hub
+          url: https://hub.steadybit.com
+    apiVersion: v2
+    appVersion: v1.2.24
     created: "2026-09-17T14:03:09.389905652Z"
     dependencies:
     - name: extensionlib
@@ -1567,4 +1596,4 @@ entries:
     urls:
     - https://github.com/steadybit/extension-kafka/releases/download/steadybit-extension-kafka-1.0.1/steadybit-extension-kafka-1.0.1.tgz
     version: 1.0.1
-generated: "2026-09-17T14:03:09.390266276Z"
+generated: "2026-09-21T07:13:57.691528733Z"
