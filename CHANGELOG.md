@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.2.26
+
+- build(deps): bump github.com/steadybit/action-kit/go/action_kit_test
+- build(deps): bump github.com/twmb/franz-go/pkg/kadm
+
 ## v1.2.25
 
 - Add OpenTelemetry tracing support
