@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.27
+
+- build(deps): bump github.com/twmb/franz-go from 1.22.0 to 1.22.1
+
 ## v1.2.26
 
 - build(deps): bump github.com/steadybit/action-kit/go/action_kit_test
