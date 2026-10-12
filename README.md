@@ -60,18 +60,28 @@ kafka:
         certKeyFile: "/path/to/key.pem"             # Optional: client key path
 
     - name: staging
-      seedBrokers: "staging-broker:9092"
       auth:
-        existingSecret: "staging-kafka-secret"      # Optional: use existing K8s secret for auth
+        existingSecret: "staging-kafka-secret"      # Optional: use existing K8s secret (must also contain seedBrokers)
 ```
 
 #### Using Existing Secrets
 
-For each cluster, you can reference an existing Kubernetes secret containing the authentication credentials. The secret should contain the following keys:
+Instead of passing credentials as Helm values, you can reference an existing Kubernetes secret via `kafka.auth.existingSecret` (single cluster) or `kafka.clusters[].auth.existingSecret` (multi-cluster). The chart then skips creating its own secret and reads every setting from the referenced one.
 
-- `sasl-mechanism` - SASL mechanism (PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512)
-- `sasl-user` - SASL username
-- `sasl-password` - SASL password
+All of the following keys must be present in the secret, otherwise the pod fails to start with `CreateContainerConfigError`. Set unused keys to an empty string.
+
+| Key             | Meaning                                                  |
+|-----------------|----------------------------------------------------------|
+| `seedBrokers`   | Comma-separated broker list (multi-cluster only)         |
+| `saslMechanism` | PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512                   |
+| `saslUser`      | SASL username                                            |
+| `saslPassword`  | SASL password                                            |
+| `useTLS`        | Enable TLS (`true`/`false`)                              |
+| `caFile`        | CA certificate path                                      |
+| `certChainFile` | Client certificate path                                  |
+| `certKeyFile`   | Client key path                                          |
+
+In multi-cluster mode the broker list is read from the secret's `seedBrokers` key; a `seedBrokers` value set next to `existingSecret` is ignored. In single-cluster mode the broker list always comes from `kafka.seedBrokers`, and the `seedBrokers` key is not needed.
 
 Example secret:
 
@@ -82,9 +92,14 @@ metadata:
   name: staging-kafka-secret
 type: Opaque
 stringData:
-  sasl-mechanism: "SCRAM-SHA-256"
-  sasl-user: "staging-user"
-  sasl-password: "staging-password"
+  seedBrokers: "staging-broker:9092"
+  saslMechanism: "SCRAM-SHA-256"
+  saslUser: "staging-user"
+  saslPassword: "staging-password"
+  useTLS: "true"
+  caFile: ""
+  certChainFile: ""
+  certKeyFile: ""
 ```
 
 #### Environment Variables (Alternative)
