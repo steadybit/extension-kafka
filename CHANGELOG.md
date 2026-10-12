@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.28
+
+- chore(deps): bump golang.org/x/net to v0.61.0
+
 ## v1.2.27
 
 - build(deps): bump github.com/twmb/franz-go from 1.22.0 to 1.22.1
