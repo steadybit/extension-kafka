@@ -5,12 +5,9 @@ package extkafka
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"net"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -168,16 +165,12 @@ func createNewClient(brokers []string) (*kgo.Client, error) {
 		}
 	}
 
-	if config.Config.KafkaClusterCaFile != "" && config.Config.KafkaClusterCertKeyFile != "" && config.Config.KafkaClusterCertChainFile != "" {
-		tlsConfig, err := newTLSConfig(config.Config.KafkaClusterCertChainFile, config.Config.KafkaClusterCertKeyFile, config.Config.KafkaClusterCaFile)
-		if err != nil {
-			return nil, err
-		}
-
-		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
-	} else if config.Config.KafkaConnectionUseTLS == "true" {
-		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
-		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
+	tlsDialer, err := config.Config.LegacyClusterConfig().TLSDialer()
+	if err != nil {
+		return nil, err
+	}
+	if tlsDialer != nil {
+		opts = append(opts, kgo.Dialer(tlsDialer))
 	}
 
 	client, err := kgo.NewClient(opts...)
@@ -230,15 +223,12 @@ func createNewClientWithConfig(brokers []string, clusterConfig *config.ClusterCo
 		}
 	}
 
-	if clusterConfig.KafkaClusterCaFile != "" && clusterConfig.KafkaClusterCertKeyFile != "" && clusterConfig.KafkaClusterCertChainFile != "" {
-		tlsConfig, err := newTLSConfig(clusterConfig.KafkaClusterCertChainFile, clusterConfig.KafkaClusterCertKeyFile, clusterConfig.KafkaClusterCaFile)
-		if err != nil {
-			return nil, err
-		}
-		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
-	} else if clusterConfig.KafkaConnectionUseTLS == "true" {
-		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
-		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
+	tlsDialer, err := clusterConfig.TLSDialer()
+	if err != nil {
+		return nil, err
+	}
+	if tlsDialer != nil {
+		opts = append(opts, kgo.Dialer(tlsDialer))
 	}
 
 	client, err := kgo.NewClient(opts...)
@@ -548,26 +538,4 @@ func adjustThreadsWithConfig(ctx context.Context, hosts []string, configName str
 		}
 	}
 	return nil
-}
-
-func newTLSConfig(clientCertFile, clientKeyFile, caCertFile string) (*tls.Config, error) {
-	tlsConfig := tls.Config{}
-
-	// Load client cert
-	cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
-	if err != nil {
-		return &tlsConfig, err
-	}
-	tlsConfig.Certificates = []tls.Certificate{cert}
-
-	// Load CA cert
-	caCert, err := os.ReadFile(caCertFile)
-	if err != nil {
-		return &tlsConfig, err
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-	tlsConfig.RootCAs = caCertPool
-
-	return &tlsConfig, err
 }

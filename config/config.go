@@ -81,16 +81,7 @@ func ParseConfiguration() {
 		}
 
 		log.Info().Msg("Using legacy single-cluster configuration")
-		legacyCluster := &ClusterConfig{
-			SeedBrokers:               Config.SeedBrokers,
-			SaslMechanism:             Config.SaslMechanism,
-			SaslUser:                  Config.SaslUser,
-			SaslPassword:              Config.SaslPassword,
-			KafkaConnectionUseTLS:     Config.KafkaConnectionUseTLS,
-			KafkaClusterCertChainFile: Config.KafkaClusterCertChainFile,
-			KafkaClusterCertKeyFile:   Config.KafkaClusterCertKeyFile,
-			KafkaClusterCaFile:        Config.KafkaClusterCaFile,
-		}
+		legacyCluster := Config.LegacyClusterConfig()
 
 		clusterID, err := getClusterName(legacyCluster)
 		if err != nil {
@@ -108,6 +99,20 @@ func ParseConfiguration() {
 	clustersMutex.Lock()
 	Config.Clusters = clusters
 	clustersMutex.Unlock()
+}
+
+// LegacyClusterConfig returns the single-cluster configuration set through the unindexed environment variables.
+func (s *Specification) LegacyClusterConfig() *ClusterConfig {
+	return &ClusterConfig{
+		SeedBrokers:               s.SeedBrokers,
+		SaslMechanism:             s.SaslMechanism,
+		SaslUser:                  s.SaslUser,
+		SaslPassword:              s.SaslPassword,
+		KafkaConnectionUseTLS:     s.KafkaConnectionUseTLS,
+		KafkaClusterCertChainFile: s.KafkaClusterCertChainFile,
+		KafkaClusterCertKeyFile:   s.KafkaClusterCertKeyFile,
+		KafkaClusterCaFile:        s.KafkaClusterCaFile,
+	}
 }
 
 func ValidateConfiguration() {
