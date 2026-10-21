@@ -158,3 +158,21 @@ tests:
             - global-pull-secret
     asserts:
       - matchSnapshot: {}
+  - it: manifest should match snapshot with custom certificates and insecureSkipVerify
+    set:
+      kafka:
+        seedBrokers: "broker:9093"
+        insecureSkipVerify: true
+        auth:
+          useTLS: "true"
+          caFile: /etc/ssl/extra-certs/self-signed-ca.crt
+      extraVolumeMounts:
+        - name: extra-certs
+          mountPath: /etc/ssl/extra-certs
+          readOnly: true
+      extraVolumes:
+        - name: extra-certs
+          configMap:
+            name: kafka-self-signed-ca
+    asserts:
+      - matchSnapshot: {}

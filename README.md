@@ -29,8 +29,9 @@ For connecting to a single Kafka cluster, use the following configuration:
 | `STEADYBIT_EXTENSION_SASL_PASSWORD`                                 | `kafka.auth.saslPassword`                | Sasl Password                                                                                                                           | no       |         |
 | `STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_CHAIN_FILE`                 | `kafka.auth.certChainFile`               | The client certificate in PEM format.                                                                                                   | no       |         |
 | `STEADYBIT_EXTENSION_KAFKA_CLUSTER_CERT_KEY_FILE`                   | `kafka.auth.certKeyFile`                 | The private key associated with the client certificate.                                                                                 | no       |         |
-| `STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE`                         | `kafka.auth.caFile`                      | The Certificate Authority (CA) certificate in PEM format.                                                                               | no       |         |
+| `STEADYBIT_EXTENSION_KAFKA_CLUSTER_CA_FILE`                         | `kafka.auth.caFile`                      | The Certificate Authority (CA) certificate in PEM format. Can be used without a client certificate, and enables TLS.                    | no       |         |
 | `STEADYBIT_EXTENSION_KAFKA_CONNECTION_USE_TLS`                      | `kafka.auth.useTLS`                      | Switch to "true" to use a TLS connection with default system certs, fill the certs fields above if you want to tune the tls connection. | no       |         |
+| `STEADYBIT_EXTENSION_INSECURE_SKIP_VERIFY`                          | `kafka.insecureSkipVerify`               | Skip TLS certificate verification for all clusters. See [Importing your own certificates](#importing-your-own-certificates).            | no       | `false` |
 | `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_BROKERS`         | `discovery.attributes.excludes.broker`   | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*"                  | no       |         |
 | `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_TOPICS`          | `discovery.attributes.excludes.topic`    | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*"                  | no       |         |
 | `STEADYBIT_EXTENSION_DISCOVERY_ATTRIBUTES_EXCLUDES_CONSUMER_GROUPS` | `discovery.attributes.excludes.consumer` | List of Broker Attributes which will be excluded during discovery. Checked by key equality and supporting trailing "*"                  | no       |         |
@@ -142,6 +143,66 @@ extensions:
   stop the extension reporting targets you do not want.
 - [Group Matching](https://github.com/steadybit/discovery-kit/blob/main/docs/target-enrichment.md#group-matching) —
   tag discovered targets with a group, so enrichment rules only match within it.
+
+## Importing your own certificates
+
+If your brokers use a self-signed certificate, or one issued by a private CA, either trust the CA (recommended) or
+skip certificate verification. Both apply to the single-cluster and the multi-cluster configuration.
+
+Store the CA certificate (`*.crt`) in a config map and mount it into the extension:
+
+```shell
+kubectl create configmap -n steadybit-agent kafka-self-signed-ca --from-file=./self-signed-ca.crt
+```
+
+```yaml
+extraVolumeMounts:
+  - name: extra-certs
+    mountPath: /etc/ssl/extra-certs
+    readOnly: true
+extraVolumes:
+  - name: extra-certs
+    configMap:
+      name: kafka-self-signed-ca
+```
+
+### Option 1: Trusting the CA for all clusters
+
+Add the mounted directory to the trusted certificate directories, and enable TLS:
+
+```yaml
+kafka:
+  auth:
+    useTLS: "true"
+extraEnv:
+  - name: SSL_CERT_DIR
+    value: /etc/ssl/extra-certs:/etc/ssl/certs
+```
+
+### Option 2: Trusting the CA for one cluster
+
+Point the cluster's `caFile` at the mounted file. A CA file alone is enough: it enables TLS and replaces the system
+CAs for that cluster, no client certificate is required.
+
+```yaml
+kafka:
+  auth:
+    caFile: /etc/ssl/extra-certs/self-signed-ca.crt
+```
+
+For mutual TLS, additionally set `certChainFile` and `certKeyFile` (both are required) to the mounted client
+certificate and key.
+
+### Option 3: Skipping certificate verification
+
+Disables TLS certificate verification for all clusters. Suitable for testing, not recommended for production.
+
+```yaml
+kafka:
+  insecureSkipVerify: true
+  auth:
+    useTLS: "true"
+```
 
 ## Installation
 

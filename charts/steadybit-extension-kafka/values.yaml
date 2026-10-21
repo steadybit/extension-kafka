@@ -15,6 +15,8 @@ image:
   pullSecrets: []
 
 kafka:
+  # kafka.insecureSkipVerify -- If true, the extension skips TLS certificate verification when connecting to all configured clusters (e.g. for self-signed certificates). Prefer mounting your CA, see README.
+  insecureSkipVerify: false
   # -- Legacy single-cluster configuration (for backward compatibility)
   # If kafka.clusters is defined, this section is ignored in favor of multi-cluster configuration.
   seedBrokers: ""
@@ -163,6 +165,20 @@ extraEnv: []
 #  - secretRef:
 #    name: env-secrets
 extraEnvFrom: []
+
+# extraVolumeMounts -- Additional volumeMounts to add to the container, e.g. to mount custom CA or client certificates
+# extraVolumeMounts:
+#   - name: extra-certs
+#     mountPath: /etc/ssl/extra-certs
+#     readOnly: true
+extraVolumeMounts: []
+
+# extraVolumes -- Additional volumes to add to the pod
+# extraVolumes:
+#   - name: extra-certs
+#     configMap:
+#       name: kafka-self-signed-ca
+extraVolumes: []
 
 discovery:
   # discovery.group -- Optional group identifier. When set, the extension adds steadybit.group=<value> to every discovered target. Used as an additional matcher in enrichment rules.

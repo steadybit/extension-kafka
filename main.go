@@ -6,14 +6,10 @@ package main
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"net"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
-	"time"
 
 	_ "github.com/KimMachineGun/automemlimit" // By default, it sets `GOMEMLIMIT` to 90% of cgroup's memory limit.
 	"github.com/rs/zerolog"
@@ -234,16 +230,12 @@ func testSingleClusterConnection(clusterName string, clusterConfig *config.Clust
 		}
 	}
 
-	if clusterConfig.KafkaClusterCaFile != "" && clusterConfig.KafkaClusterCertKeyFile != "" && clusterConfig.KafkaClusterCertChainFile != "" {
-		tlsConfig, err := newTLSConfig(clusterConfig.KafkaClusterCertChainFile, clusterConfig.KafkaClusterCertKeyFile, clusterConfig.KafkaClusterCaFile)
-		if err != nil {
-			return err
-		}
-
-		opts = append(opts, kgo.DialTLSConfig(tlsConfig))
-	} else if clusterConfig.KafkaConnectionUseTLS == "true" {
-		tlsDialer := &tls.Dialer{NetDialer: &net.Dialer{Timeout: 10 * time.Second}}
-		opts = append(opts, kgo.Dialer(tlsDialer.DialContext))
+	tlsDialer, err := clusterConfig.TLSDialer()
+	if err != nil {
+		return err
+	}
+	if tlsDialer != nil {
+		opts = append(opts, kgo.Dialer(tlsDialer))
 	}
 
 	client, err := kgo.NewClient(opts...)
@@ -295,25 +287,3 @@ func testSingleClusterConnection(clusterName string, clusterConfig *config.Clust
 //		return
 //	}
 //}
-
-func newTLSConfig(clientCertFile, clientKeyFile, caCertFile string) (*tls.Config, error) {
-	tlsConfig := tls.Config{}
-
-	// Load client cert
-	cert, err := tls.LoadX509KeyPair(clientCertFile, clientKeyFile)
-	if err != nil {
-		return &tlsConfig, err
-	}
-	tlsConfig.Certificates = []tls.Certificate{cert}
-
-	// Load CA cert
-	caCert, err := os.ReadFile(caCertFile)
-	if err != nil {
-		return &tlsConfig, err
-	}
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-	tlsConfig.RootCAs = caCertPool
-
-	return &tlsConfig, err
-}
