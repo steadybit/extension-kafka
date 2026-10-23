@@ -22,6 +22,7 @@ jobs:
     uses: steadybit/extension-kit/.github/workflows/reusable-extension-ci.yml@main # NOSONAR githubactions:S7637 - our own action
     with:
       runs_on: ubuntu-latest
+      go_version: '1.27'
       build_linux_packages: true
       run_make_prepare_audit: true
       VERSION_BUMPER_APPID: ${{ vars.GH_APP_STEADYBIT_APP_ID }}

@@ -1,6 +1,6 @@
 module github.com/steadybit/extension-kafka
 
-go 1.26.0
+go 1.27
 
 require (
 	github.com/KimMachineGun/automemlimit v1.0.0
