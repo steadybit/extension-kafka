@@ -1,5 +1,13 @@
 # Changelog
 
+## v1.2.30
+
+- build(deps): bump github.com/KimMachineGun/automemlimit
+- build(deps): bump github.com/klauspost/compress
+- build(docker): build with golang:1.27-alpine
+- chore(deps): bump action_kit_test to v1.4.13 (#150)
+- feat: support Kafka brokers with self-signed certificates (#149)
+
 ## v1.2.29
 
 - build(deps): bump github.com/twmb/franz-go from 1.22.1 to 1.22.2
