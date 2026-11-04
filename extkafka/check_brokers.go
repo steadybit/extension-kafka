@@ -34,10 +34,10 @@ type CheckBrokersState struct {
 	FailEarly          bool
 	// DeviationSeen and DeviationTitle are used in 'fail at end' mode (FailEarly = false) to remember
 	// that a deviating change was observed during the step so the failure can be reported once the step ends.
-	DeviationSeen     bool
-	DeviationTitle    string
-	BrokerHosts       []string
-	ClusterName       string // Cluster name for multi-cluster support
+	DeviationSeen  bool
+	DeviationTitle string
+	BrokerHosts    []string
+	ClusterName    string // Cluster name for multi-cluster support
 }
 
 const (
