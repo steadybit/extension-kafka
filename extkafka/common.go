@@ -82,11 +82,12 @@ var (
 		Type:        action_kit_api.ActionParameterTypeString,
 	}
 	recordValue = action_kit_api.ActionParameter{
-		Name:        "recordValue",
-		Label:       "Record value",
-		Description: new("Required. The message body to produce. Every record uses this same value."),
-		Type:        action_kit_api.ActionParameterTypeString,
-		Required:    new(true),
+		Name:         "recordValue",
+		Label:        "Record value",
+		Description:  new("Required. The message body to produce. Every record uses this same value."),
+		Type:         action_kit_api.ActionParameterTypeTextarea,
+		Required:     new(true),
+		DefaultValue: new("test-message"),
 	}
 	recordHeaders = action_kit_api.ActionParameter{
 		Name:        "recordHeaders",
