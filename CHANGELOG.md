@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- feat: Kafka checks show Fail early with the other check settings; the produce actions group their parameters into "Record Content" and "Producer Behavior" (a few parameters slightly reordered), and the record value is a textarea that defaults to "test-message"
+
 ## v1.2.30
 
 - build(deps): bump github.com/KimMachineGun/automemlimit
