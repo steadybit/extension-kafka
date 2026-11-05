@@ -74,19 +74,11 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 		TimeControl: action_kit_api.TimeControlInternal,
 
 		// The parameters for the action
+		ParameterGroups: new([]action_kit_api.ParameterGroup{producerBehaviorGroup}),
 		Parameters: []action_kit_api.ActionParameter{
-			//------------------------
-			// Request Definition
-			//------------------------
-			recordKey,
-			recordValue,
-			recordHeaders,
-			{
-				Name:  "-",
-				Label: "-",
-				Type:  action_kit_api.ActionParameterTypeSeparator,
-				Order: new(5),
-			},
+			recordKeyContent,
+			recordHeadersContent,
+			recordValueContent,
 			{
 				Name:         "numberOfRecords",
 				Label:        "Number of Records.",
@@ -96,17 +88,7 @@ func (l *produceMessageActionFixedAmount) Describe() action_kit_api.ActionDescri
 				DefaultValue: new("1"),
 			},
 			duration,
-			{
-				Name:  "-",
-				Label: "-",
-				Type:  action_kit_api.ActionParameterTypeSeparator,
-				Order: new(9),
-			},
 			successRate,
-			//------------------------
-			// Additional Settings
-			//------------------------
-
 			maxConcurrent,
 		},
 		Status: new(action_kit_api.MutatingEndpointReferenceWithCallInterval{

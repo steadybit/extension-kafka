@@ -131,6 +131,7 @@ var (
 		MaxValue:     new(10),
 		Required:     new(true),
 		Advanced:     new(true),
+		Group:        new(groupProducerBehavior),
 	}
 )
 

@@ -70,19 +70,11 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 		TimeControl: action_kit_api.TimeControlExternal,
 
 		// The parameters for the action
+		ParameterGroups: new([]action_kit_api.ParameterGroup{producerBehaviorGroup}),
 		Parameters: []action_kit_api.ActionParameter{
-			//------------------------
-			// Request Definition
-			//------------------------
-			recordKey,
-			recordValue,
-			recordHeaders,
-			{
-				Name:  "-",
-				Label: "-",
-				Type:  action_kit_api.ActionParameterTypeSeparator,
-				Order: new(5),
-			},
+			recordKeyContent,
+			recordHeadersContent,
+			recordValueContent,
 			{
 				Name:         "recordsPerSecond",
 				Label:        "Records per second",
@@ -94,18 +86,7 @@ func (l *produceMessageActionPeriodically) Describe() action_kit_api.ActionDescr
 				Required:     new(true),
 			},
 			duration,
-			{
-				Name:  "-",
-				Label: "-",
-				Type:  action_kit_api.ActionParameterTypeSeparator,
-				Order: new(9),
-			},
 			successRate,
-
-			//------------------------
-			// Additional Settings
-			//------------------------
-
 			maxConcurrent,
 		},
 		Status: new(action_kit_api.MutatingEndpointReferenceWithCallInterval{
