@@ -105,7 +105,6 @@ func (m *ConsumerGroupLagCheckAction) Describe() action_kit_api.ActionDescriptio
 				Description:  new("If enabled, the check fails as soon as the lag exceeds the threshold. If disabled (the default, matching the previous behavior), the check keeps collecting lag for the whole duration and only fails at the end of the step."),
 				Type:         action_kit_api.ActionParameterTypeBoolean,
 				DefaultValue: new("false"),
-				Advanced:     new(true),
 				Required:     new(false),
 			},
 		},

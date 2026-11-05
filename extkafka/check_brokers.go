@@ -34,10 +34,10 @@ type CheckBrokersState struct {
 	FailEarly          bool
 	// DeviationSeen and DeviationTitle are used in 'fail at end' mode (FailEarly = false) to remember
 	// that a deviating change was observed during the step so the failure can be reported once the step ends.
-	DeviationSeen     bool
-	DeviationTitle    string
-	BrokerHosts       []string
-	ClusterName       string // Cluster name for multi-cluster support
+	DeviationSeen  bool
+	DeviationTitle string
+	BrokerHosts    []string
+	ClusterName    string // Cluster name for multi-cluster support
 }
 
 const (
@@ -131,7 +131,6 @@ func (m *CheckBrokersAction) Describe() action_kit_api.ActionDescription {
 				Description:  new("If enabled, the check fails as soon as a deviating change is observed. If disabled, the check keeps collecting events for the whole duration and only fails at the end of the step. Only affects the 'All the time' mode; 'At least once' can only be evaluated at the end of the step."),
 				Type:         action_kit_api.ActionParameterTypeBoolean,
 				DefaultValue: new("true"),
-				Advanced:     new(true),
 				Required:     new(false),
 			},
 		},
