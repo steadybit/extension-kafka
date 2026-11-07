@@ -12,3 +12,7 @@ updates:
     steadybit:
       patterns:
         - "github.com/steadybit/*"
+- package-ecosystem: "docker"
+  directory: "/"
+  schedule:
+    interval: "weekly"
