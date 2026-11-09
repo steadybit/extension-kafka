@@ -1,8 +1,15 @@
 # Changelog
 
-## Unreleased
+## v1.2.31
 
+- build(deps): bump k8s.io/api from 0.37.1 to 0.37.2
+- chore(deps): bump golang.org/x/net to v0.62.0
 - feat: Kafka checks show Fail early with the other check settings; the produce actions group their parameters into "Record Content" and "Producer Behavior" (a few parameters slightly reordered), and the record value is a textarea that defaults to "test-message"
+- feat: group the parameters of the produce actions
+- feat: show Fail early with the other check settings
+- feat: show the record value as a textarea with a default
+- fix(chart): set default memory limit to 128Mi
+- style: gofmt check_brokers.go
 
 ## v1.2.30
 
