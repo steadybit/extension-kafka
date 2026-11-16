@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.2.32
+
+- build(deps): bump the steadybit group with 2 updates
+
 ## v1.2.31
 
 - build(deps): bump k8s.io/api from 0.37.1 to 0.37.2
