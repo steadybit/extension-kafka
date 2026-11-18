@@ -21,7 +21,7 @@ require (
 	github.com/twmb/franz-go v1.22.2
 	github.com/twmb/franz-go/pkg/kadm v1.19.0
 	github.com/twmb/franz-go/pkg/kfake v0.0.0-20250711145744-a849b8be17b7
-	github.com/twmb/franz-go/pkg/kmsg v1.15.0
+	github.com/twmb/franz-go/pkg/kmsg v1.15.1
 	k8s.io/api v0.37.2
 	k8s.io/apimachinery v0.37.2
 )
