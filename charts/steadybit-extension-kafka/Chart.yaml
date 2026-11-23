@@ -1,7 +1,7 @@
 apiVersion: v2
 name: steadybit-extension-kafka
-description: Steadybit scaffold extension Helm chart for Kubernetes.
-version: 1.0.67
+description: Steadybit Kafka extension Helm chart for Kubernetes.
+version: 1.0.68
 appVersion: v1.2.32
 home: https://www.steadybit.com/
 icon: https://steadybit-website-assets.s3.amazonaws.com/logo-symbol-transparent.png
